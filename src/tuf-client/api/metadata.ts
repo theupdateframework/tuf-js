@@ -1,4 +1,4 @@
-import { SignedSerializer } from './serialization';
+import { SignedSerializer, CanonicalJSONSerializer } from './serialization';
 
 const SPECIFICATION_VERSION = ['1', '20', '30'];
 export class Metadata {
