@@ -1,7 +1,6 @@
-import { SignedSerializer, CanonicalJSONSerializer } from './serialization';
-
 const SPECIFICATION_VERSION = ['1', '20', '30'];
 export class Metadata {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public signatures: Record<any, any>;
   constructor() {
     this.signatures = {};
@@ -10,15 +9,17 @@ export class Metadata {
 
 export abstract class Signed {
   private specVersion: string;
-  private expeires: number;
+  private expires: number;
   private version: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private unrecognizedFields: Record<string, any>;
 
   constructor(
-    version: number | undefined,
-    specVersion: string | undefined,
-    expeires: number | undefined,
-    unrecognizedFields: Record<string, any> | undefined
+    version?: number,
+    specVersion?: string,
+    expires?: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    unrecognizedFields?: Record<string, any>
   ) {
     if (!specVersion) {
       //  TODO: make it a constant var
@@ -27,175 +28,118 @@ export abstract class Signed {
     const specList = specVersion.split('.');
     if (
       !(specList.length === 2 || specList.length === 3) ||
-      specList.every((item) => {
-        return typeof item === 'number';
-      })
+      specList.every((item) => typeof item === 'number')
     ) {
-      throw new Error('Failed to parse spec_version');
+      throw new Error('Failed to parse specVersion');
     }
 
     // major version must match
     if (specList[0] != SPECIFICATION_VERSION[0]) {
-      throw new Error('Unsupported spec_version');
+      throw new Error('Unsupported specVersion');
     }
 
     this.specVersion = specVersion;
-    this.expeires = expeires || new Date().getUTCMilliseconds();
+    this.expires = expires || new Date().getUTCMilliseconds();
     this.version = version || 1;
     this.unrecognizedFields = unrecognizedFields || {};
   }
 
-  public isEqual(other: any): boolean {
+  public equals(other: Signed): boolean {
     if (!(other instanceof Signed)) {
       return false;
     }
 
     return (
       this.specVersion === other.specVersion &&
-      this.expeires === other.expeires &&
+      this.expires === other.expires &&
       this.version === other.version &&
       this.unrecognizedFields === other.unrecognizedFields
     );
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  abstract toJSON(): Record<string, any>;
 
-  abstract toDict(): Record<string, any>;
-  abstract fromDict(signedDict: Record<string, any>): Signed;
-
-  public _commonFieldsFromDict(
-    signedDict: Record<string, any>
-  ): [number, string, number] {
-    // Returns common fields of ``Signed`` instances from the passed dict
-    //     representation, and returns an ordered list to be passed as leading
-    //     positional arguments to a subclass constructor.
-
-    //     See ``{Root, Timestamp, Snapshot, Targets}.from_dict`` methods for usage.
-
-    const _type = 'Signed';
-
-    const version = signedDict?.['version'];
-    const specVersion = signedDict?.['spec_version'];
-    const expires = signedDict?.['expires'];
-    // Convert 'expires' TUF metadata string to a datetime object, which is
-    // what the constructor expects and what we store. The inverse operation
-    // is implemented in '_common_fields_to_dict'.
-    return [version, specVersion, expires];
-  }
-
-  public _commonFieldsToDict(): Record<string, any> {
-    // Returns dict representation of common fields of ``Signed`` instances.
-    //     See ``{Root, Timestamp, Snapshot, Targets}.to_dict`` methods for usage.
-    return {
-      _type: 'Signed',
-      version: this.version,
-      spec_version: this.specVersion,
-      expires: this.expeires,
-      ...this.unrecognizedFields,
-    };
-  }
-
-  public isExpired(referenceTime: number | undefined): boolean {
+  public isExpired(referenceTime?: number): boolean {
     if (!referenceTime) {
       referenceTime = new Date().getUTCMilliseconds();
     }
-    return referenceTime >= this.expeires;
+    return referenceTime >= this.expires;
   }
 }
 
 export interface KeyOptions {
-  keyid: string;
-  keytype: string;
+  keyID: string;
+  keyType: string;
   scheme: string;
-  keyval: Record<string, string>;
-  unrecognized_fields?: Record<string, string>;
+  keyVal: Record<string, string>;
+  unrecognizedFields?: Record<string, string>;
 }
 
 export class Key {
-  private keyid: string;
-  private keytype: string;
+  private keyID: string;
+  private keyType: string;
   private scheme: string;
-  private keyval: Record<string, string>;
-  private unrecognized_fields?: Record<string, string>;
+  private keyVal: Record<string, string>;
+  private unrecognizedFields?: Record<string, string>;
 
   constructor(options: KeyOptions) {
-    const { keyid, keytype, scheme, keyval, unrecognized_fields } = options;
+    const { keyID, keyType, scheme, keyVal, unrecognizedFields } = options;
 
-    this.keyid = keyid;
-    this.keytype = keytype;
+    this.keyID = keyID;
+    this.keyType = keyType;
     this.scheme = scheme;
-    this.keyval = keyval;
-    if (unrecognized_fields === null) {
-      this.unrecognized_fields = {};
-    } else {
-      this.unrecognized_fields = unrecognized_fields;
-    }
+    this.keyVal = keyVal;
+    this.unrecognizedFields = unrecognizedFields || {};
   }
 
-  public isEqual(other: any): boolean {
+  public equals(other: Key): boolean {
     if (!(other instanceof Key)) {
       return false;
     }
 
     return (
-      this.keyid === other.keyid &&
-      this.keytype === other.keytype &&
+      this.keyID === other.keyID &&
+      this.keyType === other.keyType &&
       this.scheme === other.scheme &&
-      this.keyval === other.keyval &&
-      this.unrecognized_fields === other.unrecognized_fields
+      this.keyVal === other.keyVal &&
+      this.unrecognizedFields === other.unrecognizedFields
     );
   }
 
-  public fromDict(keyid: string, keyDict: Record<string, any>): Key {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public fromJSON(keyID: string, keyDict: Record<string, any>): Key {
     // Creates ``Key`` object from its json/dict representation.
     //     Raises:
     //         KeyError, TypeError: Invalid arguments.
 
-    const { keytype, schema, keyval } = keyDict;
-    if (keytype && schema && keyval) {
+    const { keyType, schema, keyVal } = keyDict;
+    if (keyType && schema && keyVal) {
       const keyOptions = {
-        keyid: keyid,
-        keytype: keytype,
+        keyID: keyID,
+        keyType: keyType,
         schema: schema,
-        keyval: keyval,
-        unrecognized_fields: keyDict,
+        keyVal: keyVal,
+        unrecognizedFields: keyDict,
       } as unknown as KeyOptions;
       return new Key(keyOptions);
     }
     throw new Error('Wrong key in keyDict');
   }
 
-  public toDict(): Record<string, any> {
-    const { keytype, scheme, keyval, unrecognized_fields } = this;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public toJSON(): Record<string, any> {
+    const { keyType, scheme, keyVal, unrecognizedFields } = this;
     // Returns the dictionary representation of self.
     return {
-      keytype,
+      keytype: keyType,
       scheme,
-      keyval,
-      unrecognized_fields,
+      keyval: keyVal,
+      unrecognized_fields: unrecognizedFields,
     };
   }
 
   // TODO: involve with secureslib. will work on it later
-  public toSecuresystemslibKey(): Record<string, any> {
-    const { keytype, scheme, keyval, keyid } = this;
-    // Returns a ``Securesystemslib`` compatible representation of self.
-    return {
-      keyid,
-      keytype,
-      scheme,
-      keyval,
-    };
-  }
-
-  // TODO: involve with secureslib. will work on it later
-  // public fromSecuresystemslibKey() {
-
-  // }
-
-  // TODO: involve with secureslib. will work on it later
-  public verifySignature(
-    metadata: Metadata,
-    signed_serializer: SignedSerializer | undefined
-  ) {
+  public verifySignature(metadata: Metadata) {
     // Verifies that the ``metadata.signatures`` contains a signature made
     //     with this key, correctly signing ``metadata.signed``.
     //     Args:
@@ -205,19 +149,17 @@ export class Key {
     //     Raises:
     //         UnsignedMetadataError: The signature could not be verified for a
     //             variety of possible reasons: see error message.
+    let signature;
     try {
-      const signature = metadata?.signatures[this.keyid];
+      signature = metadata?.signatures[this.keyID];
     } catch (error) {
       throw new Error('No signature for key found in metadata');
-    }
-    if (signed_serializer === undefined) {
-      signed_serializer = new CanonicalJSONSerializer();
     }
 
     try {
       // TODO: implmeent verifysignature func
-      const sslib_keys_verifySignature = false;
-      if (!sslib_keys_verifySignature) {
+      const verifySignature = signature;
+      if (!verifySignature) {
         throw new Error('Failed to verify signature');
       }
     } catch (error) {
