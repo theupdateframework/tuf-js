@@ -22,7 +22,6 @@ export abstract class Signed {
     unrecognizedFields?: Record<string, any>
   ) {
     if (!specVersion) {
-      //  TODO: make it a constant var
       specVersion = SPECIFICATION_VERSION.join('.');
     }
     const specList = specVersion.split('.');
@@ -138,7 +137,7 @@ export class Key {
     };
   }
 
-  // TODO: involve with secureslib. will work on it later
+  // TODO:  implm the verify signature logic
   public verifySignature(metadata: Metadata) {
     // Verifies that the ``metadata.signatures`` contains a signature made
     //     with this key, correctly signing ``metadata.signed``.
