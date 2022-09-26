@@ -1,10 +1,19 @@
+import isEqual from 'lodash.isequal';
+import * as singer from '../utils/singer';
+
 const SPECIFICATION_VERSION = ['1', '20', '30'];
 export class Metadata {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public signatures: Record<any, any>;
+  public signed: string;
   constructor() {
     this.signatures = {};
+    this.signed = '';
   }
+}
+
+function is_numeric(str: string): boolean {
+  return /^\d+$/.test(str);
 }
 
 export abstract class Signed {
@@ -27,7 +36,7 @@ export abstract class Signed {
     const specList = specVersion.split('.');
     if (
       !(specList.length === 2 || specList.length === 3) ||
-      specList.every((item) => typeof item === 'number')
+      !specList.every((item) => is_numeric(item))
     ) {
       throw new Error('Failed to parse specVersion');
     }
@@ -52,7 +61,7 @@ export abstract class Signed {
       this.specVersion === other.specVersion &&
       this.expires === other.expires &&
       this.version === other.version &&
-      this.unrecognizedFields === other.unrecognizedFields
+      isEqual(this.unrecognizedFields, other.unrecognizedFields)
     );
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,7 +110,7 @@ export class Key {
       this.keyType === other.keyType &&
       this.scheme === other.scheme &&
       this.keyVal === other.keyVal &&
-      this.unrecognizedFields === other.unrecognizedFields
+      isEqual(this.unrecognizedFields, other.unrecognizedFields)
     );
   }
 
@@ -148,16 +157,24 @@ export class Key {
     //     Raises:
     //         UnsignedMetadataError: The signature could not be verified for a
     //             variety of possible reasons: see error message.
-    let signature;
-    try {
-      signature = metadata?.signatures[this.keyID];
-    } catch (error) {
-      throw new Error('No signature for key found in metadata');
-    }
+
+    const signature = metadata?.signatures?.[this.keyID]?.sig;
+    if (!signature) throw new Error('No signature for key found in metadata');
+
+    const publicKey = this.keyVal?.public;
+    if (!publicKey) throw new Error('No spublic key found');
+
+    const signedData = metadata?.signed;
+    if (!signedData) throw new Error('No signed data found in metadata');
 
     try {
       // TODO: implmeent verifysignature func
-      const verifySignature = signature;
+      const verifySignature = singer.verifySignature(
+        this.keyType,
+        signedData,
+        signature,
+        publicKey
+      );
       if (!verifySignature) {
         throw new Error('Failed to verify signature');
       }

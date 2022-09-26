@@ -31,7 +31,7 @@ describe('Signed', () => {
       });
     });
 
-    describe('when spec version is too long', () => {
+    describe('when spec version includes non number', () => {
       it('constructs an object', () => {
         expect(() => {
           new DummySigned(1, '1.b.c');
@@ -72,10 +72,11 @@ describe('Signed', () => {
         });
       });
 
-      describe('when other is equal', () => {
+      describe('when both with no arguments', () => {
         it('returns true', () => {
-          const other = new DummySigned(1, '1.0.0', 1, {});
-          expect(subject.equals(other)).toBe(true);
+          const current = new DummySigned();
+          const other = new DummySigned();
+          expect(current.equals(other)).toBe(true);
         });
       });
     });
