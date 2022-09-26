@@ -53,6 +53,7 @@ describe('Signed', () => {
 
     describe('when other is not a Signed', () => {
       it('returns false', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect(subject.equals({} as any)).toBe(false);
       });
     });

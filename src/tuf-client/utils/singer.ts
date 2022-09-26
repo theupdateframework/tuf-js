@@ -1,7 +1,5 @@
 import canonicalize from 'canonicalize';
 import crypto from 'crypto';
-import * as fs from 'fs';
-import { Metadata } from '../api/metadata';
 import { ed25519 } from './key';
 
 export const verifySignature = (
