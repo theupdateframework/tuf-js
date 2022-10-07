@@ -1,0 +1,4 @@
+
+to run the example: 
+1. ```cd examples/clientExample```
+2. ```npx ts-node  clientExample.ts```

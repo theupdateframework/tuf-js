@@ -37,6 +37,7 @@ export class TrustedMetadataSet {
     rootMetaData.verifyDelegate();
 
     this.trustedSet[new Root().type] = rootMetaData;
+    console.log(this.trustedSet.Root.signed)
     console.info('Loaded trusted root v%d', rootMetaData.signed.version);
   }
 }

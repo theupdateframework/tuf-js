@@ -234,7 +234,7 @@ export class Role {}
 export class Root extends Signed {
   public type = 'Root';
   private consistentSnapshot: boolean;
-  private keys: Record<string, Key>;
+  public keys: Record<string, Key>;
 
   constructor(
     version?: number,
