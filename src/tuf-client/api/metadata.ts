@@ -1,15 +1,59 @@
 import isEqual from 'lodash.isequal';
-import * as singer from '../utils/singer';
+import * as signer from '../utils/signer';
+import canonicalize from 'canonicalize';
+import { JSONValue } from '../utils/type';
 
 const SPECIFICATION_VERSION = ['1', '20', '30'];
-export class Metadata {
+type MetadataType = Root | Timestamp | Snapshot | Targets;
+
+interface Signature {
+  keyID: string;
+  sig: string;
+}
+export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public signatures: Record<any, any>;
-  public signed: string;
-  constructor() {
-    this.signatures = {};
-    this.signed = '';
+  public signatures: Record<string, Signature>;
+  public signed: T;
+  public unrecognizedFields: Record<string, any>;
+  constructor(
+    signed: T,
+    signatures?: Record<string, Signature>,
+    unrecognizedFields?: Record<string, any>
+  ) {
+    this.signatures = signatures || {};
+    this.signed = signed;
+    this.unrecognizedFields = unrecognizedFields || {};
   }
+
+  public equals(other: T): boolean {
+    if (!(other instanceof Metadata)) {
+      return false;
+    }
+    return (
+      this.signed === other.signed,
+      isEqual(this.signatures, other.signatures),
+      isEqual(this.unrecognizedFields, other.unrecognizedFields)
+    );
+  }
+
+  public sign() {
+    const bytes_data = canonicalize(this.signed);
+    if (!bytes_data) {
+      throw new Error('Problem signing the metadata');
+    }
+
+    const signature = signer.sign(bytes_data);
+
+    // const keyId = signature?.keyid as string;
+    // if (keyId){
+    //   this.signatures[keyId] = signature?.;
+    // }
+
+    return signature;
+  }
+
+  // TODO after delegations
+  public verifyDelegate() {}
 }
 
 function is_numeric(str: string): boolean {
@@ -17,11 +61,11 @@ function is_numeric(str: string): boolean {
 }
 
 export abstract class Signed {
-  private specVersion: string;
-  private expires: number;
-  private version: number;
+  public specVersion: string;
+  public expires: number;
+  public version: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private unrecognizedFields: Record<string, any>;
+  public unrecognizedFields: Record<string, any>;
 
   constructor(
     version?: number,
@@ -66,6 +110,7 @@ export abstract class Signed {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   abstract toJSON(): Record<string, any>;
+  abstract fromJSON(data: JSONValue): Signed;
 
   public isExpired(referenceTime?: number): boolean {
     if (!referenceTime) {
@@ -115,18 +160,18 @@ export class Key {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public fromJSON(keyID: string, keyDict: Record<string, any>): Key {
+  public static fromJSON(keyID: string, keyDict: Record<string, any>): Key {
     // Creates ``Key`` object from its json/dict representation.
     //     Raises:
     //         KeyError, TypeError: Invalid arguments.
 
-    const { keyType, schema, keyVal } = keyDict;
-    if (keyType && schema && keyVal) {
+    const { keytype, scheme, keyval } = keyDict;
+    if (keytype && scheme && keyval) {
       const keyOptions = {
         keyID: keyID,
-        keyType: keyType,
-        schema: schema,
-        keyVal: keyVal,
+        keyType: keytype,
+        scheme: scheme,
+        keyVal: keyval,
         unrecognizedFields: keyDict,
       } as unknown as KeyOptions;
       return new Key(keyOptions);
@@ -147,7 +192,7 @@ export class Key {
   }
 
   // TODO:  implm the verify signature logic
-  public verifySignature(metadata: Metadata) {
+  public verifySignature(metadata: Metadata<Root>) {
     // Verifies that the ``metadata.signatures`` contains a signature made
     //     with this key, correctly signing ``metadata.signed``.
     //     Args:
@@ -169,9 +214,9 @@ export class Key {
 
     try {
       // TODO: implmeent verifysignature func
-      const verifySignature = singer.verifySignature(
+      const verifySignature = signer.verifySignature(
         this.keyType,
-        signedData,
+        signedData.type,
         signature,
         publicKey
       );
@@ -186,6 +231,69 @@ export class Key {
 
 export class Role {}
 
-export class Root {}
+export class Root extends Signed {
+  public type = 'Root';
+  private consistentSnapshot: boolean;
+  private keys: Record<string, Key>;
+
+  constructor(
+    version?: number,
+    specVersion?: string,
+    expires?: number,
+    keys?: Record<string, Key>,
+    roles?: Record<string, Role>,
+    consistentSnapshot?: boolean,
+    unrecognizedFields?: Record<string, any>
+  ) {
+    super(version, specVersion, expires, unrecognizedFields);
+    this.consistentSnapshot = consistentSnapshot || false;
+    this.keys = keys || {};
+
+    // TODO: work on roles
+  }
+
+  public fromJSON(data: JSONValue): Root {
+    const consistentSnapshot = data?.['consistent_snapshot'];
+    const keys: Record<string, any> = data?.['keys'];
+    const roles: Record<string, any> = data?.['roles'];
+
+
+    for (const keyid in keys) {
+      // TODO:
+      keys[keyid] = Key.fromJSON(keyid, keys[keyid]);
+    }
+
+    for (const roleName in keys) {
+      // TODO:
+      // roles[roleName] = new Role().fromJSON(roleName, roles[roleName]);
+    }
+
+    return new Root(
+      this.version,
+      this.specVersion,
+      this.expires,
+      keys,
+      roles,
+      consistentSnapshot,
+      this.unrecognizedFields
+    );
+  }
+
+  public toJSON(): Record<string, any> {
+    return {};
+  }
+}
+
+export class Timestamp {
+  public type = 'Timestamp';
+}
+
+export class Snapshot {
+  public type = 'Snapshot';
+}
+
+export class Targets {
+  public type = 'Targets';
+}
 
 export class Delegations {}
