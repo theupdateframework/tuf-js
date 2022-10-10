@@ -4,40 +4,37 @@ import {
   Root,
   Timestamp,
   Targets,
+  MetadataKind,
 } from '../../api/metadata';
-import { JSONValue } from '../../utils/type';
+import { JSONObject } from '../../utils/type';
+
+interface TrustedSet {
+  root?: Metadata<Root>;
+  timestamp?: Metadata<Timestamp>;
+  snapshot?: Metadata<Snapshot>;
+  targets?: Metadata<Targets>;
+}
 
 export class TrustedMetadataSet {
-  private trustedSet: Record<
-    string,
-    | Metadata<Root>
-    | Metadata<Timestamp>
-    | Metadata<Snapshot>
-    | Metadata<Targets>
-  >;
+  private trustedSet: TrustedSet = {};
   private referenceTime: number;
 
-  constructor(rootData: JSONValue) {
-    this.trustedSet = {};
-    this.referenceTime = new Date().getUTCMilliseconds();
+  constructor(rootData: JSONObject) {
+    this.referenceTime = new Date().getTime();
     this.loadTrustedRoot(rootData);
   }
 
-  private loadTrustedRoot(data: JSONValue) {
-    // Verifies and loads ``data`` as trusted root metadata.
-    // Note that an expired initial root is considered valid: expiry is
-    // only checked for the final root in ``update_timestamp()``.
+  // Verifies and loads data as trusted root metadata.
+  // Note that an expired initial root is still considered valid.
+  private loadTrustedRoot(data: JSONObject) {
+    const root = Metadata.fromJSON(MetadataKind.Root, data);
 
-    const rootData = new Root().fromJSON(data?.signed);
-    const rootMetaData = new Metadata<Root>(rootData);
-
-    if (rootMetaData?.signed?.type != new Root().type) {
-      throw new Error(`Expected 'root', got ${rootMetaData?.signed?.type}`);
+    if (root.signed.type != MetadataKind.Root) {
+      throw new Error(`Expected 'root', got ${root.signed.type}`);
     }
-    rootMetaData.verifyDelegate();
+    root.verifyDelegate();
 
-    this.trustedSet[new Root().type] = rootMetaData;
-    console.log(this.trustedSet.Root.signed)
-    console.info('Loaded trusted root v%d', rootMetaData.signed.version);
+    this.trustedSet['root'] = root;
+    console.info('Loaded trusted root v%d', root.signed.version);
   }
 }

@@ -1,7 +1,9 @@
+export type JSONObject = { [key: string]: JSONValue };
+
 export type JSONValue =
-  | string
-  | number
+  | null
   | boolean
-  | any
-  | { [x: string]: JSONValue }
-  | Array<JSONValue>;
+  | number
+  | string
+  | JSONValue[]
+  | JSONObject;
