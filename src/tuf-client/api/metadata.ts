@@ -94,7 +94,45 @@ export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
   }
 
   // TODO after delegations
-  public verifyDelegate() {}
+  public verifyDelegate(
+    delegatedRole: string,
+    delegatedMetadata: Metadata<MetadataType>
+  ) {
+    let role: Role | null = null;
+    let keys: Record<string, Key> | null = null;
+    if (this.signed.type === MetadataKind.Root) {
+      const root = this.signed as Root;
+      keys = root.keys;
+      role = root.roles[delegatedRole];
+    }
+
+    if (!role) {
+      throw new Error(`No delegation fround for ${delegatedRole}`);
+    }
+
+    if (!keys){
+      throw new Error(`No keys found`);
+    }
+
+    const signingKeys = new Set();
+    for (let i = 0; i < role.keyIds.length; i++) {
+      const key = keys[role.keyIds[i]] as Key;
+
+      try {
+        key.verifySignature(delegatedMetadata);
+        signingKeys.add(key.keyID);
+      } catch {
+        throw new Error(
+          `Key ${key.keyID} failed to verify ${delegatedRole} with error %{error`
+        );
+      }
+    }
+    if (signingKeys.size < role.threshold){
+      throw new Error(
+        `${delegatedRole} was signed by ${signingKeys.size}/${role.threshold} keys`
+      );
+    }
+  }
 }
 
 export interface KeyOptions {
@@ -106,11 +144,11 @@ export interface KeyOptions {
 }
 
 export class Key {
-  private keyID: string;
-  private keyType: string;
-  private scheme: string;
-  private keyVal: Record<string, string>;
-  private unrecognizedFields?: Record<string, string>;
+  public keyID: string;
+  public keyType: string;
+  public scheme: string;
+  public keyVal: Record<string, string>;
+  public unrecognizedFields?: Record<string, string>;
 
   constructor(options: KeyOptions) {
     const { keyID, keyType, scheme, keyVal, unrecognizedFields } = options;
@@ -188,7 +226,58 @@ export class Key {
   }
 }
 
-export class Role {}
+type RoleOptions = {
+  keyIds: string[];
+  threshold: number;
+  unrecognizedFields?: Record<string, any>;
+};
+
+function hasDuplicates(array: string[]) {
+  return new Set(array).size !== array.length;
+}
+
+export class Role {
+  public keyIds: string[];
+  public threshold: number;
+  public unrecognizedFields: Record<string, any>;
+
+  constructor(options: RoleOptions) {
+    const { keyIds, threshold, unrecognizedFields } = options;
+    if (hasDuplicates(keyIds)) {
+      throw new Error(`None unqiue keyids ${keyIds}`);
+    }
+    if (threshold < 1) {
+      throw new Error(`Threshold should be at least 1`);
+    }
+    this.keyIds = keyIds;
+    this.threshold = threshold;
+    this.unrecognizedFields = unrecognizedFields || {};
+  }
+
+  public equals(other: Role): boolean {
+    if (!(other instanceof Role)) {
+      return false;
+    }
+    return (
+      this.threshold === other.threshold &&
+      util.isDeepStrictEqual(this.keyIds, other.keyIds) &&
+      util.isDeepStrictEqual(this.unrecognizedFields, other.unrecognizedFields)
+    );
+  }
+
+  public static fromJSON(data: JSONObject): Role {
+    const { keyids, threshold, ...rest } = data;
+    if (!keyids && !threshold) {
+      throw new Error('No able to serialize Role from JSON');
+    }
+
+    return new Role({
+      keyIds: keyids as string[],
+      threshold: threshold as number,
+      unrecognizedFields: rest,
+    });
+  }
+}
 
 type RootOptions = SignedOptions & {
   keys: Record<string, Key>;
@@ -199,12 +288,15 @@ type RootOptions = SignedOptions & {
 export class Root extends Signed {
   public readonly type = MetadataKind.Root;
   public keys: Record<string, Key>;
+  public roles: Record<string, Role>;
+
   private consistentSnapshot: boolean;
 
   constructor(options: RootOptions) {
     super(options);
 
     this.keys = options.keys || {};
+    this.roles = options.roles || {};
     this.consistentSnapshot = options.consistentSnapshot ?? false;
 
     // TODO: work on roles
@@ -220,10 +312,10 @@ export class Root extends Signed {
       keySet[keyID] = Key.fromJSON(keyID, keyData);
     });
 
-    for (const roleName in keys) {
-      // TODO:
-      // roles[roleName] = new Role().fromJSON(roleName, roles[roleName]);
-    }
+    Object.entries(roles).forEach(([roleName, roleData]) => {
+      roles[roleName] = Role.fromJSON(roleData as JSONObject);
+    });
+
 
     return new Root({
       ...commonFields,
@@ -241,6 +333,7 @@ export class Root extends Signed {
 
 export class Timestamp extends Signed {
   public type = 'Timestamp';
+
   public static fromJSON(data: JSONValue): Timestamp {
     return new Timestamp({});
   }
@@ -248,6 +341,7 @@ export class Timestamp extends Signed {
 
 export class Snapshot extends Signed {
   public type = 'Snapshot';
+
   public static fromJSON(data: JSONValue): Snapshot {
     return new Snapshot({});
   }
@@ -255,6 +349,7 @@ export class Snapshot extends Signed {
 
 export class Targets extends Signed {
   public type = 'Targets';
+
   public static fromJSON(data: JSONValue): Targets {
     return new Targets({});
   }

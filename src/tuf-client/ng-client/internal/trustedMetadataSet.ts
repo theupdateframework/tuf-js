@@ -24,6 +24,18 @@ export class TrustedMetadataSet {
     this.loadTrustedRoot(rootData);
   }
 
+  private updateRoot(data: JSONObject): Metadata<Root> {
+    const root = Metadata.fromJSON(MetadataKind.Root, data);
+    if (root.signed.type != MetadataKind.Root) {
+      throw new Error(`Expected 'root', got ${root.signed.type}`);
+    }
+    this.trustedSet.root?.verifyDelegate(MetadataKind.Root, root);
+    root.verifyDelegate(MetadataKind.Root, root);
+
+    this.trustedSet.root = root;
+    return root;
+  }
+
   // Verifies and loads data as trusted root metadata.
   // Note that an expired initial root is still considered valid.
   private loadTrustedRoot(data: JSONObject) {
@@ -32,7 +44,7 @@ export class TrustedMetadataSet {
     if (root.signed.type != MetadataKind.Root) {
       throw new Error(`Expected 'root', got ${root.signed.type}`);
     }
-    root.verifyDelegate();
+    root.verifyDelegate(MetadataKind.Root, root);
 
     this.trustedSet['root'] = root;
     console.info('Loaded trusted root v%d', root.signed.version);
