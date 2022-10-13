@@ -8,6 +8,7 @@ export const verifySignature = (
   key: string,
   keyType: string
 ): boolean => {
+  console.log('test')
   if (keyType === 'ed25519') {
     const publicKey = ed25519.fromHex(key);
 
