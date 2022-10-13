@@ -1,78 +1,100 @@
-import isEqual from 'lodash.isequal';
-import * as singer from '../utils/singer';
+import canonicalize from 'canonicalize';
+import util from 'util';
+import * as signer from '../utils/signer';
+import { JSONObject, JSONValue } from '../utils/type';
+import { Signed, SignedOptions } from './signed';
 
-const SPECIFICATION_VERSION = ['1', '20', '30'];
-export class Metadata {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public signatures: Record<any, any>;
-  public signed: string;
-  constructor() {
-    this.signatures = {};
-    this.signed = '';
-  }
+export enum MetadataKind {
+  Root = 'root',
+  Timestamp = 'timestamp',
+  Snapshot = 'snapshot',
+  Targets = 'targets',
 }
 
-function is_numeric(str: string): boolean {
-  return /^\d+$/.test(str);
-}
+type MetadataType = Root | Timestamp | Snapshot | Targets;
 
-export abstract class Signed {
-  private specVersion: string;
-  private expires: number;
-  private version: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private unrecognizedFields: Record<string, any>;
+interface Signature {
+  keyID: string;
+  sig: string;
+}
+export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
+  public signed: T;
+  public signatures: Record<string, Signature>;
+  public unrecognizedFields: Record<string, any>;
 
   constructor(
-    version?: number,
-    specVersion?: string,
-    expires?: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    signed: T,
+    signatures?: Record<string, Signature>,
     unrecognizedFields?: Record<string, any>
   ) {
-    if (!specVersion) {
-      specVersion = SPECIFICATION_VERSION.join('.');
-    }
-    const specList = specVersion.split('.');
-    if (
-      !(specList.length === 2 || specList.length === 3) ||
-      !specList.every((item) => is_numeric(item))
-    ) {
-      throw new Error('Failed to parse specVersion');
-    }
-
-    // major version must match
-    if (specList[0] != SPECIFICATION_VERSION[0]) {
-      throw new Error('Unsupported specVersion');
-    }
-
-    this.specVersion = specVersion;
-    this.expires = expires || new Date().getUTCMilliseconds();
-    this.version = version || 1;
+    this.signed = signed;
+    this.signatures = signatures || {};
     this.unrecognizedFields = unrecognizedFields || {};
   }
 
-  public equals(other: Signed): boolean {
-    if (!(other instanceof Signed)) {
+  public static fromJSON(type: MetadataKind.Root, data: any): Metadata<Root>;
+  public static fromJSON(
+    type: MetadataKind.Timestamp,
+    data: any
+  ): Metadata<Timestamp>;
+  public static fromJSON(
+    type: MetadataKind.Snapshot,
+    data: any
+  ): Metadata<Snapshot>;
+  public static fromJSON(
+    type: MetadataKind.Targets,
+    data: any
+  ): Metadata<Targets>;
+  public static fromJSON(
+    type: MetadataKind,
+    data: any
+  ): Metadata<MetadataType> {
+    const { signed, signatures, ...rest } = data;
+
+    if (type !== signed._type) {
+      throw new Error(`Expected '${type}', got ${signed['_type']}`);
+    }
+
+    let signedObj: MetadataType;
+    switch (type) {
+      case MetadataKind.Root:
+        signedObj = Root.fromJSON(signed);
+        break;
+      case MetadataKind.Timestamp:
+        signedObj = Timestamp.fromJSON(signed);
+        break;
+      case MetadataKind.Snapshot:
+        signedObj = Snapshot.fromJSON(signed);
+        break;
+      case MetadataKind.Targets:
+        signedObj = Targets.fromJSON(signed);
+        break;
+      default:
+        throw new Error('Not implemented');
+    }
+
+    // Collect unique signatures
+    const sigs: Record<string, Signature> = {};
+    signatures.forEach((sig: { keyid: string; sig: string }) => {
+      sigs[sig.keyid] = { keyID: sig.keyid, sig: sig.sig };
+    });
+
+    return new Metadata(signedObj, sigs, rest);
+  }
+
+  public equals(other: T): boolean {
+    if (!(other instanceof Metadata)) {
       return false;
     }
-
     return (
-      this.specVersion === other.specVersion &&
-      this.expires === other.expires &&
-      this.version === other.version &&
-      isEqual(this.unrecognizedFields, other.unrecognizedFields)
+      this.signed.equals(other.signed) &&
+      util.isDeepStrictEqual(this.signatures, other.signatures) &&
+      util.isDeepStrictEqual(this.unrecognizedFields, other.unrecognizedFields)
     );
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  abstract toJSON(): Record<string, any>;
 
-  public isExpired(referenceTime?: number): boolean {
-    if (!referenceTime) {
-      referenceTime = new Date().getUTCMilliseconds();
-    }
-    return referenceTime >= this.expires;
-  }
+  // TODO after delegations
+  public verifyDelegate() {}
 }
 
 export interface KeyOptions {
@@ -80,7 +102,7 @@ export interface KeyOptions {
   keyType: string;
   scheme: string;
   keyVal: Record<string, string>;
-  unrecognizedFields?: Record<string, string>;
+  unrecognizedFields?: any;
 }
 
 export class Key {
@@ -109,45 +131,27 @@ export class Key {
       this.keyID === other.keyID &&
       this.keyType === other.keyType &&
       this.scheme === other.scheme &&
-      this.keyVal === other.keyVal &&
-      isEqual(this.unrecognizedFields, other.unrecognizedFields)
+      util.isDeepStrictEqual(this.keyVal, other.keyVal) &&
+      util.isDeepStrictEqual(this.unrecognizedFields, other.unrecognizedFields)
     );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public fromJSON(keyID: string, keyDict: Record<string, any>): Key {
-    // Creates ``Key`` object from its json/dict representation.
-    //     Raises:
-    //         KeyError, TypeError: Invalid arguments.
-
-    const { keyType, schema, keyVal } = keyDict;
-    if (keyType && schema && keyVal) {
-      const keyOptions = {
-        keyID: keyID,
-        keyType: keyType,
-        schema: schema,
-        keyVal: keyVal,
-        unrecognizedFields: keyDict,
-      } as unknown as KeyOptions;
-      return new Key(keyOptions);
-    }
-    throw new Error('Wrong key in keyDict');
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public toJSON(): Record<string, any> {
-    const { keyType, scheme, keyVal, unrecognizedFields } = this;
-    // Returns the dictionary representation of self.
-    return {
-      keytype: keyType,
+  public static fromJSON(keyID: string, keyData: any): Key {
+    const { keytype, scheme, keyval, ...rest } = keyData;
+    const keyOptions: KeyOptions = {
+      keyID,
+      keyType: keytype,
       scheme,
-      keyval: keyVal,
-      unrecognized_fields: unrecognizedFields,
+      keyVal: keyval,
+      unrecognizedFields: rest,
     };
+
+    return new Key(keyOptions);
   }
 
   // TODO:  implm the verify signature logic
-  public verifySignature(metadata: Metadata) {
+  public verifySignature<T extends MetadataType>(metadata: Metadata<T>) {
     // Verifies that the ``metadata.signatures`` contains a signature made
     //     with this key, correctly signing ``metadata.signed``.
     //     Args:
@@ -169,9 +173,9 @@ export class Key {
 
     try {
       // TODO: implmeent verifysignature func
-      const verifySignature = singer.verifySignature(
+      const verifySignature = signer.verifySignature(
         this.keyType,
-        signedData,
+        signedData.type,
         signature,
         publicKey
       );
@@ -186,6 +190,74 @@ export class Key {
 
 export class Role {}
 
-export class Root {}
+type RootOptions = SignedOptions & {
+  keys: Record<string, Key>;
+  roles: Record<string, Role>;
+  consistentSnapshot: boolean;
+};
 
-export class Delegations {}
+export class Root extends Signed {
+  public readonly type = MetadataKind.Root;
+  public keys: Record<string, Key>;
+  private consistentSnapshot: boolean;
+
+  constructor(options: RootOptions) {
+    super(options);
+
+    this.keys = options.keys || {};
+    this.consistentSnapshot = options.consistentSnapshot ?? false;
+
+    // TODO: work on roles
+  }
+
+  public static fromJSON(data: JSONObject): Root {
+    const { unrecognizedFields, ...commonFields } =
+      Signed.commonFieldsFromJSON(data);
+    const { keys, roles, consistent_snapshot, ...rest } = unrecognizedFields;
+
+    const keySet: Record<string, Key> = {};
+    Object.entries(keys).forEach(([keyID, keyData]) => {
+      keySet[keyID] = Key.fromJSON(keyID, keyData);
+    });
+
+    for (const roleName in keys) {
+      // TODO:
+      // roles[roleName] = new Role().fromJSON(roleName, roles[roleName]);
+    }
+
+    return new Root({
+      ...commonFields,
+      keys,
+      roles,
+      consistentSnapshot: consistent_snapshot,
+      unrecognizedFields: rest,
+    });
+  }
+
+  public toJSON(): Record<string, any> {
+    return {};
+  }
+}
+
+export class Timestamp extends Signed {
+  public type = 'Timestamp';
+  public static fromJSON(data: JSONValue): Timestamp {
+    return new Timestamp({});
+  }
+}
+
+export class Snapshot extends Signed {
+  public type = 'Snapshot';
+  public static fromJSON(data: JSONValue): Snapshot {
+    return new Snapshot({});
+  }
+}
+
+export class Targets extends Signed {
+  public type = 'Targets';
+  public static fromJSON(data: JSONValue): Targets {
+    return new Targets({});
+  }
+}
+
+export class Delegations extends Signed {}

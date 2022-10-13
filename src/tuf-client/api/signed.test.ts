@@ -1,16 +1,12 @@
-import { Signed } from './metadata';
+import { Signed, SignedOptions } from './signed';
 
 describe('Signed', () => {
-  class DummySigned extends Signed {
-    public toJSON() {
-      return {};
-    }
-  }
+  class DummySigned extends Signed {}
 
   describe('constructor', () => {
     describe('when called with no arguments', () => {
       it('constructs an object', () => {
-        const signed = new DummySigned();
+        const signed = new DummySigned({});
         expect(signed).toBeTruthy();
       });
     });
@@ -18,7 +14,7 @@ describe('Signed', () => {
     describe('when spec version is too short', () => {
       it('constructs an object', () => {
         expect(() => {
-          new DummySigned(1, '1');
+          new DummySigned({ specVersion: '1' });
         }).toThrow('Failed to parse specVersion');
       });
     });
@@ -26,7 +22,7 @@ describe('Signed', () => {
     describe('when spec version is too long', () => {
       it('constructs an object', () => {
         expect(() => {
-          new DummySigned(1, '1.0.0.0');
+          new DummySigned({ specVersion: '1.0.0.0' });
         }).toThrow('Failed to parse specVersion');
       });
     });
@@ -34,7 +30,7 @@ describe('Signed', () => {
     describe('when spec version includes non number', () => {
       it('constructs an object', () => {
         expect(() => {
-          new DummySigned(1, '1.b.c');
+          new DummySigned({ specVersion: '1.b.c' });
         }).toThrow('Failed to parse specVersion');
       });
     });
@@ -42,14 +38,19 @@ describe('Signed', () => {
     describe('when spec version is unsupported', () => {
       it('constructs an object', () => {
         expect(() => {
-          new DummySigned(1, '2.0.0');
+          new DummySigned({ specVersion: '2.0.0' });
         }).toThrow('Unsupported specVersion');
       });
     });
   });
 
   describe('equals', () => {
-    const subject = new DummySigned(1, '1.0.0', 1, {});
+    const opts: SignedOptions = {
+      version: 1,
+      specVersion: '1.0.0',
+      expires: 1,
+    };
+    const subject = new DummySigned(opts);
 
     describe('when other is not a Signed', () => {
       it('returns false', () => {
@@ -60,23 +61,23 @@ describe('Signed', () => {
 
     describe('when other is a Signed', () => {
       describe('when other is equal', () => {
+        const other = new DummySigned(opts);
         it('returns true', () => {
-          const other = new DummySigned(1, '1.0.0', 1, {});
           expect(subject.equals(other)).toBe(true);
         });
       });
 
       describe('when other is NOT equal', () => {
+        const other = new DummySigned({ ...opts, version: 2 });
         it('returns false', () => {
-          const other = new DummySigned(2, '1.0.0', 1, {});
           expect(subject.equals(other)).toBe(false);
         });
       });
 
       describe('when both with no arguments', () => {
+        const current = new DummySigned({});
+        const other = new DummySigned({});
         it('returns true', () => {
-          const current = new DummySigned();
-          const other = new DummySigned();
           expect(current.equals(other)).toBe(true);
         });
       });
@@ -84,7 +85,7 @@ describe('Signed', () => {
   });
 
   describe('isExpired', () => {
-    const subject = new DummySigned(1, '1.0.0', 100, {});
+    const subject = new DummySigned({ expires: 100 });
 
     describe('when reference time is not provided', () => {
       it('returns true', () => {
@@ -100,7 +101,7 @@ describe('Signed', () => {
 
     describe('when reference time is greater than the expiry time', () => {
       it('returns true', () => {
-        expect(subject.isExpired(new Date().getUTCMilliseconds())).toBe(true);
+        expect(subject.isExpired(new Date().getTime())).toBe(true);
       });
     });
   });
