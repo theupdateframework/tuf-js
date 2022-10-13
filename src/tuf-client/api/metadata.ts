@@ -110,7 +110,7 @@ export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
       throw new Error(`No delegation fround for ${delegatedRole}`);
     }
 
-    if (!keys){
+    if (!keys) {
       throw new Error(`No keys found`);
     }
 
@@ -121,13 +121,13 @@ export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
       try {
         key.verifySignature(delegatedMetadata);
         signingKeys.add(key.keyID);
-      } catch {
+      } catch (error){
         throw new Error(
-          `Key ${key.keyID} failed to verify ${delegatedRole} with error %{error`
+          `Key ${key.keyID} failed to verify ${delegatedRole} with error ${error}`
         );
       }
     }
-    if (signingKeys.size < role.threshold){
+    if (signingKeys.size < role.threshold) {
       throw new Error(
         `${delegatedRole} was signed by ${signingKeys.size}/${role.threshold} keys`
       );
@@ -188,6 +188,17 @@ export class Key {
     return new Key(keyOptions);
   }
 
+  public toJSON(): JSONObject {
+    return {
+      [this.keyID]: {
+        keytype: this.keyType,
+        scheme: this.scheme,
+        keyval: this.keyVal,
+        ...this.unrecognizedFields,
+      },
+    };
+  }
+
   // TODO:  implm the verify signature logic
   public verifySignature<T extends MetadataType>(metadata: Metadata<T>) {
     // Verifies that the ``metadata.signatures`` contains a signature made
@@ -206,14 +217,16 @@ export class Key {
     const publicKey = this.keyVal?.public;
     if (!publicKey) throw new Error('No spublic key found');
 
-    const signedData = metadata?.signed;
+    const signedData = metadata?.signed.toJSON();
+    console.log('signedData', signature)
     if (!signedData) throw new Error('No signed data found in metadata');
 
     try {
       // TODO: implmeent verifysignature func
+      console.log('verify signature options', this.keyType);
       const verifySignature = signer.verifySignature(
         this.keyType,
-        signedData.type,
+        signedData,
         signature,
         publicKey
       );
@@ -277,6 +290,15 @@ export class Role {
       unrecognizedFields: rest,
     });
   }
+
+  public toJSON (): JSONObject {
+
+    return {
+      keyids: this.keyIds, 
+      threshold: this.threshold,
+       ...this.unrecognizedFields
+    }
+  }
 }
 
 type RootOptions = SignedOptions & {
@@ -307,27 +329,40 @@ export class Root extends Signed {
       Signed.commonFieldsFromJSON(data);
     const { keys, roles, consistent_snapshot, ...rest } = unrecognizedFields;
 
-    const keySet: Record<string, Key> = {};
+    const keyMap: Record<string, Key> = {};
     Object.entries(keys).forEach(([keyID, keyData]) => {
-      keySet[keyID] = Key.fromJSON(keyID, keyData);
+      keyMap[keyID] = Key.fromJSON(keyID, keyData);
     });
 
     Object.entries(roles).forEach(([roleName, roleData]) => {
       roles[roleName] = Role.fromJSON(roleData as JSONObject);
     });
 
-
     return new Root({
       ...commonFields,
-      keys,
+      keys: keyMap,
       roles,
       consistentSnapshot: consistent_snapshot,
       unrecognizedFields: rest,
     });
   }
 
-  public toJSON(): Record<string, any> {
-    return {};
+  public toJSON(): JSONObject {
+    return {
+      keys: Object.values(this.keys).reduce(
+        (prev, cur) => ({ ...prev, ...cur.toJSON() }),
+        {}
+      ),
+      roles: Object.entries(this.roles).reduce(
+        (prev, [roleKey, roleValue]) => ({ ...prev, [roleKey]: roleValue.toJSON() }),
+        {}
+      ),
+      consistent_snapshot: this.consistentSnapshot, 
+      spec_version: this.specVersion,
+      version: this.version,
+      expires: "2030-01-01T00:00:00Z",
+      ...this.unrecognizedFields 
+    };
   }
 }
 
@@ -337,6 +372,9 @@ export class Timestamp extends Signed {
   public static fromJSON(data: JSONValue): Timestamp {
     return new Timestamp({});
   }
+  public toJSON(): JSONObject {
+    return {};
+  }
 }
 
 export class Snapshot extends Signed {
@@ -345,6 +383,9 @@ export class Snapshot extends Signed {
   public static fromJSON(data: JSONValue): Snapshot {
     return new Snapshot({});
   }
+  public toJSON(): JSONObject {
+    return {};
+  }
 }
 
 export class Targets extends Signed {
@@ -352,6 +393,9 @@ export class Targets extends Signed {
 
   public static fromJSON(data: JSONValue): Targets {
     return new Targets({});
+  }
+  public toJSON(): JSONObject {
+    return {};
   }
 }
 

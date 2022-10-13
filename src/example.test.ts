@@ -20,7 +20,6 @@ describe('sample verification', () => {
       const signedDataCanonical = canonicalize(timestamp.signed) || '';
       const te = new TextEncoder();
       const data = te.encode(signedDataCanonical);
-
       const result = crypto.verify(
         undefined,
         data,
