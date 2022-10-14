@@ -1,4 +1,4 @@
-import { Signed, SignedOptions } from './signed';
+import { Signed } from './signed';
 
 describe('Signed', () => {
   class DummySigned extends Signed {}
