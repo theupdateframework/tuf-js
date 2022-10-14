@@ -44,48 +44,10 @@ describe('Signed', () => {
     });
   });
 
-  describe('equals', () => {
-    const opts: SignedOptions = {
-      version: 1,
-      specVersion: '1.0.0',
-      expires: 1,
-    };
-    const subject = new DummySigned(opts);
-
-    describe('when other is not a Signed', () => {
-      it('returns false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(subject.equals({} as any)).toBe(false);
-      });
-    });
-
-    describe('when other is a Signed', () => {
-      describe('when other is equal', () => {
-        const other = new DummySigned(opts);
-        it('returns true', () => {
-          expect(subject.equals(other)).toBe(true);
-        });
-      });
-
-      describe('when other is NOT equal', () => {
-        const other = new DummySigned({ ...opts, version: 2 });
-        it('returns false', () => {
-          expect(subject.equals(other)).toBe(false);
-        });
-      });
-
-      describe('when both with no arguments', () => {
-        const current = new DummySigned({});
-        const other = new DummySigned({});
-        it('returns true', () => {
-          expect(current.equals(other)).toBe(true);
-        });
-      });
-    });
-  });
-
   describe('isExpired', () => {
-    const subject = new DummySigned({ expires: 100 });
+    const subject = new DummySigned({
+      expires: '2021-12-18T13:28:12.99008-06:00',
+    });
 
     describe('when reference time is not provided', () => {
       it('returns true', () => {
@@ -95,13 +57,13 @@ describe('Signed', () => {
 
     describe('when reference time is less than the expiry time', () => {
       it('returns false', () => {
-        expect(subject.isExpired(1)).toBe(false);
+        expect(subject.isExpired('2021-11-18')).toBe(false);
       });
     });
 
     describe('when reference time is greater than the expiry time', () => {
       it('returns true', () => {
-        expect(subject.isExpired(new Date().getTime())).toBe(true);
+        expect(subject.isExpired(new Date().toISOString())).toBe(true);
       });
     });
   });
