@@ -1,4 +1,3 @@
-import canonicalize from 'canonicalize';
 import util from 'util';
 import * as signer from '../utils/signer';
 import { JSONObject, JSONValue } from '../utils/type';
@@ -20,11 +19,13 @@ interface Signature {
 export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
   public signed: T;
   public signatures: Record<string, Signature>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public unrecognizedFields: Record<string, any>;
 
   constructor(
     signed: T,
     signatures?: Record<string, Signature>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     unrecognizedFields?: Record<string, any>
   ) {
     this.signed = signed;
@@ -32,21 +33,26 @@ export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
     this.unrecognizedFields = unrecognizedFields || {};
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static fromJSON(type: MetadataKind.Root, data: any): Metadata<Root>;
   public static fromJSON(
     type: MetadataKind.Timestamp,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any
   ): Metadata<Timestamp>;
   public static fromJSON(
     type: MetadataKind.Snapshot,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any
   ): Metadata<Snapshot>;
   public static fromJSON(
     type: MetadataKind.Targets,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any
   ): Metadata<Targets>;
   public static fromJSON(
     type: MetadataKind,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any
   ): Metadata<MetadataType> {
     const { signed, signatures, ...rest } = data;
@@ -110,7 +116,7 @@ export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
       throw new Error(`No delegation fround for ${delegatedRole}`);
     }
 
-    if (!keys){
+    if (!keys) {
       throw new Error(`No keys found`);
     }
 
@@ -121,13 +127,13 @@ export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
       try {
         key.verifySignature(delegatedMetadata);
         signingKeys.add(key.keyID);
-      } catch {
+      } catch (error) {
         throw new Error(
-          `Key ${key.keyID} failed to verify ${delegatedRole} with error %{error`
+          `Key ${key.keyID} failed to verify ${delegatedRole} with error ${error}`
         );
       }
     }
-    if (signingKeys.size < role.threshold){
+    if (signingKeys.size < role.threshold) {
       throw new Error(
         `${delegatedRole} was signed by ${signingKeys.size}/${role.threshold} keys`
       );
@@ -140,6 +146,7 @@ export interface KeyOptions {
   keyType: string;
   scheme: string;
   keyVal: Record<string, string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unrecognizedFields?: any;
 }
 
@@ -188,6 +195,17 @@ export class Key {
     return new Key(keyOptions);
   }
 
+  public toJSON(): JSONObject {
+    return {
+      [this.keyID]: {
+        keytype: this.keyType,
+        scheme: this.scheme,
+        keyval: this.keyVal,
+        ...this.unrecognizedFields,
+      },
+    };
+  }
+
   // TODO:  implm the verify signature logic
   public verifySignature<T extends MetadataType>(metadata: Metadata<T>) {
     // Verifies that the ``metadata.signatures`` contains a signature made
@@ -206,14 +224,13 @@ export class Key {
     const publicKey = this.keyVal?.public;
     if (!publicKey) throw new Error('No spublic key found');
 
-    const signedData = metadata?.signed;
+    const signedData = metadata?.signed.toJSON();
     if (!signedData) throw new Error('No signed data found in metadata');
 
     try {
-      // TODO: implmeent verifysignature func
       const verifySignature = signer.verifySignature(
         this.keyType,
-        signedData.type,
+        signedData,
         signature,
         publicKey
       );
@@ -229,6 +246,7 @@ export class Key {
 type RoleOptions = {
   keyIds: string[];
   threshold: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unrecognizedFields?: Record<string, any>;
 };
 
@@ -239,6 +257,7 @@ function hasDuplicates(array: string[]) {
 export class Role {
   public keyIds: string[];
   public threshold: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public unrecognizedFields: Record<string, any>;
 
   constructor(options: RoleOptions) {
@@ -277,6 +296,14 @@ export class Role {
       unrecognizedFields: rest,
     });
   }
+
+  public toJSON(): JSONObject {
+    return {
+      keyids: this.keyIds,
+      threshold: this.threshold,
+      ...this.unrecognizedFields,
+    };
+  }
 }
 
 type RootOptions = SignedOptions & {
@@ -307,51 +334,79 @@ export class Root extends Signed {
       Signed.commonFieldsFromJSON(data);
     const { keys, roles, consistent_snapshot, ...rest } = unrecognizedFields;
 
-    const keySet: Record<string, Key> = {};
+    const keyMap: Record<string, Key> = {};
     Object.entries(keys).forEach(([keyID, keyData]) => {
-      keySet[keyID] = Key.fromJSON(keyID, keyData);
+      keyMap[keyID] = Key.fromJSON(keyID, keyData);
     });
 
     Object.entries(roles).forEach(([roleName, roleData]) => {
       roles[roleName] = Role.fromJSON(roleData as JSONObject);
     });
 
-
     return new Root({
       ...commonFields,
-      keys,
+      keys: keyMap,
       roles,
       consistentSnapshot: consistent_snapshot,
       unrecognizedFields: rest,
     });
   }
 
-  public toJSON(): Record<string, any> {
-    return {};
+  public toJSON(): JSONObject {
+    return {
+      keys: Object.values(this.keys).reduce(
+        (prev, cur) => ({ ...prev, ...cur.toJSON() }),
+        {}
+      ),
+      roles: Object.entries(this.roles).reduce(
+        (prev, [roleKey, roleValue]) => ({
+          ...prev,
+          [roleKey]: roleValue.toJSON(),
+        }),
+        {}
+      ),
+      consistent_snapshot: this.consistentSnapshot,
+      spec_version: this.specVersion,
+      version: this.version,
+      expires: this.expires,
+      ...this.unrecognizedFields,
+    };
   }
 }
 
 export class Timestamp extends Signed {
   public type = 'Timestamp';
 
-  public static fromJSON(data: JSONValue): Timestamp {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static fromJSON(_data: JSONValue): Timestamp {
     return new Timestamp({});
+  }
+  public toJSON(): JSONObject {
+    return {};
   }
 }
 
 export class Snapshot extends Signed {
   public type = 'Snapshot';
 
-  public static fromJSON(data: JSONValue): Snapshot {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static fromJSON(_data: JSONValue): Snapshot {
     return new Snapshot({});
+  }
+  public toJSON(): JSONObject {
+    return {};
   }
 }
 
 export class Targets extends Signed {
   public type = 'Targets';
 
-  public static fromJSON(data: JSONValue): Targets {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static fromJSON(_data: JSONValue): Targets {
     return new Targets({});
+  }
+  public toJSON(): JSONObject {
+    return {};
   }
 }
 
