@@ -18,14 +18,6 @@ describe('MetaFile', () => {
       });
     });
 
-    describe('when called with invalid hash value', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const opts = { version: 1, hashes: { sha256: 2 as any } };
-      it('throws an error', () => {
-        expect(() => new MetaFile(opts)).toThrow('Hashes must be a string');
-      });
-    });
-
     describe('when called with valid arguments', () => {
       const opts = {
         version: 1,
@@ -200,14 +192,6 @@ describe('TargetFile', () => {
       const opts = { length: -1, path: 'foo', hashes: { sha256: 'a' } };
       it('throws an error', () => {
         expect(() => new TargetFile(opts)).toThrow('Length must be at least 0');
-      });
-    });
-
-    describe('when called with invalid hash value', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const opts = { length: 1, path: 'foo', hashes: { sha256: 2 as any } };
-      it('throws an error', () => {
-        expect(() => new TargetFile(opts)).toThrow('Hashes must be a string');
       });
     });
 

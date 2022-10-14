@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import util from 'util';
+import { isDefined, isStringRecord } from '../utils/guard';
 import { JSONObject, JSONValue } from '../utils/type';
 import { LengthOrHashMismatchError, ValueError } from './error';
 
@@ -23,10 +24,6 @@ export class MetaFile {
 
     if (opts.length !== undefined) {
       validateLength(opts.length);
-    }
-
-    if (opts.hashes) {
-      validateHashes(opts.hashes);
     }
 
     this.version = opts.version;
@@ -75,9 +72,20 @@ export class MetaFile {
     return json;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static fromJSON(data: any): MetaFile {
+  public static fromJSON(data: JSONObject): MetaFile {
     const { version, length, hashes, ...rest } = data;
+
+    if (typeof version !== 'number') {
+      throw new TypeError('version must be a number');
+    }
+
+    if (isDefined(length) && typeof length !== 'number') {
+      throw new TypeError('length must be a number');
+    }
+
+    if (isDefined(hashes) && !isStringRecord(hashes)) {
+      throw new TypeError('hashes must be string keys and values');
+    }
 
     return new MetaFile({
       version,
@@ -104,7 +112,6 @@ export class TargetFile {
 
   constructor(opts: TargetFileOptions) {
     validateLength(opts.length);
-    validateHashes(opts.hashes);
 
     this.length = opts.length;
     this.path = opts.path;
@@ -142,9 +149,16 @@ export class TargetFile {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static fromJSON(path: string, data: any): TargetFile {
+  public static fromJSON(path: string, data: JSONObject): TargetFile {
     const { length, hashes, ...rest } = data;
+
+    if (typeof length !== 'number') {
+      throw new TypeError('length must be a number');
+    }
+
+    if (!isStringRecord(hashes)) {
+      throw new TypeError('hashes must have string keys and values');
+    }
 
     return new TargetFile({
       length,
@@ -186,19 +200,6 @@ function verifyLength(data: Buffer, expectedLength: number): void {
       `Expected length ${expectedLength} but got ${observedLength}`
     );
   }
-}
-
-// Check that supplied hashes are properly formed.
-function validateHashes(hashes: Record<string, string>): void {
-  if (!hashes) {
-    throw new ValueError('Hashes must be defined');
-  }
-
-  Object.entries(hashes).forEach(([key, value]) => {
-    if (typeof key !== 'string' || typeof value !== 'string') {
-      throw new TypeError('Hashes must be a string');
-    }
-  });
 }
 
 // Check that supplied length if valid
