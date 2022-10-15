@@ -44,6 +44,6 @@
   "dependencies": {
     "canonicalize": "^1.0.8",
     "lodash.isequal": "^4.5.0",
-    "make-fetch-happen": "^10.2.1"
+    "make-fetch-happen": "^11.0.0"
   }
 }
