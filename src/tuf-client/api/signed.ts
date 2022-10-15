@@ -1,4 +1,5 @@
 import util from 'util';
+import { JSONObject, JSONValue } from '../utils/type';
 
 const SPECIFICATION_VERSION = ['1', '20', '30'];
 
@@ -15,7 +16,7 @@ export abstract class Signed {
   public readonly expires: string;
   public readonly version: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public unrecognizedFields: Record<string, any>;
+  public unrecognizedFields: Record<string, JSONValue>;
 
   constructor(options: SignedOptions) {
     this.specVersion = options.specVersion || SPECIFICATION_VERSION.join('.');
@@ -69,6 +70,8 @@ export abstract class Signed {
       unrecognizedFields: rest,
     };
   }
+
+  abstract toJSON(): JSONObject;
 }
 
 function isNumeric(str: string): boolean {

@@ -1,14 +1,11 @@
 import util from 'util';
 import * as signer from '../utils/signer';
 import { JSONObject, JSONValue } from '../utils/type';
+import { MetadataKind } from './constants';
+import { MetaFile } from './file';
 import { Signed, SignedOptions } from './signed';
-
-export enum MetadataKind {
-  Root = 'root',
-  Timestamp = 'timestamp',
-  Snapshot = 'snapshot',
-  Targets = 'targets',
-}
+import { Snapshot } from './snapshot';
+import { Timestamp } from './timestamp';
 
 type MetadataType = Root | Timestamp | Snapshot | Targets;
 
@@ -394,30 +391,6 @@ export class Root extends Signed {
   }
 }
 
-export class Timestamp extends Signed {
-  readonly type = MetadataKind.Timestamp;
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static fromJSON(_data: JSONValue): Timestamp {
-    return new Timestamp({});
-  }
-  public toJSON(): JSONObject {
-    return {};
-  }
-}
-
-export class Snapshot extends Signed {
-  readonly type = MetadataKind.Snapshot;
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static fromJSON(_data: JSONValue): Snapshot {
-    return new Snapshot({});
-  }
-  public toJSON(): JSONObject {
-    return {};
-  }
-}
-
 export class Targets extends Signed {
   readonly type = MetadataKind.Targets;
 
@@ -430,4 +403,8 @@ export class Targets extends Signed {
   }
 }
 
-export class Delegations extends Signed {}
+export class Delegations extends Signed {
+  public toJSON(): JSONObject {
+    return {};
+  }
+}

@@ -1,7 +1,12 @@
+import { JSONObject } from '../utils/type';
 import { Signed, SignedOptions } from './signed';
 
 describe('Signed', () => {
-  class DummySigned extends Signed {}
+  class DummySigned extends Signed {
+    public toJSON(): JSONObject {
+      return {};
+    }
+  }
 
   describe('constructor', () => {
     describe('when called with no arguments', () => {
