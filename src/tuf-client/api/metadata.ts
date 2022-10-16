@@ -347,7 +347,8 @@ export class Root extends Signed {
   public static fromJSON(data: JSONObject): Root {
     const { unrecognizedFields, ...commonFields } =
       Signed.commonFieldsFromJSON(data);
-    const { keys, roles, consistent_snapshot, ...rest } = unrecognizedFields;
+    const { keys, roles, consistent_snapshot, ...rest } =
+      unrecognizedFields as any;
 
     const keyMap: Record<string, Key> = {};
     Object.entries(keys).forEach(([keyID, keyData]) => {
