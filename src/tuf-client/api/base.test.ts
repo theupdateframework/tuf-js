@@ -1,5 +1,5 @@
 import { JSONObject } from '../utils/type';
-import { Signed, SignedOptions } from './signed';
+import { Signed, SignedOptions } from './base';
 
 describe('Signed', () => {
   class DummySigned extends Signed {
@@ -11,8 +11,8 @@ describe('Signed', () => {
   describe('constructor', () => {
     describe('when called with no arguments', () => {
       it('constructs an object', () => {
-        const signed = new DummySigned({});
-        expect(signed).toBeTruthy();
+        const subject = new DummySigned({});
+        expect(subject).toBeTruthy();
       });
     });
 

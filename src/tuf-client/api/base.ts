@@ -1,8 +1,14 @@
 import util from 'util';
 import { isDefined } from '../utils/guard';
 import { JSONObject, JSONValue } from '../utils/type';
+import { Signature } from './signature';
 
 const SPECIFICATION_VERSION = ['1', '20', '30'];
+
+export interface Signable {
+  signatures: Record<string, Signature>;
+  signed: Signed;
+}
 
 export interface SignedOptions {
   version?: number;

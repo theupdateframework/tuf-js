@@ -1,9 +1,9 @@
 import util from 'util';
 import { isDefined, isObjectRecord } from '../utils/guard';
 import { JSONObject } from '../utils/type';
+import { Signed, SignedOptions } from './base';
 import { MetadataKind } from './constants';
 import { MetaFile } from './file';
-import { Signed, SignedOptions } from './signed';
 
 type MetaFileMap = Record<string, MetaFile>;
 
