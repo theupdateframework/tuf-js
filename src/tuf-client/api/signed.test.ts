@@ -112,4 +112,26 @@ describe('Signed', () => {
       });
     });
   });
+
+  describe('isExpired', () => {
+    const subject = new DummySigned({ expires: '1970-01-01T00:00:01.000Z' });
+
+    describe('when reference time is not provided', () => {
+      it('returns true', () => {
+        expect(subject.isExpired()).toBe(true);
+      });
+    });
+
+    describe('when reference time is less than the expiry time', () => {
+      it('returns false', () => {
+        expect(subject.isExpired(1)).toBe(false);
+      });
+    });
+
+    describe('when reference time is greater than the expiry time', () => {
+      it('returns true', () => {
+        expect(subject.isExpired(new Date().getTime())).toBe(true);
+      });
+    });
+  });
 });

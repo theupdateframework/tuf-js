@@ -1,4 +1,5 @@
 import util from 'util';
+import { isDefined } from '../utils/guard';
 import { JSONObject, JSONValue } from '../utils/type';
 
 const SPECIFICATION_VERSION = ['1', '20', '30'];
@@ -7,16 +8,14 @@ export interface SignedOptions {
   version?: number;
   specVersion?: string;
   expires?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  unrecognizedFields?: any;
+  unrecognizedFields?: Record<string, JSONValue>;
 }
 
 export abstract class Signed {
-  public readonly specVersion: string;
-  public readonly expires: string;
-  public readonly version: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public unrecognizedFields: Record<string, JSONValue>;
+  readonly specVersion: string;
+  readonly expires: string;
+  readonly version: number;
+  readonly unrecognizedFields: Record<string, JSONValue>;
 
   constructor(options: SignedOptions) {
     this.specVersion = options.specVersion || SPECIFICATION_VERSION.join('.');
@@ -56,16 +55,27 @@ export abstract class Signed {
     if (!referenceTime) {
       referenceTime = new Date();
     }
-    return referenceTime >= new Date(this.expires);
+    return referenceTime >= new Date(this.expires).getTime();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static commonFieldsFromJSON(data: any): SignedOptions {
+  public static commonFieldsFromJSON(data: JSONObject): SignedOptions {
     const { spec_version, expires, version, ...rest } = data;
+
+    if (isDefined(spec_version) && !(typeof spec_version === 'string')) {
+      throw new TypeError('spec_version must be a string');
+    }
+
+    if (isDefined(expires) && !(typeof expires === 'string')) {
+      throw new TypeError('expires must be a string');
+    }
+
+    if (isDefined(version) && !(typeof version === 'number')) {
+      throw new TypeError('version must be a number');
+    }
 
     return {
       specVersion: spec_version,
-      expires: expires,
+      expires,
       version,
       unrecognizedFields: rest,
     };
