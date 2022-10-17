@@ -17,10 +17,10 @@ interface Signature {
   sig: string;
 }
 export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
-  public signed: T;
-  public signatures: Record<string, Signature>;
+  readonly signed: T;
+  readonly signatures: Record<string, Signature>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public unrecognizedFields: Record<string, any>;
+  readonly unrecognizedFields: Record<string, any>;
 
   constructor(
     signed: T,
@@ -121,8 +121,12 @@ export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
     }
 
     const signingKeys = new Set();
-    for (let i = 0; i < role.keyIds.length; i++) {
-      const key = keys[role.keyIds[i]] as Key;
+    role.keyIDs.forEach((keyID) => {
+      if (!keys?.[keyID]) {
+        throw new Error(`No key found for ${keyID}`);
+      }
+
+      const key = keys[keyID] as Key;
 
       try {
         key.verifySignature(delegatedMetadata);
@@ -132,7 +136,8 @@ export class Metadata<T extends Root | Timestamp | Snapshot | Targets> {
           `Key ${key.keyID} failed to verify ${delegatedRole} with error ${error}`
         );
       }
-    }
+    });
+
     if (signingKeys.size < role.threshold) {
       throw new Error(
         `${delegatedRole} was signed by ${signingKeys.size}/${role.threshold} keys`
@@ -151,11 +156,11 @@ export interface KeyOptions {
 }
 
 export class Key {
-  public keyID: string;
-  public keyType: string;
-  public scheme: string;
-  public keyVal: Record<string, string>;
-  public unrecognizedFields?: Record<string, string>;
+  readonly keyID: string;
+  readonly keyType: string;
+  readonly scheme: string;
+  readonly keyVal: Record<string, string>;
+  readonly unrecognizedFields?: Record<string, string>;
 
   constructor(options: KeyOptions) {
     const { keyID, keyType, scheme, keyVal, unrecognizedFields } = options;
@@ -244,7 +249,7 @@ export class Key {
 }
 
 type RoleOptions = {
-  keyIds: string[];
+  keyIDs: string[];
   threshold: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unrecognizedFields?: Record<string, any>;
@@ -255,20 +260,20 @@ function hasDuplicates(array: string[]) {
 }
 
 export class Role {
-  public keyIds: string[];
-  public threshold: number;
+  readonly keyIDs: string[];
+  readonly threshold: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public unrecognizedFields: Record<string, any>;
+  readonly unrecognizedFields: Record<string, any>;
 
   constructor(options: RoleOptions) {
-    const { keyIds, threshold, unrecognizedFields } = options;
-    if (hasDuplicates(keyIds)) {
-      throw new Error(`None unqiue keyids ${keyIds}`);
+    const { keyIDs, threshold, unrecognizedFields } = options;
+    if (hasDuplicates(keyIDs)) {
+      throw new Error(`None unqiue keyids ${keyIDs}`);
     }
     if (threshold < 1) {
       throw new Error(`Threshold should be at least 1`);
     }
-    this.keyIds = keyIds;
+    this.keyIDs = keyIDs;
     this.threshold = threshold;
     this.unrecognizedFields = unrecognizedFields || {};
   }
@@ -279,19 +284,32 @@ export class Role {
     }
     return (
       this.threshold === other.threshold &&
-      util.isDeepStrictEqual(this.keyIds, other.keyIds) &&
+      util.isDeepStrictEqual(this.keyIDs, other.keyIDs) &&
       util.isDeepStrictEqual(this.unrecognizedFields, other.unrecognizedFields)
     );
   }
 
   public static fromJSON(data: JSONObject): Role {
     const { keyids, threshold, ...rest } = data;
-    if (!keyids && !threshold) {
-      throw new Error('No able to serialize Role from JSON');
+
+    if (!keyids) {
+      throw new Error('Missing keyids');
+    }
+
+    if (!Array.isArray(keyids)) {
+      throw new Error('keyids must be an array');
+    }
+
+    if (!threshold) {
+      throw new Error('Missing threshold');
+    }
+
+    if (typeof threshold !== 'number') {
+      throw new Error('threshold must be a number');
     }
 
     return new Role({
-      keyIds: keyids as string[],
+      keyIDs: keyids as string[],
       threshold: threshold as number,
       unrecognizedFields: rest,
     });
@@ -299,7 +317,7 @@ export class Role {
 
   public toJSON(): JSONObject {
     return {
-      keyids: this.keyIds,
+      keyids: this.keyIDs,
       threshold: this.threshold,
       ...this.unrecognizedFields,
     };
@@ -313,9 +331,9 @@ type RootOptions = SignedOptions & {
 };
 
 export class Root extends Signed {
-  public readonly type = MetadataKind.Root;
-  public keys: Record<string, Key>;
-  public roles: Record<string, Role>;
+  readonly type = MetadataKind.Root;
+  readonly keys: Record<string, Key>;
+  readonly roles: Record<string, Role>;
 
   private consistentSnapshot: boolean;
 
@@ -339,14 +357,16 @@ export class Root extends Signed {
       keyMap[keyID] = Key.fromJSON(keyID, keyData);
     });
 
+    const roleMap: Record<string, Role> = {};
+
     Object.entries(roles).forEach(([roleName, roleData]) => {
-      roles[roleName] = Role.fromJSON(roleData as JSONObject);
+      roleMap[roleName] = Role.fromJSON(roleData as JSONObject);
     });
 
     return new Root({
       ...commonFields,
       keys: keyMap,
-      roles,
+      roles: roleMap,
       consistentSnapshot: consistent_snapshot,
       unrecognizedFields: rest,
     });
@@ -375,7 +395,7 @@ export class Root extends Signed {
 }
 
 export class Timestamp extends Signed {
-  public type = 'Timestamp';
+  readonly type = MetadataKind.Timestamp;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static fromJSON(_data: JSONValue): Timestamp {
@@ -387,7 +407,7 @@ export class Timestamp extends Signed {
 }
 
 export class Snapshot extends Signed {
-  public type = 'Snapshot';
+  readonly type = MetadataKind.Snapshot;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static fromJSON(_data: JSONValue): Snapshot {
@@ -399,7 +419,7 @@ export class Snapshot extends Signed {
 }
 
 export class Targets extends Signed {
-  public type = 'Targets';
+  readonly type = MetadataKind.Targets;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static fromJSON(_data: JSONValue): Targets {

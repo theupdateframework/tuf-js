@@ -51,11 +51,11 @@ export abstract class Signed {
     );
   }
 
-  public isExpired(referenceTime?: string): boolean {
+  public isExpired(referenceTime?: Date): boolean {
     if (!referenceTime) {
-      referenceTime = new Date().toISOString();
+      referenceTime = new Date();
     }
-    return new Date(referenceTime) >= new Date(this.expires);
+    return referenceTime >= new Date(this.expires);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

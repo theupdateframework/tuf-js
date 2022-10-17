@@ -1,4 +1,4 @@
-import { Signed } from './signed';
+import { Signed, SignedOptions } from './signed';
 
 describe('Signed', () => {
   class DummySigned extends Signed {}
@@ -57,13 +57,53 @@ describe('Signed', () => {
 
     describe('when reference time is less than the expiry time', () => {
       it('returns false', () => {
-        expect(subject.isExpired('2021-11-18')).toBe(false);
+        expect(subject.isExpired(new Date('2021-11-18'))).toBe(false);
       });
     });
 
     describe('when reference time is greater than the expiry time', () => {
       it('returns true', () => {
-        expect(subject.isExpired(new Date().toISOString())).toBe(true);
+        expect(subject.isExpired(new Date())).toBe(true);
+      });
+    });
+  });
+
+  describe('equals', () => {
+    const opts: SignedOptions = {
+      version: 1,
+      specVersion: '1.0.0',
+      expires: new Date().toISOString(),
+    };
+    const subject = new DummySigned(opts);
+
+    describe('when other is not a Signed', () => {
+      it('returns false', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(subject.equals({} as any)).toBe(false);
+      });
+    });
+
+    describe('when other is a Signed', () => {
+      describe('when other is equal', () => {
+        const other = new DummySigned(opts);
+        it('returns true', () => {
+          expect(subject.equals(other)).toBe(true);
+        });
+      });
+
+      describe('when other is NOT equal', () => {
+        const other = new DummySigned({ ...opts, version: 2 });
+        it('returns false', () => {
+          expect(subject.equals(other)).toBe(false);
+        });
+      });
+
+      describe('when both with no arguments', () => {
+        const current = new DummySigned({});
+        const other = new DummySigned({});
+        it('returns true', () => {
+          expect(current.equals(other)).toBe(true);
+        });
       });
     });
   });
