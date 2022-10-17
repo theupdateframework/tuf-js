@@ -89,7 +89,7 @@ export function encodeOIDString(oid: string): Buffer {
   // The first two subidentifiers are encoded into the first byte
   const first = parseInt(parts[0], 10) * 40 + parseInt(parts[1], 10);
 
-  let rest: number[] = [];
+  const rest: number[] = [];
   parts.slice(2).forEach((part) => {
     const bytes = encodeVariableLengthInteger(parseInt(part, 10));
     rest.push(...bytes);

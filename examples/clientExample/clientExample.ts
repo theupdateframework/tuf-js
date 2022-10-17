@@ -1,14 +1,10 @@
 import { Updater } from '../../src/tuf-client/ng-client/updater';
 
+function initDir() {}
 
-function initDir(){
-
+function dowonloadTarget() {
+  const updater = new Updater({ metadataBaseUrl: './', metadataDir: './' });
 }
 
-function dowonloadTarget(){
-    const updater = new Updater({ metadataBaseUrl: './', metadataDir: './' });
-}
-
-initDir()
-dowonloadTarget()
-
+initDir();
+dowonloadTarget();

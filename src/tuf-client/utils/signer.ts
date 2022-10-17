@@ -1,18 +1,19 @@
 import canonicalize from 'canonicalize';
 import crypto from 'crypto';
-import { ed25519 } from './key';
+import { ed25519, ecdsa } from './key';
+import { JSONObject } from './type';
 
 export const verifySignature = (
-  metaDataSignedData: string,
+  keyType: string,
+  metaDataSignedData: JSONObject,
   signature: string,
-  key: string,
-  keyType: string
+  key: string
 ): boolean => {
+  const signedDataCanonical = canonicalize(metaDataSignedData) || '';
+  const data = new TextEncoder().encode(signedDataCanonical);
+
   if (keyType === 'ed25519') {
     const publicKey = ed25519.fromHex(key);
-
-    const signedDataCanonical = canonicalize(metaDataSignedData) || '';
-    const data = new TextEncoder().encode(signedDataCanonical);
 
     const result = crypto.verify(
       undefined,
@@ -22,12 +23,19 @@ export const verifySignature = (
     );
 
     return result;
+  } else if (keyType === 'ecdsa-sha2-nistp256') {
+    const publicKey = ecdsa.fromHex(key);
+    const result = crypto.verify(
+      undefined,
+      data,
+      publicKey,
+      Buffer.from(signature, 'hex')
+    );
+
+    console.log('verify ', result);
+
+    return result;
   }
 
   return false;
 };
-
-
-export const sign = (bytes: string): Record<string, any> => {
-  return {}
-}

@@ -5,13 +5,14 @@ const SPECIFICATION_VERSION = ['1', '20', '30'];
 export interface SignedOptions {
   version?: number;
   specVersion?: string;
-  expires?: number;
+  expires?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unrecognizedFields?: any;
 }
 
 export abstract class Signed {
   public readonly specVersion: string;
-  public readonly expires: number;
+  public readonly expires: string;
   public readonly version: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public unrecognizedFields: Record<string, any>;
@@ -32,7 +33,7 @@ export abstract class Signed {
       throw new Error('Unsupported specVersion');
     }
 
-    this.expires = options.expires || new Date().getTime();
+    this.expires = options.expires || new Date().toISOString();
     this.version = options.version || 1;
     this.unrecognizedFields = options.unrecognizedFields || {};
   }
@@ -50,19 +51,20 @@ export abstract class Signed {
     );
   }
 
-  public isExpired(referenceTime?: number): boolean {
+  public isExpired(referenceTime?: Date): boolean {
     if (!referenceTime) {
-      referenceTime = new Date().getTime();
+      referenceTime = new Date();
     }
-    return referenceTime >= this.expires;
+    return referenceTime >= new Date(this.expires);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static commonFieldsFromJSON(data: any): SignedOptions {
     const { spec_version, expires, version, ...rest } = data;
-    const exp = new Date(expires).getTime();
+
     return {
       specVersion: spec_version,
-      expires: exp,
+      expires: expires,
       version,
       unrecognizedFields: rest,
     };

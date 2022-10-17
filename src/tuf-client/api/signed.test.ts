@@ -44,11 +44,35 @@ describe('Signed', () => {
     });
   });
 
+  describe('isExpired', () => {
+    const subject = new DummySigned({
+      expires: '2021-12-18T13:28:12.99008-06:00',
+    });
+
+    describe('when reference time is not provided', () => {
+      it('returns true', () => {
+        expect(subject.isExpired()).toBe(true);
+      });
+    });
+
+    describe('when reference time is less than the expiry time', () => {
+      it('returns false', () => {
+        expect(subject.isExpired(new Date('2021-11-18'))).toBe(false);
+      });
+    });
+
+    describe('when reference time is greater than the expiry time', () => {
+      it('returns true', () => {
+        expect(subject.isExpired(new Date())).toBe(true);
+      });
+    });
+  });
+
   describe('equals', () => {
     const opts: SignedOptions = {
       version: 1,
       specVersion: '1.0.0',
-      expires: 1,
+      expires: new Date().toISOString(),
     };
     const subject = new DummySigned(opts);
 
@@ -80,28 +104,6 @@ describe('Signed', () => {
         it('returns true', () => {
           expect(current.equals(other)).toBe(true);
         });
-      });
-    });
-  });
-
-  describe('isExpired', () => {
-    const subject = new DummySigned({ expires: 100 });
-
-    describe('when reference time is not provided', () => {
-      it('returns true', () => {
-        expect(subject.isExpired()).toBe(true);
-      });
-    });
-
-    describe('when reference time is less than the expiry time', () => {
-      it('returns false', () => {
-        expect(subject.isExpired(1)).toBe(false);
-      });
-    });
-
-    describe('when reference time is greater than the expiry time', () => {
-      it('returns true', () => {
-        expect(subject.isExpired(new Date().getTime())).toBe(true);
       });
     });
   });
