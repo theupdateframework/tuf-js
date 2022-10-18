@@ -102,14 +102,6 @@ describe('Signed', () => {
           expect(subject.equals(other)).toBe(false);
         });
       });
-
-      describe('when both with no arguments', () => {
-        const current = new DummySigned({});
-        const other = new DummySigned({});
-        it('returns true', () => {
-          expect(current.equals(other)).toBe(true);
-        });
-      });
     });
   });
 
