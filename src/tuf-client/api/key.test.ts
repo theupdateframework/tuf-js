@@ -1,4 +1,7 @@
+import { Signed } from './base';
+import { UnsignedMetadataError } from './error';
 import { Key } from './key';
+import { Signature } from './signature';
 
 describe('Key', () => {
   describe('constructor', () => {
@@ -19,6 +22,94 @@ describe('Key', () => {
       expect(key.scheme).toEqual(opts.scheme);
       expect(key.keyVal).toEqual(opts.keyVal);
       expect(key.unrecognizedFields).toEqual(opts.unrecognizedFields);
+    });
+  });
+
+  describe('#verifySignature', () => {
+    // Hard-coded data -- the following signature is valid for the data and can be validated with the public key
+    const data = { b: 'bar', a: 'foo' };
+    const publicKey =
+      '04167E0F6F4928F9F007CD7FA8DD3C6A4FBD97CC7CE1F9FE784E4DCD4AB039C20A88AC04E3FA629F0CEFDAD1D5ED7653E855D5A47B9663A185EE6DC60FF5DAE643';
+    const sig =
+      '30450220718be31aed3e59b9b422bed30d492d86f7e6c881098a6954cd06f2e07c098b67022100c1ddf76ffd3fea16098638079fde64dbd7f33b17350363bd8da9b49def6f7f50';
+    const keyID = 'abc';
+
+    const signature = new Signature({ keyID: keyID, sig: sig });
+
+    class DummySigned extends Signed {
+      toJSON() {
+        return data;
+      }
+    }
+    const metadata = {
+      signed: new DummySigned({}),
+      signatures: { [keyID]: signature },
+    };
+
+    const key = new Key({
+      keyID: keyID,
+      keyType: 'ecdsa-sha2-nistp256',
+      scheme: 'ecdsa-sha2-nistp256',
+      keyVal: { public: publicKey },
+    });
+
+    describe('when no signature is found for the key', () => {
+      it('throws an error', () => {
+        expect(() => {
+          key.verifySignature({ ...metadata, signatures: { xyz: signature } });
+        }).toThrowError(UnsignedMetadataError);
+      });
+    });
+
+    describe('when no signature does NOT match', () => {
+      const badMetadata = {
+        signed: new DummySigned({}),
+        signatures: { [keyID]: new Signature({ keyID: keyID, sig: 'bad' }) },
+      };
+
+      it('throws an error', () => {
+        expect(() => {
+          key.verifySignature(badMetadata);
+        }).toThrowError(UnsignedMetadataError);
+      });
+    });
+
+    describe('when key is missing', () => {
+      const badKey = new Key({
+        keyID: keyID,
+        keyType: 'ecdsa-sha2-nistp256',
+        scheme: 'ecdsa-sha2-nistp256',
+        keyVal: { foo: 'bar' },
+      });
+
+      it('throws an error', () => {
+        expect(() => {
+          badKey.verifySignature(metadata);
+        }).toThrowError(UnsignedMetadataError);
+      });
+    });
+
+    describe('when key is malformed', () => {
+      const badKey = new Key({
+        keyID: keyID,
+        keyType: 'ecdsa-sha2-nistp256',
+        scheme: 'ecdsa-sha2-nistp256',
+        keyVal: { public: 'bad' },
+      });
+
+      it('throws an error', () => {
+        expect(() => {
+          badKey.verifySignature(metadata);
+        }).toThrowError(UnsignedMetadataError);
+      });
+    });
+
+    describe('when the signature is valid', () => {
+      it('does NOT throw an error', () => {
+        expect(() => {
+          key.verifySignature(metadata);
+        }).not.toThrow();
+      });
     });
   });
 
