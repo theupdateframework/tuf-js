@@ -27,11 +27,11 @@ export class Role {
     const { keyIDs, threshold, unrecognizedFields } = options;
 
     if (hasDuplicates(keyIDs)) {
-      throw new ValueError('Duplicate key IDs found');
+      throw new ValueError('duplicate key IDs found');
     }
 
     if (threshold < 1) {
-      throw new ValueError('Threshold must be at least 1');
+      throw new ValueError('threshold must be at least 1');
     }
 
     this.keyIDs = keyIDs;
