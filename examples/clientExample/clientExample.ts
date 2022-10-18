@@ -4,6 +4,7 @@ function initDir() {}
 
 function dowonloadTarget() {
   const updater = new Updater({ metadataBaseUrl: './', metadataDir: './' });
+  updater.refresh();
 }
 
 initDir();
