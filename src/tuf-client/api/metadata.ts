@@ -1,7 +1,7 @@
 import util from 'util';
 import { isDefined, isObject, isObjectArray } from '../utils/guard';
 import { Signable } from './base';
-import { ValueError } from './error';
+import { UnsignedMetadataError, ValueError } from './error';
 import { Key } from './key';
 import { Role } from './role';
 import { Root } from './root';
@@ -32,43 +32,46 @@ export class Metadata<T extends MetadataType> implements Signable {
     delegatedRole: string,
     delegatedMetadata: Metadata<MetadataType>
   ) {
-    let role: Role | null = null;
-    let keys: Record<string, Key> | null = null;
+    let role: Role | undefined;
+    let keys: Record<string, Key> = {};
 
-    if (this.signed.type === MetadataKind.Root) {
-      const root = this.signed as Root;
-      keys = root.keys;
-      role = root.roles[delegatedRole];
+    switch (this.signed.type) {
+      case MetadataKind.Root:
+        keys = this.signed.keys;
+        role = this.signed.roles[delegatedRole];
+        break;
+      case MetadataKind.Targets:
+        // TODO implement this
+        throw new Error('not implemented');
+      default:
+        throw new TypeError('invalid metadata type');
     }
 
     if (!role) {
-      throw new Error(`No delegation found for ${delegatedRole}`);
-    }
-
-    if (!keys) {
-      throw new Error(`No keys found`);
+      throw new ValueError(`no delegation found for ${delegatedRole}`);
     }
 
     const signingKeys = new Set();
     role.keyIDs.forEach((keyID) => {
-      if (!keys?.[keyID]) {
-        throw new Error(`No key found for ${keyID}`);
-      }
+      const key = keys[keyID];
 
-      const key = keys[keyID] as Key;
+      // If we dont' have the key, continue checking other keys
+      if (!key) {
+        return;
+      }
 
       try {
         key.verifySignature(delegatedMetadata);
         signingKeys.add(key.keyID);
       } catch (error) {
-        throw new Error(
+        console.error(
           `Key ${key.keyID} failed to verify ${delegatedRole} with error ${error}`
         );
       }
     });
 
     if (signingKeys.size < role.threshold) {
-      throw new Error(
+      throw new UnsignedMetadataError(
         `${delegatedRole} was signed by ${signingKeys.size}/${role.threshold} keys`
       );
     }
