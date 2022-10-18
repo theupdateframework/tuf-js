@@ -1,7 +1,7 @@
 import util from 'util';
+import { ValueError } from '../error';
 import { isDefined, isObjectRecord } from '../utils/guard';
 import { Signed, SignedOptions } from './base';
-import { ValueError } from './error';
 import { Key } from './key';
 import { Role, TOP_LEVEL_ROLE_NAMES } from './role';
 import { JSONObject, JSONValue, MetadataKind } from './types';

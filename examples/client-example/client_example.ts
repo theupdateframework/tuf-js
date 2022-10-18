@@ -1,4 +1,4 @@
-import { Updater } from '../../src/tuf-client/ng-client/updater';
+import { Updater } from '../../src';
 
 function initDir() {}
 

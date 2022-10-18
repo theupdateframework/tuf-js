@@ -1,6 +1,6 @@
 import canonicalize from 'canonicalize';
 import crypto from 'crypto';
-import { JSONObject } from '../api/types';
+import { JSONObject } from '../models';
 
 export const verifySignature = (
   metaDataSignedData: JSONObject,

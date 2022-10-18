@@ -1,5 +1,1 @@
-async function main() {
-  console.log('test');
-}
-
-main();
+export { Updater } from './updater';

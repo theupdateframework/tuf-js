@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import util from 'util';
+import { LengthOrHashMismatchError, ValueError } from '../error';
 import { isDefined, isStringRecord } from '../utils/guard';
 import { JSONObject, JSONValue } from './types';
-import { LengthOrHashMismatchError, ValueError } from './error';
 
 interface MetaFileOptions {
   version: number;

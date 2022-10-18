@@ -1,6 +1,6 @@
 import util from 'util';
-import { isDefined } from '../utils/guard';
-import { ValueError } from './error';
+import { ValueError } from '../error';
+import { guard } from '../utils';
 import { Signature } from './signature';
 import { JSONObject, JSONValue } from './types';
 
@@ -68,15 +68,15 @@ export abstract class Signed {
   public static commonFieldsFromJSON(data: JSONObject): SignedOptions {
     const { spec_version, expires, version, ...rest } = data;
 
-    if (isDefined(spec_version) && !(typeof spec_version === 'string')) {
+    if (guard.isDefined(spec_version) && !(typeof spec_version === 'string')) {
       throw new TypeError('spec_version must be a string');
     }
 
-    if (isDefined(expires) && !(typeof expires === 'string')) {
+    if (guard.isDefined(expires) && !(typeof expires === 'string')) {
       throw new TypeError('expires must be a string');
     }
 
-    if (isDefined(version) && !(typeof version === 'number')) {
+    if (guard.isDefined(version) && !(typeof version === 'number')) {
       throw new TypeError('version must be a number');
     }
 

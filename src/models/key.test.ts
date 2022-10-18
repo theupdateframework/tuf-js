@@ -1,5 +1,5 @@
+import { UnsignedMetadataError } from '../error';
 import { Signed } from './base';
-import { UnsignedMetadataError } from './error';
 import { Key } from './key';
 import { Signature } from './signature';
 
