@@ -1,4 +1,103 @@
-import { DelegatedRole } from './delegated_role';
+import { ValueError } from './error';
+import { DelegatedRole, Role } from './role';
+
+describe('Role', () => {
+  describe('constructor', () => {
+    describe('when called with valid arguments', () => {
+      const opts = { keyIDs: ['a'], threshold: 2 };
+      it('constructs an object', () => {
+        const role = new Role(opts);
+        expect(role).toBeTruthy();
+        expect(role.keyIDs).toEqual(opts.keyIDs);
+        expect(role.threshold).toEqual(opts.threshold);
+      });
+    });
+
+    describe('when called with duplicate key IDs', () => {
+      const opts = { keyIDs: ['a', 'a'], threshold: 1 };
+      it('throws an error', () => {
+        expect(() => new Role(opts)).toThrow(ValueError);
+      });
+    });
+
+    describe('when called with threshold less than 1', () => {
+      const opts = { keyIDs: [], threshold: 0 };
+      it('throws an error', () => {
+        expect(() => new Role(opts)).toThrow(ValueError);
+      });
+    });
+  });
+
+  describe('fromJSON', () => {
+    describe('when keyids is not an array', () => {
+      const json = { keyids: 'a', threshold: 1 };
+      it('throws an error', () => {
+        expect(() => Role.fromJSON(json)).toThrowError(TypeError);
+      });
+    });
+
+    describe('when threshold is not a number', () => {
+      const json = { keyids: [], threshold: 'foo' };
+      it('throws an error', () => {
+        expect(() => Role.fromJSON(json)).toThrowError(TypeError);
+      });
+    });
+
+    describe('when called with valid arguments', () => {
+      const json = { keyids: ['a'], threshold: 1 };
+      it('constructs an object', () => {
+        const role = Role.fromJSON(json);
+        expect(role).toBeTruthy();
+        expect(role.keyIDs).toEqual(json.keyids);
+        expect(role.threshold).toEqual(json.threshold);
+      });
+    });
+  });
+
+  describe('equals', () => {
+    const opts = {
+      keyIDs: ['a'],
+      threshold: 1,
+      unrecognizedFields: { foo: 'bar' },
+    };
+    const role = new Role(opts);
+
+    describe('when called with a non-Role object', () => {
+      it('returns false', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(role.equals({} as any)).toBeFalsy();
+      });
+    });
+
+    describe('when called with a Role object with different key IDs', () => {
+      const other = new Role({ ...opts, keyIDs: ['b'] });
+      it('returns false', () => {
+        expect(role.equals(other)).toBeFalsy();
+      });
+    });
+
+    describe('when called with a Role object with different threshold', () => {
+      const other = new Role({ ...opts, threshold: 2 });
+      it('returns false', () => {
+        expect(role.equals(other)).toBeFalsy();
+      });
+    });
+
+    describe('when called with a Role object with different unrecognized fields', () => {
+      const other = new Role({ ...opts, unrecognizedFields: { bar: 'foo' } });
+      it('returns false', () => {
+        expect(role.equals(other)).toBeFalsy();
+      });
+    });
+
+    describe('when called with a Role object with the same properties', () => {
+      const other = new Role(opts);
+      it('returns true', () => {
+        expect(role.equals(other)).toBeTruthy();
+      });
+    });
+  });
+});
 
 describe('DelegatedRole', () => {
   describe('constructor', () => {
@@ -51,7 +150,7 @@ describe('DelegatedRole', () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             pathHashPrefixes: pathHashPrefixes as any,
           });
-        }).toThrowError('paths and pathHashPrefixes are mutually exclusive');
+        }).toThrowError(ValueError);
       });
     });
   });
@@ -263,7 +362,7 @@ describe('DelegatedRole', () => {
       it('throws a TypeError', () => {
         expect(() =>
           DelegatedRole.fromJSON({ ...json, keyids: 1 })
-        ).toThrowError('keyids must be an array of strings');
+        ).toThrowError(TypeError);
       });
     });
 
@@ -271,7 +370,7 @@ describe('DelegatedRole', () => {
       it('throws a TypeError', () => {
         expect(() =>
           DelegatedRole.fromJSON({ ...json, threshold: 'a' })
-        ).toThrowError('threshold must be a number');
+        ).toThrowError(TypeError);
       });
     });
 
@@ -279,7 +378,7 @@ describe('DelegatedRole', () => {
       it('throws a TypeError', () => {
         expect(() =>
           DelegatedRole.fromJSON({ ...json, name: 99 })
-        ).toThrowError('name must be a string');
+        ).toThrowError(TypeError);
       });
     });
 
@@ -287,7 +386,7 @@ describe('DelegatedRole', () => {
       it('throws a TypeError', () => {
         expect(() =>
           DelegatedRole.fromJSON({ ...json, terminating: 'yes' })
-        ).toThrowError('terminating must be a boolean');
+        ).toThrowError(TypeError);
       });
     });
 
@@ -296,7 +395,7 @@ describe('DelegatedRole', () => {
         it('throws a TypeError', () => {
           expect(() =>
             DelegatedRole.fromJSON({ ...json, paths: 1 })
-          ).toThrowError('paths must be an array of strings');
+          ).toThrowError(TypeError);
         });
       });
 
@@ -304,7 +403,7 @@ describe('DelegatedRole', () => {
         it('throws a TypeError', () => {
           expect(() =>
             DelegatedRole.fromJSON({ ...json, paths: ['a', 2] })
-          ).toThrowError('paths must be an array of strings');
+          ).toThrowError(TypeError);
         });
       });
 
@@ -321,7 +420,7 @@ describe('DelegatedRole', () => {
         it('throws a TypeError', () => {
           expect(() =>
             DelegatedRole.fromJSON({ ...json, path_hash_prefixes: 1 })
-          ).toThrowError('path_hash_prefixes must be an array of strings');
+          ).toThrowError(TypeError);
         });
       });
 
@@ -329,7 +428,7 @@ describe('DelegatedRole', () => {
         it('throws a TypeError', () => {
           expect(() =>
             DelegatedRole.fromJSON({ ...json, path_hash_prefixes: ['a', 2] })
-          ).toThrowError('path_hash_prefixes must be an array of strings');
+          ).toThrowError(TypeError);
         });
       });
 

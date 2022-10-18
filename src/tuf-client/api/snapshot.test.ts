@@ -143,23 +143,33 @@ describe('Snapshot', () => {
       foo: 'bar',
     };
 
-    it('returns the expected object', () => {
-      const snapshot = Snapshot.fromJSON(json);
+    describe('when the meta field is malformed', () => {
+      it('throws an error', () => {
+        expect(() => Snapshot.fromJSON({ ...json, meta: 'foo' })).toThrow(
+          TypeError
+        );
+      });
+    });
 
-      expect(snapshot).toBeTruthy();
-      expect(snapshot.version).toEqual(json.version);
-      expect(snapshot.specVersion).toEqual(json.spec_version);
-      expect(snapshot.expires).toEqual(json.expires);
+    describe('when the JSON is valid', () => {
+      it('returns the expected object', () => {
+        const snapshot = Snapshot.fromJSON(json);
 
-      expect(Object.entries(snapshot.meta).length).toEqual(1);
-      expect(snapshot.meta).toHaveProperty(['foo.txt']);
+        expect(snapshot).toBeTruthy();
+        expect(snapshot.version).toEqual(json.version);
+        expect(snapshot.specVersion).toEqual(json.spec_version);
+        expect(snapshot.expires).toEqual(json.expires);
 
-      const metafile = snapshot.meta['foo.txt'];
-      expect(metafile.version).toEqual(json.meta['foo.txt'].version);
-      expect(metafile.length).toEqual(json.meta['foo.txt'].length);
-      expect(metafile.hashes).toEqual(json.meta['foo.txt'].hashes);
+        expect(Object.entries(snapshot.meta).length).toEqual(1);
+        expect(snapshot.meta).toHaveProperty(['foo.txt']);
 
-      expect(snapshot.unrecognizedFields).toEqual({ foo: 'bar' });
+        const metafile = snapshot.meta['foo.txt'];
+        expect(metafile.version).toEqual(json.meta['foo.txt'].version);
+        expect(metafile.length).toEqual(json.meta['foo.txt'].length);
+        expect(metafile.hashes).toEqual(json.meta['foo.txt'].hashes);
+
+        expect(snapshot.unrecognizedFields).toEqual({ foo: 'bar' });
+      });
     });
   });
 });

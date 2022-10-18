@@ -1,9 +1,8 @@
 import util from 'util';
 import { isDefined, isObjectRecord } from '../utils/guard';
-import { JSONObject } from '../utils/type';
 import { Signed, SignedOptions } from './base';
-import { MetadataKind } from './constants';
 import { MetaFile } from './file';
+import { JSONObject, MetadataKind } from './types';
 
 type MetaFileMap = Record<string, MetaFile>;
 
@@ -52,7 +51,7 @@ export class Snapshot extends Signed {
     let metaMap;
     if (isDefined(meta)) {
       if (!isObjectRecord(meta)) {
-        throw new TypeError('meta is not malformed');
+        throw new TypeError('meta field is malformed');
       } else {
         metaMap = Object.entries(meta).reduce<MetaFileMap>(
           (acc, [path, metadata]) => ({

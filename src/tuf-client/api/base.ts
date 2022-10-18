@@ -1,7 +1,8 @@
 import util from 'util';
 import { isDefined } from '../utils/guard';
-import { JSONObject, JSONValue } from '../utils/type';
+import { ValueError } from './error';
 import { Signature } from './signature';
+import { JSONObject, JSONValue } from './types';
 
 const SPECIFICATION_VERSION = ['1', '20', '30'];
 
@@ -31,12 +32,12 @@ export abstract class Signed {
       !(specList.length === 2 || specList.length === 3) ||
       !specList.every((item) => isNumeric(item))
     ) {
-      throw new Error('Failed to parse specVersion');
+      throw new ValueError('Failed to parse specVersion');
     }
 
     // major version must match
     if (specList[0] != SPECIFICATION_VERSION[0]) {
-      throw new Error('Unsupported specVersion');
+      throw new ValueError('Unsupported specVersion');
     }
 
     this.expires = options.expires || new Date().toISOString();
@@ -91,5 +92,5 @@ export abstract class Signed {
 }
 
 function isNumeric(str: string): boolean {
-  return /^\d+$/.test(str);
+  return !isNaN(Number(str));
 }

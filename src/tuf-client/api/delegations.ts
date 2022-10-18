@@ -1,21 +1,21 @@
 import util from 'util';
 import { isDefined, isObjectArray, isObjectRecord } from '../utils/guard';
-import { JSONObject, JSONValue } from '../utils/type';
-import { DelegatedRole } from './delegated_role';
 import { ValueError } from './error';
 import { Key } from './key';
-import { TOP_LEVEL_ROLE_NAMES } from './role';
+import { DelegatedRole, TOP_LEVEL_ROLE_NAMES } from './role';
+import { JSONObject, JSONValue } from './types';
 
 type DelegatedRoleMap = Record<string, DelegatedRole>;
+type KeyMap = Record<string, Key>;
 
 interface DelegationsOptions {
-  keys: Record<string, Key>;
+  keys: KeyMap;
   roles?: DelegatedRoleMap;
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
 export class Delegations {
-  readonly keys: Record<string, Key>;
+  readonly keys: KeyMap;
   readonly roles?: DelegatedRoleMap;
   readonly unrecognizedFields?: Record<string, JSONValue>;
 
@@ -90,7 +90,7 @@ export class Delegations {
       throw new TypeError('keys is malformed');
     }
 
-    const keyMap = Object.entries(keys).reduce<Record<string, Key>>(
+    const keyMap = Object.entries(keys).reduce<KeyMap>(
       (acc, [keyID, keyData]) => ({
         ...acc,
         [keyID]: Key.fromJSON(keyID, keyData),

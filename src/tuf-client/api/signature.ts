@@ -1,4 +1,4 @@
-import { JSONObject } from '../utils/type';
+import { JSONObject } from './types';
 
 export interface SignatureOptions {
   keyID: string;

@@ -81,8 +81,7 @@ describe('Targets', () => {
     const targets = new Targets(opts);
     describe('when called with a non-Targets object', () => {
       it('returns false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(targets.equals({} as any)).toBeFalsy();
+        expect(targets.equals({} as Targets)).toBeFalsy();
       });
     });
 
@@ -117,6 +116,122 @@ describe('Targets', () => {
       const other = new Targets(opts);
       it('returns true', () => {
         expect(targets.equals(other)).toBeTruthy();
+      });
+    });
+  });
+
+  describe('#toJSON', () => {
+    const targetFile = new TargetFile({
+      path: 'a',
+      length: 1,
+      hashes: { sha256: 'abc' },
+    });
+
+    const delegations = new Delegations({
+      keys: {},
+      roles: {},
+    });
+
+    describe('when there are no delegations', () => {
+      const opts = {
+        specVersion: '1.0.0',
+        version: 1,
+        expires: '1970-01-01T00:00:01.000Z',
+        targets: { a: targetFile },
+        unrecognizedFields: { foo: 'bar' },
+      };
+
+      const targets = new Targets(opts);
+
+      it('should return a JSON representation', () => {
+        expect(targets.toJSON()).toEqual({
+          spec_version: opts.specVersion,
+          version: opts.version,
+          expires: opts.expires,
+          targets: { a: targetFile.toJSON() },
+          foo: 'bar',
+        });
+      });
+    });
+
+    describe('when there are delegations', () => {
+      const opts = {
+        specVersion: '1.0.0',
+        version: 1,
+        expires: '1970-01-01T00:00:01.000Z',
+        targets: { a: targetFile },
+        delegations: delegations,
+        unrecognizedFields: { foo: 'bar' },
+      };
+
+      const targets = new Targets(opts);
+
+      it('should return a JSON representation', () => {
+        expect(targets.toJSON()).toEqual({
+          spec_version: opts.specVersion,
+          version: opts.version,
+          expires: opts.expires,
+          targets: { a: targetFile.toJSON() },
+          delegations: delegations.toJSON(),
+          foo: 'bar',
+        });
+      });
+    });
+  });
+
+  describe('.fromJSON', () => {
+    const json = {
+      spec_version: '1.0.0',
+      version: 1,
+      expires: '1970-01-01T00:00:01.000Z',
+      targets: { a: { length: 1, hashes: { sha256: 'abc' } } },
+      delegations: {
+        keys: {},
+        roles: [
+          {
+            name: 'a',
+            keyids: ['a'],
+            threshold: 1,
+            paths: ['a'],
+            terminating: false,
+          },
+        ],
+      },
+      foo: 'bar',
+    };
+
+    describe('when there is a type error with targets', () => {
+      it('should throw a TypeError', () => {
+        expect(() => Targets.fromJSON({ ...json, targets: 'a' })).toThrow(
+          TypeError
+        );
+      });
+    });
+
+    describe('when there is a type error with delegations', () => {
+      it('should throw a TypeError', () => {
+        expect(() => Targets.fromJSON({ ...json, delegations: 'a' })).toThrow(
+          TypeError
+        );
+      });
+    });
+
+    describe('when JSON is valid', () => {
+      it('returns a Targets object', () => {
+        const targets = Targets.fromJSON(json);
+
+        expect(targets.specVersion).toEqual(json.spec_version);
+        expect(targets.version).toEqual(json.version);
+        expect(targets.expires).toEqual(json.expires);
+        expect(targets.targets).toHaveProperty('a');
+
+        const targetFile = targets.targets.a;
+        expect(targetFile.length).toEqual(json.targets.a.length);
+        expect(targetFile.hashes).toEqual(json.targets.a.hashes);
+
+        expect(targets.delegations).toBeDefined();
+        expect(targets.delegations?.keys).toEqual(json.delegations.keys);
+        expect(targets.delegations?.roles).toBeDefined();
       });
     });
   });

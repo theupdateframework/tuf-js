@@ -3,21 +3,21 @@ import { Timestamp } from './timestamp';
 
 describe('Timestamp', () => {
   describe('constructor', () => {
+    const metaFile = new MetaFile({
+      version: 1,
+      length: 1,
+      hashes: { sha256: 'a' },
+    });
+
+    const opts = {
+      version: 1,
+      specVersion: '1.0.0',
+      expires: '1970-01-01T00:00:01.000Z',
+      snapshotMeta: metaFile,
+      unrecognizedFields: { foo: 'bar' },
+    };
+
     describe('when called with valid arguments', () => {
-      const metaFile = new MetaFile({
-        version: 1,
-        length: 1,
-        hashes: { sha256: 'a' },
-      });
-
-      const opts = {
-        version: 1,
-        specVersion: '1.0.0',
-        expires: '1970-01-01T00:00:01.000Z',
-        snapshotMeta: metaFile,
-        unrecognizedFields: { foo: 'bar' },
-      };
-
       it('constructs an object', () => {
         const snapshot = new Timestamp(opts);
         expect(snapshot).toBeTruthy();
@@ -25,6 +25,18 @@ describe('Timestamp', () => {
         expect(snapshot.specVersion).toEqual(opts.specVersion);
         expect(snapshot.expires).toEqual(opts.expires);
         expect(snapshot.snapshotMeta).toEqual(opts.snapshotMeta);
+        expect(snapshot.unrecognizedFields).toEqual(opts.unrecognizedFields);
+      });
+    });
+
+    describe('when called with a missing meta property', () => {
+      it('constructs an object', () => {
+        const snapshot = new Timestamp({ ...opts, snapshotMeta: undefined });
+        expect(snapshot).toBeTruthy();
+        expect(snapshot.version).toEqual(opts.version);
+        expect(snapshot.specVersion).toEqual(opts.specVersion);
+        expect(snapshot.expires).toEqual(opts.expires);
+        expect(snapshot.snapshotMeta).toEqual(new MetaFile({ version: 1 }));
         expect(snapshot.unrecognizedFields).toEqual(opts.unrecognizedFields);
       });
     });
@@ -131,17 +143,27 @@ describe('Timestamp', () => {
       foo: 'bar',
     };
 
-    it('returns the expected object', () => {
-      const timestamp = Timestamp.fromJSON(json);
+    describe('when snapshot.json is missing', () => {
+      it('throws an error', () => {
+        expect(() => Timestamp.fromJSON({ ...json, meta: {} })).toThrow(
+          TypeError
+        );
+      });
+    });
 
-      expect(timestamp).toBeTruthy();
-      expect(timestamp.version).toEqual(json.version);
-      expect(timestamp.specVersion).toEqual(json.spec_version);
-      expect(timestamp.expires).toEqual(json.expires);
-      expect(timestamp.snapshotMeta).toEqual(
-        MetaFile.fromJSON(json.meta['snapshot.json'])
-      );
-      expect(timestamp.unrecognizedFields).toEqual({ foo: 'bar' });
+    describe('when the JSON is valid', () => {
+      it('returns the expected object', () => {
+        const timestamp = Timestamp.fromJSON(json);
+
+        expect(timestamp).toBeTruthy();
+        expect(timestamp.version).toEqual(json.version);
+        expect(timestamp.specVersion).toEqual(json.spec_version);
+        expect(timestamp.expires).toEqual(json.expires);
+        expect(timestamp.snapshotMeta).toEqual(
+          MetaFile.fromJSON(json.meta['snapshot.json'])
+        );
+        expect(timestamp.unrecognizedFields).toEqual({ foo: 'bar' });
+      });
     });
   });
 });

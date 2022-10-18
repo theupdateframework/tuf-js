@@ -1,10 +1,9 @@
 import util from 'util';
 import { isDefined, isObject, isObjectRecord } from '../utils/guard';
-import { JSONObject, JSONValue } from '../utils/type';
 import { Signed, SignedOptions } from './base';
-import { MetadataKind } from './constants';
 import { Delegations } from './delegations';
 import { TargetFile } from './file';
+import { JSONObject, JSONValue, MetadataKind } from './types';
 
 type TargetFileMap = Record<string, TargetFile>;
 
@@ -76,7 +75,7 @@ export class Targets extends Signed {
     let targetMap: TargetFileMap | undefined;
     if (isDefined(targets)) {
       if (!isObjectRecord(targets)) {
-        throw new TypeError('targets is malformed');
+        throw new TypeError('targets must be an object');
       } else {
         targetMap = Object.entries(targets).reduce<TargetFileMap>(
           (acc, [path, target]) => ({
@@ -91,7 +90,7 @@ export class Targets extends Signed {
     let delegationsMap: Delegations | undefined;
     if (isDefined(delegations)) {
       if (!isObject(delegations)) {
-        throw new TypeError('delegations is malformed');
+        throw new TypeError('delegations must be an object');
       } else {
         delegationsMap = Delegations.fromJSON(delegations);
       }

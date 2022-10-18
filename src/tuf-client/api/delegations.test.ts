@@ -1,6 +1,7 @@
-import { DelegatedRole } from './delegated_role';
+import { DelegatedRole } from './role';
 import { Delegations } from './delegations';
 import { Key } from './key';
+import { ValueError } from './error';
 
 describe('Delegations', () => {
   describe('constructor', () => {
@@ -30,7 +31,7 @@ describe('Delegations', () => {
         it('constructs an object', () => {
           expect(() => {
             new Delegations({ ...opts, roles: { root: role } });
-          }).toThrow('Delegated role name conflicts with top-level role');
+          }).toThrow(ValueError);
         });
       });
 
@@ -72,8 +73,7 @@ describe('Delegations', () => {
 
     describe('when called with a non-Delegation object', () => {
       it('returns false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(delegations.equals({} as any)).toBeFalsy();
+        expect(delegations.equals({} as Delegations)).toBeFalsy();
       });
     });
 
@@ -173,7 +173,7 @@ describe('Delegations', () => {
       it('returns no roles', () => {
         const gen = delegations.rolesForTarget('d');
 
-        let result = gen.next();
+        const result = gen.next();
         expect(result.done).toEqual(true);
       });
     });
@@ -259,7 +259,7 @@ describe('Delegations', () => {
       it('throws a TypeError', () => {
         expect(() =>
           Delegations.fromJSON({ ...json, keys: { abc: 2 } })
-        ).toThrowError('keys is malformed');
+        ).toThrowError(TypeError);
       });
     });
 
@@ -267,7 +267,7 @@ describe('Delegations', () => {
       it('throws a TypeError', () => {
         expect(() =>
           Delegations.fromJSON({ ...json, roles: [2] })
-        ).toThrowError('roles is malformed');
+        ).toThrowError(TypeError);
       });
     });
 

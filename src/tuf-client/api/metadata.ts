@@ -1,8 +1,6 @@
 import util from 'util';
 import { isDefined, isObject, isObjectArray } from '../utils/guard';
-import { JSONObject, JSONValue } from '../utils/type';
 import { Signable } from './base';
-import { MetadataKind } from './constants';
 import { ValueError } from './error';
 import { Key } from './key';
 import { Role } from './role';
@@ -11,6 +9,7 @@ import { Signature } from './signature';
 import { Snapshot } from './snapshot';
 import { Targets } from './targets';
 import { Timestamp } from './timestamp';
+import { JSONObject, JSONValue, MetadataKind } from './types';
 
 type MetadataType = Root | Timestamp | Snapshot | Targets;
 
@@ -43,7 +42,7 @@ export class Metadata<T extends MetadataType> implements Signable {
     }
 
     if (!role) {
-      throw new Error(`No delegation fround for ${delegatedRole}`);
+      throw new Error(`No delegation found for ${delegatedRole}`);
     }
 
     if (!keys) {

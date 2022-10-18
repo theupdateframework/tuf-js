@@ -1,7 +1,7 @@
 import canonicalize from 'canonicalize';
 import crypto from 'crypto';
 import { ed25519, ecdsa } from './key';
-import { JSONObject } from './type';
+import { JSONObject } from '../api/types';
 
 export const verifySignature = (
   keyType: string,

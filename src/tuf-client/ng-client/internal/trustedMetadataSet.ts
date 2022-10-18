@@ -1,8 +1,12 @@
-import { Metadata, Root, Targets } from '../../api';
-import { Snapshot } from '../../api/snapshot';
-import { MetadataKind } from '../../api/constants';
-import { Timestamp } from '../../api/timestamp';
-import { JSONObject } from '../../utils/type';
+import {
+  Metadata,
+  Root,
+  Targets,
+  Snapshot,
+  Timestamp,
+  MetadataKind,
+} from '../../api';
+import { JSONObject } from '../../api/types';
 
 interface TrustedSet {
   root?: Metadata<Root>;

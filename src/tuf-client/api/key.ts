@@ -1,8 +1,9 @@
 import util from 'util';
 import { isStringRecord } from '../utils/guard';
 import * as signer from '../utils/signer';
-import { JSONObject, JSONValue } from '../utils/type';
 import { Signable } from './base';
+import { UnsignedMetadataError } from './error';
+import { JSONObject, JSONValue } from './types';
 
 export interface KeyOptions {
   keyID: string;
@@ -33,10 +34,11 @@ export class Key {
   // this key and is correctly signed.
   public verifySignature(metadata: Signable) {
     const signature = metadata.signatures[this.keyID];
-    if (!signature) throw new Error('No signature for key found in metadata');
+    if (!signature)
+      throw new UnsignedMetadataError('No signature for key found in metadata');
 
     const publicKey = this.keyVal.public;
-    if (!publicKey) throw new Error('No public key found');
+    if (!publicKey) throw new UnsignedMetadataError('No public key found');
 
     const signedData = metadata.signed.toJSON();
 
@@ -49,10 +51,10 @@ export class Key {
         publicKey
       );
       if (!verifySignature) {
-        throw new Error('Failed to verify signature');
+        throw new UnsignedMetadataError('Failed to verify signature');
       }
     } catch (error) {
-      throw new Error('Failed to verify signature');
+      throw new UnsignedMetadataError('Failed to verify signature');
     }
   }
 

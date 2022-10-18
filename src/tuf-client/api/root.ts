@@ -1,11 +1,10 @@
 import util from 'util';
 import { isDefined, isObjectRecord } from '../utils/guard';
-import { JSONObject, JSONValue } from '../utils/type';
 import { Signed, SignedOptions } from './base';
-import { MetadataKind } from './constants';
 import { ValueError } from './error';
 import { Key } from './key';
 import { Role, TOP_LEVEL_ROLE_NAMES } from './role';
+import { JSONObject, JSONValue, MetadataKind } from './types';
 
 type KeyMap = Record<string, Key>;
 type RoleMap = Record<string, Role>;
@@ -13,7 +12,7 @@ type RoleMap = Record<string, Role>;
 export interface RootOptions extends SignedOptions {
   keys?: Record<string, Key>;
   roles?: Record<string, Role>;
-  consistentSnapshot: boolean;
+  consistentSnapshot?: boolean;
 }
 
 export class Root extends Signed {
@@ -39,7 +38,7 @@ export class Root extends Signed {
     } else {
       const roleNames = new Set(Object.keys(options.roles));
       if (!TOP_LEVEL_ROLE_NAMES.every((role) => roleNames.has(role))) {
-        throw new ValueError('Missing top-level role');
+        throw new ValueError('missing top-level role');
       }
 
       this.roles = options.roles;
@@ -91,13 +90,13 @@ export class Root extends Signed {
       };
 
     if (typeof consistent_snapshot !== 'boolean') {
-      throw new TypeError('consistent_snapshot is not a boolean');
+      throw new TypeError('consistent_snapshot must be a boolean');
     }
 
     let keyMap: KeyMap | undefined;
     if (isDefined(keys)) {
       if (!isObjectRecord(keys)) {
-        throw new TypeError('keys is not malformed');
+        throw new TypeError('keys must be an object');
       } else {
         keyMap = Object.entries(keys).reduce<KeyMap>(
           (acc, [keyID, keyData]) => ({
@@ -112,7 +111,7 @@ export class Root extends Signed {
     let roleMap: RoleMap | undefined;
     if (isDefined(roles)) {
       if (!isObjectRecord(roles)) {
-        throw new TypeError('roles is not malformed');
+        throw new TypeError('roles must be an object');
       } else {
         roleMap = Object.entries(roles).reduce<RoleMap>(
           (acc, [roleName, roleData]) => ({

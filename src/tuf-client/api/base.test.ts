@@ -1,5 +1,6 @@
-import { JSONObject } from '../utils/type';
 import { Signed, SignedOptions } from './base';
+import { ValueError } from './error';
+import { JSONObject } from './types';
 
 describe('Signed', () => {
   class DummySigned extends Signed {
@@ -20,7 +21,7 @@ describe('Signed', () => {
       it('constructs an object', () => {
         expect(() => {
           new DummySigned({ specVersion: '1' });
-        }).toThrow('Failed to parse specVersion');
+        }).toThrow(ValueError);
       });
     });
 
@@ -28,7 +29,7 @@ describe('Signed', () => {
       it('constructs an object', () => {
         expect(() => {
           new DummySigned({ specVersion: '1.0.0.0' });
-        }).toThrow('Failed to parse specVersion');
+        }).toThrow(ValueError);
       });
     });
 
@@ -36,7 +37,7 @@ describe('Signed', () => {
       it('constructs an object', () => {
         expect(() => {
           new DummySigned({ specVersion: '1.b.c' });
-        }).toThrow('Failed to parse specVersion');
+        }).toThrow(ValueError);
       });
     });
 
@@ -44,7 +45,7 @@ describe('Signed', () => {
       it('constructs an object', () => {
         expect(() => {
           new DummySigned({ specVersion: '2.0.0' });
-        }).toThrow('Unsupported specVersion');
+        }).toThrow(ValueError);
       });
     });
   });
@@ -83,8 +84,7 @@ describe('Signed', () => {
 
     describe('when other is not a Signed', () => {
       it('returns false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(subject.equals({} as any)).toBe(false);
+        expect(subject.equals({} as DummySigned)).toBe(false);
       });
     });
 
@@ -131,6 +131,49 @@ describe('Signed', () => {
     describe('when reference time is greater than the expiry time', () => {
       it('returns true', () => {
         expect(subject.isExpired(new Date())).toBe(true);
+      });
+    });
+  });
+
+  describe('.commonFieldsFromJSON', () => {
+    const json = {
+      version: 1,
+      spec_version: '1.0.0',
+      expires: new Date().toISOString(),
+      foo: 'bar',
+    };
+
+    describe('when there is a type error with version', () => {
+      it('throws an error', () => {
+        expect(() => {
+          DummySigned.commonFieldsFromJSON({ ...json, version: '1' });
+        }).toThrow(TypeError);
+      });
+    });
+
+    describe('when there is a type error with spec_version', () => {
+      it('throws an error', () => {
+        expect(() => {
+          DummySigned.commonFieldsFromJSON({ ...json, spec_version: 1 });
+        }).toThrow(TypeError);
+      });
+    });
+
+    describe('when there is a type error with expires', () => {
+      it('throws an error', () => {
+        expect(() => {
+          DummySigned.commonFieldsFromJSON({ ...json, expires: 1 });
+        }).toThrow(TypeError);
+      });
+    });
+
+    describe('when the JSON is valid', () => {
+      it('throws an error', () => {
+        const opts = DummySigned.commonFieldsFromJSON(json);
+        expect(opts.version).toEqual(1);
+        expect(opts.specVersion).toEqual('1.0.0');
+        expect(opts.expires).toEqual(json.expires);
+        expect(opts.unrecognizedFields).toEqual({ foo: 'bar' });
       });
     });
   });
