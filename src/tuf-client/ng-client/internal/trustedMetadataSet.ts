@@ -16,8 +16,8 @@ interface TrustedSet {
 }
 
 export class TrustedMetadataSet {
-  private trustedSet: TrustedSet = {};
-  private referenceTime: number;
+  public readonly trustedSet: TrustedSet = {};
+  public readonly referenceTime: number;
 
   constructor(rootData: JSONObject) {
     this.referenceTime = new Date().getTime();
