@@ -35,26 +35,34 @@ export class Key {
   public verifySignature(metadata: Signable) {
     const signature = metadata.signatures[this.keyID];
     if (!signature)
-      throw new UnsignedMetadataError('No signature for key found in metadata');
+      throw new UnsignedMetadataError('no signature for key found in metadata');
 
     const publicKey = this.keyVal.public;
-    if (!publicKey) throw new UnsignedMetadataError('No public key found');
+    if (!publicKey) throw new UnsignedMetadataError('no public key found');
 
     const signedData = metadata.signed.toJSON();
 
     try {
-      // TODO: implmeent verifysignature func
-      const verifySignature = signer.verifySignature(
-        this.keyType,
-        signedData,
-        signature.sig,
-        publicKey
-      );
-      if (!verifySignature) {
-        throw new UnsignedMetadataError('Failed to verify signature');
+      if (
+        !signer.verifySignature(
+          this.keyType,
+          signedData,
+          signature.sig,
+          publicKey
+        )
+      ) {
+        throw new UnsignedMetadataError(
+          `failed to verify ${this.keyID} signature`
+        );
       }
     } catch (error) {
-      throw new UnsignedMetadataError('Failed to verify signature');
+      if (error instanceof UnsignedMetadataError) {
+        throw error;
+      }
+
+      throw new UnsignedMetadataError(
+        `failed to verify ${this.keyID} signature`
+      );
     }
   }
 
