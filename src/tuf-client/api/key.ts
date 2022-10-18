@@ -32,21 +32,20 @@ export class Key {
   // Verifies the that the metadata.signatures contains a signature made with
   // this key and is correctly signed.
   public verifySignature(metadata: Signable) {
-    const signature = metadata?.signatures?.[this.keyID]?.sig;
+    const signature = metadata.signatures[this.keyID];
     if (!signature) throw new Error('No signature for key found in metadata');
 
-    const publicKey = this.keyVal?.public;
-    if (!publicKey) throw new Error('No spublic key found');
+    const publicKey = this.keyVal.public;
+    if (!publicKey) throw new Error('No public key found');
 
-    const signedData = metadata?.signed.toJSON();
-    if (!signedData) throw new Error('No signed data found in metadata');
+    const signedData = metadata.signed.toJSON();
 
     try {
       // TODO: implmeent verifysignature func
       const verifySignature = signer.verifySignature(
         this.keyType,
         signedData,
-        signature,
+        signature.sig,
         publicKey
       );
       if (!verifySignature) {

@@ -24,11 +24,15 @@ export class Delegations {
     this.unrecognizedFields = options.unrecognizedFields || {};
 
     if (options.roles) {
-      Object.keys(options.roles).forEach((roleName) => {
-        if (!TOP_LEVEL_ROLE_NAMES.includes(roleName)) {
-          throw new ValueError(`Invalid role name ${roleName}`);
-        }
-      });
+      if (
+        Object.keys(options.roles).some((roleName) =>
+          TOP_LEVEL_ROLE_NAMES.includes(roleName)
+        )
+      ) {
+        throw new ValueError(
+          'Delegated role name conflicts with top-level role name'
+        );
+      }
     }
     this.roles = options.roles;
   }

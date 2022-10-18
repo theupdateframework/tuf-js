@@ -12,9 +12,9 @@ export class Timestamp extends Signed {
   readonly type = MetadataKind.Timestamp;
   readonly snapshotMeta: MetaFile;
 
-  constructor(opts: TimestampOptions) {
-    super(opts);
-    this.snapshotMeta = opts.snapshotMeta || new MetaFile({ version: 1 });
+  constructor(options: TimestampOptions) {
+    super(options);
+    this.snapshotMeta = options.snapshotMeta || new MetaFile({ version: 1 });
   }
 
   public equals(other: Timestamp): boolean {

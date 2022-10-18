@@ -1,25 +1,20 @@
+import util from 'util';
 import { isDefined, isObjectRecord } from '../utils/guard';
 import { JSONObject, JSONValue } from '../utils/type';
 import { Signed, SignedOptions } from './base';
 import { MetadataKind } from './constants';
+import { ValueError } from './error';
 import { Key } from './key';
-import { Role } from './role';
+import { Role, TOP_LEVEL_ROLE_NAMES } from './role';
 
 type KeyMap = Record<string, Key>;
 type RoleMap = Record<string, Role>;
 
-export type RootOptions = SignedOptions & {
+export interface RootOptions extends SignedOptions {
   keys?: Record<string, Key>;
   roles?: Record<string, Role>;
   consistentSnapshot: boolean;
-};
-
-const TOP_LEVEL_ROLE_NAMES = [
-  MetadataKind.Root,
-  MetadataKind.Timestamp,
-  MetadataKind.Snapshot,
-  MetadataKind.Targets,
-];
+}
 
 export class Root extends Signed {
   readonly type = MetadataKind.Root;
@@ -34,18 +29,34 @@ export class Root extends Signed {
     this.consistentSnapshot = options.consistentSnapshot ?? true;
 
     if (!options.roles) {
-      this.roles = TOP_LEVEL_ROLE_NAMES.reduce<RoleMap>((acc, role) => {
-        acc[role] = new Role({ keyIDs: [], threshold: 1 });
-        return acc;
-      }, {});
+      this.roles = TOP_LEVEL_ROLE_NAMES.reduce<RoleMap>(
+        (acc, role) => ({
+          ...acc,
+          [role]: new Role({ keyIDs: [], threshold: 1 }),
+        }),
+        {}
+      );
     } else {
       const roleNames = new Set(Object.keys(options.roles));
       if (!TOP_LEVEL_ROLE_NAMES.every((role) => roleNames.has(role))) {
-        throw new Error('Missing top-level role');
+        throw new ValueError('Missing top-level role');
       }
 
       this.roles = options.roles;
     }
+  }
+
+  public equals(other: Root): boolean {
+    if (!(other instanceof Root)) {
+      return false;
+    }
+
+    return (
+      super.equals(other) &&
+      this.consistentSnapshot === other.consistentSnapshot &&
+      util.isDeepStrictEqual(this.keys, other.keys) &&
+      util.isDeepStrictEqual(this.roles, other.roles)
+    );
   }
 
   public toJSON(): JSONObject {

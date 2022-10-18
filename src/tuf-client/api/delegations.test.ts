@@ -18,7 +18,7 @@ describe('Delegations', () => {
 
     describe('when called with roles', () => {
       const roleOpts = {
-        name: 'root',
+        name: 'foo',
         keyIDs: ['abc'],
         threshold: 1,
         terminating: true,
@@ -29,18 +29,18 @@ describe('Delegations', () => {
       describe('when role name is invalid', () => {
         it('constructs an object', () => {
           expect(() => {
-            new Delegations({ ...opts, roles: { foo: role } });
-          }).toThrow('Invalid role name');
+            new Delegations({ ...opts, roles: { root: role } });
+          }).toThrow('Delegated role name conflicts with top-level role');
         });
       });
 
       describe('when role name is valid', () => {
         it('constructs an object', () => {
-          const subject = new Delegations({ ...opts, roles: { root: role } });
+          const subject = new Delegations({ ...opts, roles: { foo: role } });
 
           expect(subject).toBeTruthy();
           expect(subject.keys).toEqual(opts.keys);
-          expect(subject.roles).toEqual({ root: role });
+          expect(subject.roles).toEqual({ foo: role });
           expect(subject.unrecognizedFields).toEqual(opts.unrecognizedFields);
         });
       });
@@ -64,7 +64,7 @@ describe('Delegations', () => {
 
     const opts = {
       keys: { abc: new Key(keyOpts) },
-      roles: { root: new DelegatedRole(roleOpts) },
+      roles: { foo: new DelegatedRole(roleOpts) },
       unrecognizedFields: { foo: 'bar' },
     };
 
@@ -116,16 +116,16 @@ describe('Delegations', () => {
   });
 
   describe('#rolesForTarget', () => {
-    const rootRole = new DelegatedRole({
-      name: 'root',
+    const fooRole = new DelegatedRole({
+      name: 'foo',
       keyIDs: ['xyz'],
       threshold: 1,
       terminating: true,
       paths: ['b', 'c'],
     });
 
-    const snapshotRole = new DelegatedRole({
-      name: 'snapshot',
+    const barRole = new DelegatedRole({
+      name: 'bar',
       keyIDs: ['rst'],
       threshold: 1,
       terminating: false,
@@ -134,7 +134,7 @@ describe('Delegations', () => {
 
     const opts = {
       keys: {},
-      roles: { root: rootRole, snapshot: snapshotRole },
+      roles: { foo: fooRole, bar: barRole },
     };
 
     const delegations = new Delegations(opts);
@@ -145,7 +145,7 @@ describe('Delegations', () => {
 
         let result = gen.next();
         expect(result.done).toEqual(false);
-        expect(result.value).toEqual({ role: 'snapshot', terminating: false });
+        expect(result.value).toEqual({ role: 'bar', terminating: false });
 
         result = gen.next();
         expect(result.done).toEqual(true);
@@ -158,11 +158,11 @@ describe('Delegations', () => {
 
         let result = gen.next();
         expect(result.done).toEqual(false);
-        expect(result.value).toEqual({ role: 'root', terminating: true });
+        expect(result.value).toEqual({ role: 'foo', terminating: true });
 
         result = gen.next();
         expect(result.done).toEqual(false);
-        expect(result.value).toEqual({ role: 'snapshot', terminating: false });
+        expect(result.value).toEqual({ role: 'bar', terminating: false });
 
         result = gen.next();
         expect(result.done).toEqual(true);
@@ -194,7 +194,7 @@ describe('Delegations', () => {
 
     describe('when there are roles', () => {
       const roleOpts = {
-        name: 'root',
+        name: 'foo',
         keyIDs: ['abc'],
         threshold: 1,
         terminating: true,
@@ -204,7 +204,7 @@ describe('Delegations', () => {
       const role = new DelegatedRole(roleOpts);
       const delegations = new Delegations({
         ...opts,
-        roles: { root: role },
+        roles: { foo: role },
       });
 
       it('returns the expected JSON', () => {
@@ -246,7 +246,7 @@ describe('Delegations', () => {
       roles: [
         {
           keyids: ['abc'],
-          name: 'root',
+          name: 'foo',
           paths: ['foo'],
           threshold: 1,
           terminating: true,
@@ -301,11 +301,11 @@ describe('Delegations', () => {
           expect(key).toBeInstanceOf(Key);
 
           expect(delegations.roles).toBeTruthy();
-          expect(delegations.roles).toHaveProperty('root');
+          expect(delegations.roles).toHaveProperty('foo');
 
-          const role = delegations.roles?.root;
+          const role = delegations.roles?.foo;
           expect(role).toBeInstanceOf(DelegatedRole);
-          expect(role?.name).toEqual('root');
+          expect(role?.name).toEqual('foo');
           expect(role?.keyIDs).toEqual(['abc']);
           expect(role?.threshold).toEqual(1);
           expect(role?.terminating).toEqual(true);

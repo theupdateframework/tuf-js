@@ -1,4 +1,4 @@
-import { Metadata, Root, Targets } from '../../api/metadata';
+import { Metadata, Root, Targets } from '../../api';
 import { Snapshot } from '../../api/snapshot';
 import { MetadataKind } from '../../api/constants';
 import { Timestamp } from '../../api/timestamp';

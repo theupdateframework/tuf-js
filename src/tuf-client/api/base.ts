@@ -61,7 +61,7 @@ export abstract class Signed {
     if (!referenceTime) {
       referenceTime = new Date();
     }
-    return referenceTime >= new Date(this.expires).getTime();
+    return referenceTime >= new Date(this.expires);
   }
 
   public static commonFieldsFromJSON(data: JSONObject): SignedOptions {

@@ -124,13 +124,13 @@ describe('Signed', () => {
 
     describe('when reference time is less than the expiry time', () => {
       it('returns false', () => {
-        expect(subject.isExpired(1)).toBe(false);
+        expect(subject.isExpired(new Date(1))).toBe(false);
       });
     });
 
     describe('when reference time is greater than the expiry time', () => {
       it('returns true', () => {
-        expect(subject.isExpired(new Date().getTime())).toBe(true);
+        expect(subject.isExpired(new Date())).toBe(true);
       });
     });
   });
