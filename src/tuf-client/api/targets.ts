@@ -41,19 +41,11 @@ export class Targets extends Signed {
   }
 
   public toJSON(): JSONObject {
-    const targets = Object.entries(this.targets).reduce(
-      (acc, [path, target]) => ({
-        ...acc,
-        [path]: target.toJSON(),
-      }),
-      {}
-    );
-
     const json: JSONObject = {
       spec_version: this.specVersion,
       version: this.version,
       expires: this.expires,
-      targets,
+      targets: targetsToJSON(this.targets),
       ...this.unrecognizedFields,
     };
 
@@ -72,35 +64,55 @@ export class Targets extends Signed {
       delegations: JSONValue;
     };
 
-    let targetMap: TargetFileMap | undefined;
-    if (isDefined(targets)) {
-      if (!isObjectRecord(targets)) {
-        throw new TypeError('targets must be an object');
-      } else {
-        targetMap = Object.entries(targets).reduce<TargetFileMap>(
-          (acc, [path, target]) => ({
-            ...acc,
-            [path]: TargetFile.fromJSON(path, target),
-          }),
-          {}
-        );
-      }
-    }
-
-    let delegationsMap: Delegations | undefined;
-    if (isDefined(delegations)) {
-      if (!isObject(delegations)) {
-        throw new TypeError('delegations must be an object');
-      } else {
-        delegationsMap = Delegations.fromJSON(delegations);
-      }
-    }
-
     return new Targets({
       ...commonFields,
-      targets: targetMap,
-      delegations: delegationsMap,
+      targets: targetsFromJSON(targets),
+      delegations: delegationsFromJSON(delegations),
       unrecognizedFields: rest,
     });
   }
+}
+
+function targetsToJSON(targets: TargetFileMap): JSONObject {
+  return Object.entries(targets).reduce(
+    (acc, [path, target]) => ({
+      ...acc,
+      [path]: target.toJSON(),
+    }),
+    {}
+  );
+}
+
+function targetsFromJSON(data: JSONValue): TargetFileMap | undefined {
+  let targets: TargetFileMap | undefined;
+
+  if (isDefined(data)) {
+    if (!isObjectRecord(data)) {
+      throw new TypeError('targets must be an object');
+    } else {
+      targets = Object.entries(data).reduce<TargetFileMap>(
+        (acc, [path, target]) => ({
+          ...acc,
+          [path]: TargetFile.fromJSON(path, target),
+        }),
+        {}
+      );
+    }
+  }
+
+  return targets;
+}
+
+function delegationsFromJSON(data: JSONValue): Delegations | undefined {
+  let delegations: Delegations | undefined;
+
+  if (isDefined(data)) {
+    if (!isObject(data)) {
+      throw new TypeError('delegations must be an object');
+    } else {
+      delegations = Delegations.fromJSON(data);
+    }
+  }
+
+  return delegations;
 }

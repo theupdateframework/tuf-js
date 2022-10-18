@@ -2,7 +2,7 @@ import util from 'util';
 import { isDefined, isObjectRecord } from '../utils/guard';
 import { Signed, SignedOptions } from './base';
 import { MetaFile } from './file';
-import { JSONObject, MetadataKind } from './types';
+import { JSONObject, JSONValue, MetadataKind } from './types';
 
 type MetaFileMap = Record<string, MetaFile>;
 
@@ -29,13 +29,7 @@ export class Snapshot extends Signed {
 
   public toJSON(): JSONObject {
     return {
-      meta: Object.entries(this.meta).reduce(
-        (acc, [path, meta]) => ({
-          ...acc,
-          [path]: meta.toJSON(),
-        }),
-        {}
-      ),
+      meta: metaToJSON(this.meta),
       spec_version: this.specVersion,
       version: this.version,
       expires: this.expires,
@@ -48,25 +42,40 @@ export class Snapshot extends Signed {
       Signed.commonFieldsFromJSON(data);
     const { meta, ...rest } = unrecognizedFields as { meta: JSONObject };
 
-    let metaMap;
-    if (isDefined(meta)) {
-      if (!isObjectRecord(meta)) {
-        throw new TypeError('meta field is malformed');
-      } else {
-        metaMap = Object.entries(meta).reduce<MetaFileMap>(
-          (acc, [path, metadata]) => ({
-            ...acc,
-            [path]: MetaFile.fromJSON(metadata),
-          }),
-          {}
-        );
-      }
-    }
-
     return new Snapshot({
       ...commonFields,
-      meta: metaMap,
+      meta: metaFromJSON(meta),
       unrecognizedFields: rest,
     });
+  }
+}
+
+function metaToJSON(meta: MetaFileMap): JSONObject {
+  return Object.entries(meta).reduce(
+    (acc, [path, metadata]) => ({
+      ...acc,
+      [path]: metadata.toJSON(),
+    }),
+    {}
+  );
+}
+
+function metaFromJSON(data: JSONValue): MetaFileMap | undefined {
+  let meta;
+
+  if (isDefined(data)) {
+    if (!isObjectRecord(data)) {
+      throw new TypeError('meta field is malformed');
+    } else {
+      meta = Object.entries(data).reduce<MetaFileMap>(
+        (acc, [path, metadata]) => ({
+          ...acc,
+          [path]: MetaFile.fromJSON(metadata),
+        }),
+        {}
+      );
+    }
+
+    return meta;
   }
 }

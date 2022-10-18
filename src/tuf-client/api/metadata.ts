@@ -115,10 +115,6 @@ export class Metadata<T extends MetadataType> implements Signable {
       throw new ValueError(`expected '${type}', got ${signed['_type']}`);
     }
 
-    if (!isObjectArray(signatures)) {
-      throw new TypeError('signatures is not an array');
-    }
-
     let signedObj: MetadataType;
     switch (type) {
       case MetadataKind.Root:
@@ -137,12 +133,19 @@ export class Metadata<T extends MetadataType> implements Signable {
         throw new TypeError('invalid metadata type');
     }
 
-    // Collect unique signatures
-    const sigMap = signatures.reduce((acc, sigData) => {
-      const sig = Signature.fromJSON(sigData);
-      return { ...acc, [sig.keyID]: sig };
-    }, {} as Record<string, Signature>);
+    const sigMap = signaturesFromJSON(signatures);
 
     return new Metadata(signedObj, sigMap, rest);
   }
+}
+
+function signaturesFromJSON(data: JSONValue): Record<string, Signature> {
+  if (!isObjectArray(data)) {
+    throw new TypeError('signatures is not an array');
+  }
+
+  return data.reduce((acc, sigData) => {
+    const signature = Signature.fromJSON(sigData);
+    return { ...acc, [signature.keyID]: signature };
+  }, {} as Record<string, Signature>);
 }

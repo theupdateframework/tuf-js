@@ -63,17 +63,8 @@ export class Root extends Signed {
       spec_version: this.specVersion,
       version: this.version,
       expires: this.expires,
-      keys: Object.entries(this.keys).reduce(
-        (prev, [keyID, key]) => ({ ...prev, [keyID]: key.toJSON() }),
-        {}
-      ),
-      roles: Object.entries(this.roles).reduce(
-        (prev, [roleName, role]) => ({
-          ...prev,
-          [roleName]: role.toJSON(),
-        }),
-        {}
-      ),
+      keys: keysToJSON(this.keys),
+      roles: rolesToJSON(this.roles),
       consistent_snapshot: this.consistentSnapshot,
       ...this.unrecognizedFields,
     };
@@ -93,42 +84,66 @@ export class Root extends Signed {
       throw new TypeError('consistent_snapshot must be a boolean');
     }
 
-    let keyMap: KeyMap | undefined;
-    if (isDefined(keys)) {
-      if (!isObjectRecord(keys)) {
-        throw new TypeError('keys must be an object');
-      } else {
-        keyMap = Object.entries(keys).reduce<KeyMap>(
-          (acc, [keyID, keyData]) => ({
-            ...acc,
-            [keyID]: Key.fromJSON(keyID, keyData),
-          }),
-          {}
-        );
-      }
-    }
-
-    let roleMap: RoleMap | undefined;
-    if (isDefined(roles)) {
-      if (!isObjectRecord(roles)) {
-        throw new TypeError('roles must be an object');
-      } else {
-        roleMap = Object.entries(roles).reduce<RoleMap>(
-          (acc, [roleName, roleData]) => ({
-            ...acc,
-            [roleName]: Role.fromJSON(roleData),
-          }),
-          {}
-        );
-      }
-    }
-
     return new Root({
       ...commonFields,
-      keys: keyMap,
-      roles: roleMap,
+      keys: keysFromJSON(keys),
+      roles: rolesFromJSON(roles),
       consistentSnapshot: consistent_snapshot,
       unrecognizedFields: rest,
     });
   }
+}
+
+function keysToJSON(keys: KeyMap): JSONObject {
+  return Object.entries(keys).reduce<JSONObject>(
+    (acc, [keyID, key]) => ({ ...acc, [keyID]: key.toJSON() }),
+    {}
+  );
+}
+
+function rolesToJSON(roles: RoleMap): JSONObject {
+  return Object.entries(roles).reduce<JSONObject>(
+    (acc, [roleName, role]) => ({ ...acc, [roleName]: role.toJSON() }),
+    {}
+  );
+}
+
+function keysFromJSON(data: JSONValue): KeyMap | undefined {
+  let keys: KeyMap | undefined;
+
+  if (isDefined(data)) {
+    if (!isObjectRecord(data)) {
+      throw new TypeError('keys must be an object');
+    }
+
+    keys = Object.entries(data).reduce<KeyMap>(
+      (acc, [keyID, keyData]) => ({
+        ...acc,
+        [keyID]: Key.fromJSON(keyID, keyData),
+      }),
+      {}
+    );
+  }
+
+  return keys;
+}
+
+function rolesFromJSON(data: JSONValue): RoleMap | undefined {
+  let roles: RoleMap | undefined;
+
+  if (isDefined(data)) {
+    if (!isObjectRecord(data)) {
+      throw new TypeError('roles must be an object');
+    }
+
+    roles = Object.entries(data).reduce<RoleMap>(
+      (acc, [roleName, roleData]) => ({
+        ...acc,
+        [roleName]: Role.fromJSON(roleData),
+      }),
+      {}
+    );
+  }
+
+  return roles;
 }

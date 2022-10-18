@@ -62,21 +62,13 @@ export class Delegations {
   }
 
   public toJSON(): JSONObject {
-    const keys = Object.entries(this.keys).reduce(
-      (acc, [keyId, key]) => ({
-        ...acc,
-        [keyId]: key.toJSON(),
-      }),
-      {}
-    );
-
     const json: JSONObject = {
-      keys,
+      keys: keysToJSON(this.keys),
       ...this.unrecognizedFields,
     };
 
     if (this.roles) {
-      json.roles = Object.values(this.roles).map((role) => role.toJSON());
+      json.roles = rolesToJSON(this.roles);
     }
 
     return json;
@@ -85,39 +77,56 @@ export class Delegations {
   public static fromJSON(data: JSONObject): Delegations {
     const { keys, roles, ...unrecognizedFields } = data;
 
-    // Collect keys
-    if (!isObjectRecord(keys)) {
-      throw new TypeError('keys is malformed');
-    }
-
-    const keyMap = Object.entries(keys).reduce<KeyMap>(
-      (acc, [keyID, keyData]) => ({
-        ...acc,
-        [keyID]: Key.fromJSON(keyID, keyData),
-      }),
-      {}
-    );
-
-    // Collect roles
-    let roleMap;
-    if (isDefined(roles)) {
-      if (!isObjectArray(roles)) {
-        throw new TypeError('roles is malformed');
-      }
-
-      roleMap = roles.reduce<DelegatedRoleMap>((acc, role) => {
-        const delegatedRole = DelegatedRole.fromJSON(role);
-        return {
-          ...acc,
-          [delegatedRole.name]: delegatedRole,
-        };
-      }, {});
-    }
-
     return new Delegations({
-      keys: keyMap,
-      roles: roleMap,
+      keys: keysFromJSON(keys),
+      roles: rolesFromJSON(roles),
       unrecognizedFields,
     });
   }
+}
+
+function keysToJSON(keys: KeyMap): JSONObject {
+  return Object.entries(keys).reduce(
+    (acc, [keyId, key]) => ({
+      ...acc,
+      [keyId]: key.toJSON(),
+    }),
+    {}
+  );
+}
+
+function rolesToJSON(roles: DelegatedRoleMap): JSONValue {
+  return Object.values(roles).map((role) => role.toJSON());
+}
+
+function keysFromJSON(data: JSONValue): KeyMap {
+  if (!isObjectRecord(data)) {
+    throw new TypeError('keys is malformed');
+  }
+
+  return Object.entries(data).reduce<KeyMap>(
+    (acc, [keyID, keyData]) => ({
+      ...acc,
+      [keyID]: Key.fromJSON(keyID, keyData),
+    }),
+    {}
+  );
+}
+
+function rolesFromJSON(data: JSONValue): DelegatedRoleMap | undefined {
+  let roleMap;
+  if (isDefined(data)) {
+    if (!isObjectArray(data)) {
+      throw new TypeError('roles is malformed');
+    }
+
+    roleMap = data.reduce<DelegatedRoleMap>((acc, role) => {
+      const delegatedRole = DelegatedRole.fromJSON(role);
+      return {
+        ...acc,
+        [delegatedRole.name]: delegatedRole,
+      };
+    }, {});
+  }
+  return roleMap;
 }

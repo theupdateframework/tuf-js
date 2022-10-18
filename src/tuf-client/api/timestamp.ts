@@ -39,21 +39,26 @@ export class Timestamp extends Signed {
       Signed.commonFieldsFromJSON(data);
     const { meta, ...rest } = unrecognizedFields as { meta: JSONObject };
 
-    let snapshotMeta: MetaFile | undefined;
-    if (isDefined(meta)) {
-      const snapshotData = meta['snapshot.json'];
-
-      if (!isDefined(snapshotData) || !isObject(snapshotData)) {
-        throw new TypeError('missing snapshot.json in meta');
-      } else {
-        snapshotMeta = MetaFile.fromJSON(snapshotData);
-      }
-    }
-
     return new Timestamp({
       ...commonFields,
-      snapshotMeta,
+      snapshotMeta: snapshotMetaFromJSON(meta),
       unrecognizedFields: rest,
     });
   }
+}
+
+function snapshotMetaFromJSON(data: JSONObject): MetaFile | undefined {
+  let snapshotMeta: MetaFile | undefined;
+
+  if (isDefined(data)) {
+    const snapshotData = data['snapshot.json'];
+
+    if (!isDefined(snapshotData) || !isObject(snapshotData)) {
+      throw new TypeError('missing snapshot.json in meta');
+    } else {
+      snapshotMeta = MetaFile.fromJSON(snapshotData);
+    }
+  }
+
+  return snapshotMeta;
 }
