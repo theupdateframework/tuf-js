@@ -1,3 +1,4 @@
+import { LengthOrHashMismatchError, ValueError } from './error';
 import { MetaFile, TargetFile } from './file';
 
 describe('MetaFile', () => {
@@ -5,24 +6,14 @@ describe('MetaFile', () => {
     describe('when called with version less than 1', () => {
       const opts = { version: 0 };
       it('throws an error', () => {
-        expect(() => new MetaFile(opts)).toThrow(
-          'Metafile version must be at least 1'
-        );
+        expect(() => new MetaFile(opts)).toThrow(ValueError);
       });
     });
 
     describe('when called with length less than 0', () => {
       const opts = { version: 1, length: -1 };
       it('throws an error', () => {
-        expect(() => new MetaFile(opts)).toThrow('Length must be at least 0');
-      });
-    });
-
-    describe('when called with invalid hash value', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const opts = { version: 1, hashes: { sha256: 2 as any } };
-      it('throws an error', () => {
-        expect(() => new MetaFile(opts)).toThrow('Hashes must be a string');
+        expect(() => new MetaFile(opts)).toThrow(ValueError);
       });
     });
 
@@ -55,8 +46,7 @@ describe('MetaFile', () => {
 
     describe('when the other object is not a MetaFile', () => {
       it('returns false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(subject.equals({} as any)).toBeFalsy();
+        expect(subject.equals({} as MetaFile)).toBeFalsy();
       });
     });
 
@@ -114,9 +104,7 @@ describe('MetaFile', () => {
       const data = Buffer.from('a');
 
       it('throws an error', () => {
-        expect(() => subject.verify(data)).toThrow(
-          'Expected length 5 but got 1'
-        );
+        expect(() => subject.verify(data)).toThrow(LengthOrHashMismatchError);
       });
     });
 
@@ -124,7 +112,7 @@ describe('MetaFile', () => {
       const data = Buffer.from('abcde');
 
       it('throws an error', () => {
-        expect(() => subject.verify(data)).toThrow(/Expected hash/);
+        expect(() => subject.verify(data)).toThrow(LengthOrHashMismatchError);
       });
     });
 
@@ -174,16 +162,40 @@ describe('MetaFile', () => {
   });
 
   describe('.fromJSON', () => {
-    describe('when the JSON is valid', () => {
-      const json = {
-        version: 1,
-        length: 1,
-        hashes: { sha256: 'a' },
-        foo: 'bar',
-      };
-      const subject = MetaFile.fromJSON(json);
+    const json = {
+      version: 1,
+      length: 1,
+      hashes: { sha256: 'a' },
+      foo: 'bar',
+    };
 
+    describe('when there is a type error with the version', () => {
+      it('throws an error', () => {
+        expect(() => MetaFile.fromJSON({ ...json, version: '1' })).toThrow(
+          TypeError
+        );
+      });
+    });
+
+    describe('when there is a type error with the length', () => {
+      it('throws an error', () => {
+        expect(() => MetaFile.fromJSON({ ...json, length: 'a' })).toThrow(
+          TypeError
+        );
+      });
+    });
+
+    describe('when there is a type error with the hashes', () => {
+      it('throws an error', () => {
+        expect(() => MetaFile.fromJSON({ ...json, hashes: 'a' })).toThrow(
+          TypeError
+        );
+      });
+    });
+
+    describe('when the JSON is valid', () => {
       it('returns a MetaFile object', () => {
+        const subject = MetaFile.fromJSON(json);
         expect(subject).toBeTruthy();
         expect(subject.version).toEqual(json.version);
         expect(subject.length).toEqual(json.length);
@@ -199,15 +211,7 @@ describe('TargetFile', () => {
     describe('when called with length less than 0', () => {
       const opts = { length: -1, path: 'foo', hashes: { sha256: 'a' } };
       it('throws an error', () => {
-        expect(() => new TargetFile(opts)).toThrow('Length must be at least 0');
-      });
-    });
-
-    describe('when called with invalid hash value', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const opts = { length: 1, path: 'foo', hashes: { sha256: 2 as any } };
-      it('throws an error', () => {
-        expect(() => new TargetFile(opts)).toThrow('Hashes must be a string');
+        expect(() => new TargetFile(opts)).toThrow(ValueError);
       });
     });
 
@@ -268,8 +272,7 @@ describe('TargetFile', () => {
 
     describe('when the other object is not a TargetFile', () => {
       it('returns false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(subject.equals({} as any)).toBeFalsy();
+        expect(subject.equals({} as TargetFile)).toBeFalsy();
       });
     });
 
@@ -327,17 +330,23 @@ describe('TargetFile', () => {
       const data = Buffer.from('a');
 
       it('throws an error', () => {
-        expect(() => subject.verify(data)).toThrow(
-          'Expected length 5 but got 1'
-        );
+        expect(() => subject.verify(data)).toThrow(LengthOrHashMismatchError);
       });
     });
 
+    describe('when the hash algorithm is not supported', () => {
+      const subject = new TargetFile({ ...opts, hashes: { foo: 'a' } });
+      const data = Buffer.from('abcde');
+
+      it('throws an error', () => {
+        expect(() => subject.verify(data)).toThrow(LengthOrHashMismatchError);
+      });
+    });
     describe('when the data does not match the expected hash', () => {
       const data = Buffer.from('abcde');
 
       it('throws an error', () => {
-        expect(() => subject.verify(data)).toThrow(/Expected hash/);
+        expect(() => subject.verify(data)).toThrow(LengthOrHashMismatchError);
       });
     });
 
@@ -369,16 +378,32 @@ describe('TargetFile', () => {
   });
 
   describe('.fromJSON', () => {
-    describe('when the JSON is valid', () => {
-      const path = 'foo';
-      const json = {
-        length: 1,
-        hashes: { sha256: 'a' },
-        foo: 'bar',
-      };
-      const subject = TargetFile.fromJSON(path, json);
+    const path = 'foo';
+    const json = {
+      length: 1,
+      hashes: { sha256: 'a' },
+      foo: 'bar',
+    };
 
+    describe('when there is a type error with the length', () => {
+      it('throws an error', () => {
+        expect(() =>
+          TargetFile.fromJSON(path, { ...json, length: 'a' })
+        ).toThrow(TypeError);
+      });
+    });
+
+    describe('when there is a type error with the hashes', () => {
+      it('throws an error', () => {
+        expect(() =>
+          TargetFile.fromJSON(path, { ...json, hashes: 'a' })
+        ).toThrow(TypeError);
+      });
+    });
+
+    describe('when the JSON is valid', () => {
       it('returns a MetaFile object', () => {
+        const subject = TargetFile.fromJSON(path, json);
         expect(subject).toBeTruthy();
         expect(subject.length).toEqual(json.length);
         expect(subject.hashes).toEqual(json.hashes);

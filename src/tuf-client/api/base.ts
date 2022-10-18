@@ -1,21 +1,28 @@
 import util from 'util';
+import { isDefined } from '../utils/guard';
+import { ValueError } from './error';
+import { Signature } from './signature';
+import { JSONObject, JSONValue } from './types';
 
 const SPECIFICATION_VERSION = ['1', '20', '30'];
+
+export interface Signable {
+  signatures: Record<string, Signature>;
+  signed: Signed;
+}
 
 export interface SignedOptions {
   version?: number;
   specVersion?: string;
   expires?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  unrecognizedFields?: any;
+  unrecognizedFields?: Record<string, JSONValue>;
 }
 
 export abstract class Signed {
-  public readonly specVersion: string;
-  public readonly expires: string;
-  public readonly version: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public unrecognizedFields: Record<string, any>;
+  readonly specVersion: string;
+  readonly expires: string;
+  readonly version: number;
+  readonly unrecognizedFields: Record<string, JSONValue>;
 
   constructor(options: SignedOptions) {
     this.specVersion = options.specVersion || SPECIFICATION_VERSION.join('.');
@@ -25,12 +32,12 @@ export abstract class Signed {
       !(specList.length === 2 || specList.length === 3) ||
       !specList.every((item) => isNumeric(item))
     ) {
-      throw new Error('Failed to parse specVersion');
+      throw new ValueError('Failed to parse specVersion');
     }
 
     // major version must match
     if (specList[0] != SPECIFICATION_VERSION[0]) {
-      throw new Error('Unsupported specVersion');
+      throw new ValueError('Unsupported specVersion');
     }
 
     this.expires = options.expires || new Date().toISOString();
@@ -58,19 +65,32 @@ export abstract class Signed {
     return referenceTime >= new Date(this.expires);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static commonFieldsFromJSON(data: any): SignedOptions {
+  public static commonFieldsFromJSON(data: JSONObject): SignedOptions {
     const { spec_version, expires, version, ...rest } = data;
+
+    if (isDefined(spec_version) && !(typeof spec_version === 'string')) {
+      throw new TypeError('spec_version must be a string');
+    }
+
+    if (isDefined(expires) && !(typeof expires === 'string')) {
+      throw new TypeError('expires must be a string');
+    }
+
+    if (isDefined(version) && !(typeof version === 'number')) {
+      throw new TypeError('version must be a number');
+    }
 
     return {
       specVersion: spec_version,
-      expires: expires,
+      expires,
       version,
       unrecognizedFields: rest,
     };
   }
+
+  abstract toJSON(): JSONObject;
 }
 
 function isNumeric(str: string): boolean {
-  return /^\d+$/.test(str);
+  return !isNaN(Number(str));
 }

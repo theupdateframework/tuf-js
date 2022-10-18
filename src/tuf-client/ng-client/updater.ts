@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { JSONObject } from '../api/types';
 import { updaterConfig } from '../utils/config';
-import { JSONObject } from '../utils/type';
 import { TrustedMetadataSet } from './internal/trustedMetadataSet';
 
 interface UodaterOptions {
