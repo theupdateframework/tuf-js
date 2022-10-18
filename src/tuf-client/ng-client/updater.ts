@@ -4,6 +4,8 @@ import { updaterConfig } from '../utils/config';
 import { JSONObject } from '../utils/type';
 import { TrustedMetadataSet } from './internal/trustedMetadataSet';
 
+const ENDPOINT = 'https://sigstore-tuf-root.storage.googleapis.com';
+
 interface UodaterOptions {
   metadataDir: string;
   metadataBaseUrl: string;
@@ -37,6 +39,10 @@ export class Updater {
     // self.config = config or UpdaterConfig()
   }
 
+  public refresh = () => {
+    this.loadRoot();
+  };
+
   private loadLocalMetadata(): JSONObject {
     const filePath = path.join(this.dir, '1.root.json');
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -46,5 +52,15 @@ export class Updater {
     // Load remote root metadata.
     // Sequentially load and persist on local disk every newer root metadata
     // version available on the remote.
+
+    const rootVersion = this?.trustedSet?.trustedSet.root?.signed.version || 0;
+    const data = fetch(`${ENDPOINT}/${rootVersion + 1}.root.json`).then(
+      (res) => {
+        console.log('data', res);
+        return res;
+      }
+    );
+    console.log('data2', data);
+    // this.trustedSet?.updateRoot(data);
   }
 }
