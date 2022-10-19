@@ -1,6 +1,7 @@
 import crypto from 'crypto';
+import { CryptoError, UnsupportedAlgorithmError } from '../api/error';
+import { encodeOIDString } from './oid';
 
-const ANS1_TAG_OID = 0x06;
 const ASN1_TAG_SEQUENCE = 0x30;
 const ANS1_TAG_BIT_STRING = 0x03;
 const NULL_BYTE = 0x00;
@@ -9,10 +10,53 @@ const OID_EDDSA = '1.3.101.112';
 const OID_EC_PUBLIC_KEY = '1.2.840.10045.2.1';
 const OID_EC_CURVE_P256V1 = '1.2.840.10045.3.1.7';
 
-export const ed25519 = {
+interface KeyInfo {
+  keyType: string;
+  scheme: string;
+  keyVal: string;
+}
+
+export function getPublicKey(keyInfo: KeyInfo): crypto.KeyObject {
+  // If key is already PEM-encoded we can just parse it
+  if (keyInfo.keyVal.startsWith('-----BEGIN PUBLIC KEY-----')) {
+    return crypto.createPublicKey(keyInfo.keyVal);
+  }
+
+  // If key is not PEM-encoded it had better be hex
+  if (!isHex(keyInfo.keyVal)) {
+    throw new CryptoError('Invalid key format');
+  }
+
+  // Create proper DER format and convert it to PEM
+  let der: Buffer;
+  switch (keyInfo.keyType) {
+    case 'rsa':
+      throw new Error('not implemented');
+    case 'ed25519':
+      der = ed25519.hexToDER(keyInfo.keyVal);
+      break;
+    case 'ecdsa':
+    case 'ecdsa-sha2-nistp256':
+    case 'ecdsa-sha2-nistp384':
+      der = ecdsa.hexToDER(keyInfo.keyVal);
+      break;
+    default:
+      throw new UnsupportedAlgorithmError(
+        `Unsupported key type: ${keyInfo.keyType}`
+      );
+  }
+
+  return crypto.createPublicKey({
+    key: der,
+    format: 'der',
+    type: 'spki',
+  });
+}
+
+const ed25519 = {
   // Translates a hex key into a crypto KeyObject
   // https://keygen.sh/blog/how-to-use-hexadecimal-ed25519-keys-in-node/
-  fromHex: (hex: string): crypto.KeyObject => {
+  hexToDER: (hex: string): Buffer => {
     const key = Buffer.from(hex, 'hex');
     const oid = encodeOIDString(OID_EDDSA);
 
@@ -38,16 +82,12 @@ export const ed25519 = {
       elements,
     ]);
 
-    return crypto.createPublicKey({
-      key: der,
-      format: 'der',
-      type: 'spki',
-    });
+    return der;
   },
 };
 
-export const ecdsa = {
-  fromHex: (hex: string): crypto.KeyObject => {
+const ecdsa = {
+  hexToDER: (hex: string): Buffer => {
     const key = Buffer.from(hex, 'hex');
     const bitString = Buffer.concat([
       Buffer.from([ANS1_TAG_BIT_STRING]),
@@ -75,37 +115,8 @@ export const ecdsa = {
       bitString,
     ]);
 
-    return crypto.createPublicKey({
-      key: der,
-      format: 'der',
-      type: 'spki',
-    });
+    return der;
   },
 };
 
-export function encodeOIDString(oid: string): Buffer {
-  const parts = oid.split('.');
-
-  // The first two subidentifiers are encoded into the first byte
-  const first = parseInt(parts[0], 10) * 40 + parseInt(parts[1], 10);
-
-  const rest: number[] = [];
-  parts.slice(2).forEach((part) => {
-    const bytes = encodeVariableLengthInteger(parseInt(part, 10));
-    rest.push(...bytes);
-  });
-
-  const der = Buffer.from([first, ...rest]);
-  return Buffer.from([ANS1_TAG_OID, der.length, ...der]);
-}
-
-function encodeVariableLengthInteger(value: number): number[] {
-  const bytes: number[] = [];
-  let mask = 0x00;
-  while (value > 0) {
-    bytes.unshift((value & 0x7f) | mask);
-    value >>= 7;
-    mask = 0x80;
-  }
-  return bytes;
-}
+const isHex = (key: string): boolean => /^[0-9a-fA-F]+$/.test(key);

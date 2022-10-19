@@ -1,7 +1,7 @@
 import canonicalize from 'canonicalize';
 import crypto from 'crypto';
 import * as fs from 'fs';
-import { ecdsa, ed25519 } from './tuf-client/utils/key';
+import { getPublicKey } from './tuf-client/utils/key';
 
 describe('sigstore TUF', () => {
   const root = JSON.parse(
@@ -14,7 +14,11 @@ describe('sigstore TUF', () => {
       const sig = signature.sig;
 
       const key = root.signed.keys[signature.keyid].keyval.public;
-      const publicKey = ecdsa.fromHex(key);
+      const publicKey = getPublicKey({
+        keyType: 'ecdsa',
+        scheme: 'ecdsa',
+        keyVal: key,
+      });
 
       const canonicalData = canonicalize(root.signed) || '';
 
@@ -43,7 +47,11 @@ describe('python TUF sample', () => {
         const sig = signature.sig;
 
         const key = root.signed.keys[signature.keyid].keyval.public;
-        const publicKey = ed25519.fromHex(key);
+        const publicKey = getPublicKey({
+          keyType: 'ed25519',
+          scheme: 'ed25519',
+          keyVal: key,
+        });
 
         const canonicalData = canonicalize(timestamp.signed) || '';
 
@@ -63,7 +71,11 @@ describe('python TUF sample', () => {
         const sig = signature.sig;
 
         const key = root.signed.keys[signature.keyid].keyval.public;
-        const publicKey = ed25519.fromHex(key);
+        const publicKey = getPublicKey({
+          keyType: 'ed25519',
+          scheme: 'ed25519',
+          keyVal: key,
+        });
 
         const canonicalData =
           canonicalize({ ...timestamp.signed, foo: 'bar' }) || '';

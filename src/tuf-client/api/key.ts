@@ -1,5 +1,6 @@
 import util from 'util';
 import { isStringRecord } from '../utils/guard';
+import { getPublicKey } from '../utils/key';
 import * as signer from '../utils/signer';
 import { Signable } from './base';
 import { UnsignedMetadataError } from './error';
@@ -37,20 +38,19 @@ export class Key {
     if (!signature)
       throw new UnsignedMetadataError('no signature for key found in metadata');
 
-    const publicKey = this.keyVal.public;
-    if (!publicKey) throw new UnsignedMetadataError('no public key found');
+    if (!this.keyVal.public)
+      throw new UnsignedMetadataError('no public key found');
+
+    const publicKey = getPublicKey({
+      keyType: this.keyType,
+      scheme: this.scheme,
+      keyVal: this.keyVal.public,
+    });
 
     const signedData = metadata.signed.toJSON();
 
     try {
-      if (
-        !signer.verifySignature(
-          this.keyType,
-          signedData,
-          signature.sig,
-          publicKey
-        )
-      ) {
+      if (!signer.verifySignature(signedData, publicKey, signature.sig)) {
         throw new UnsignedMetadataError(
           `failed to verify ${this.keyID} signature`
         );
