@@ -100,7 +100,7 @@ describe('Key', () => {
       it('throws an error', () => {
         expect(() => {
           badKey.verifySignature(metadata);
-        }).toThrowError(UnsignedMetadataError);
+        }).toThrowError();
       });
     });
 

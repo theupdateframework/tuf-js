@@ -11,3 +11,7 @@ export class EqualVersionNumberError extends RepositoryError {}
 export class ExpiredMetadataError extends RepositoryError {}
 
 export class LengthOrHashMismatchError extends RepositoryError {}
+
+export class CryptoError extends Error {}
+
+export class UnsupportedAlgorithmError extends CryptoError {}
