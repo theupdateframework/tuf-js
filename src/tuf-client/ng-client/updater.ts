@@ -1,13 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  Metadata,
-  Root,
-  Targets,
-  Snapshot,
-  Timestamp,
-  MetadataKind,
-} from '../api';
+import { MetadataKind } from '../api';
 import { JSONObject } from '../api/types';
 import { updaterConfig } from '../utils/config';
 import { TrustedMetadataSet } from './internal/trusted_metadata_set';
