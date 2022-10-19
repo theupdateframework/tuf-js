@@ -24,19 +24,47 @@ export class TrustedMetadataSet {
     this.loadTrustedRoot(rootData);
   }
 
-  public get Root(): Metadata<Root> | undefined {
+  public hasRoot(): boolean {
+    return !!this.trustedSet.root;
+  }
+
+  public hasTimestamp(): boolean {
+    return !!this.trustedSet.timestamp;
+  }
+
+  public hasSnapshot(): boolean {
+    return !!this.trustedSet.snapshot;
+  }
+
+  public hasTargets(): boolean {
+    return !!this.trustedSet.targets;
+  }
+
+  public get root(): Metadata<Root> {
+    if (!this.trustedSet.root) {
+      throw new Error('No trusted root metadata');
+    }
     return this.trustedSet.root;
   }
 
-  public get Timestamp(): Metadata<Timestamp> | undefined {
+  public get timestamp(): Metadata<Timestamp> {
+    if (!this.trustedSet.timestamp) {
+      throw new Error('No trusted timestamp metadata');
+    }
     return this.trustedSet.timestamp;
   }
 
-  public get Snapshot(): Metadata<Snapshot> | undefined {
+  public get snapshot(): Metadata<Snapshot> {
+    if (!this.trustedSet.snapshot) {
+      throw new Error('No trusted snapshot metadata');
+    }
     return this.trustedSet.snapshot;
   }
 
-  public get Targets(): Metadata<Targets> | undefined {
+  public get targets(): Metadata<Targets> {
+    if (!this.trustedSet.targets) {
+      throw new Error('No trusted targets metadata');
+    }
     return this.trustedSet.targets;
   }
 
