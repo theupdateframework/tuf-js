@@ -29,7 +29,7 @@ export class Updater {
     this.targetDir = targetDir;
     this.targetBaseUrl = targetBaseUrl;
 
-    const data = this.loadLocalMetadata();
+    const data = this.loadLocalMetadata('1.root');
     this.trustedSet = new TrustedMetadataSet(data);
     this.config = updaterConfig;
 
@@ -40,10 +40,12 @@ export class Updater {
 
   public async refresh() {
     await this.loadRoot();
+    await this.loadTimestamp();
+    await this.loadSnapshot();
   }
 
-  private loadLocalMetadata(): JSONObject {
-    const filePath = path.join(this.dir, '1.root.json');
+  private loadLocalMetadata(fileName: string): JSONObject {
+    const filePath = path.join(this.dir, `${fileName}.json`);
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   }
 
@@ -73,6 +75,68 @@ export class Updater {
       } catch (error) {
         console.log('error', error);
         break;
+      }
+    }
+  }
+
+  private async loadTimestamp() {
+    // Load local and remote timestamp metadata
+    try {
+      const data = this.loadLocalMetadata(MetadataKind.Timestamp);
+      this.trustedSet.updateTimestamp(data);
+    } catch (error) {
+      console.error('Cannot load local timestamp metadata');
+    }
+    //Load from remote (whether local load succeeded or not)
+
+    const url = `${this.metadataBaseUrl}/timestamp.json`;
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        return;
+      }
+      const data = (await response.json()) as JSONObject;
+      this.trustedSet.updateTimestamp(data);
+    } catch (error) {
+      console.log('error', error);
+    }
+  }
+
+  private async loadSnapshot() {
+    //Load local (and if needed remote) snapshot metadata
+    try {
+      const data = this.loadLocalMetadata(MetadataKind.Snapshot);
+      this.trustedSet.updateSnapshot(data, true);
+      console.log('Local snapshot is valid: not downloading new one');
+    } catch (error) {
+      console.log('Local snapshot is invalid: downloading new one');
+      if (!this.trustedSet.trustedSet.timestamp) {
+        throw new Error('No timestamp metadata');
+      }
+      const snapshotMeta =
+        this.trustedSet.trustedSet.timestamp.signed.snapshotMeta;
+      const length = snapshotMeta.length || this.config.snapshotMaxLength;
+
+      const version = this.trustedSet.trustedSet.root?.signed.consistentSnapshot
+        ? snapshotMeta.version
+        : undefined;
+
+      const url = version
+        ? `${this.metadataBaseUrl}/${version}.snapshot.json`
+        : `${this.metadataBaseUrl}/snapshot.json`;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          return;
+        }
+        const data = (await response.json()) as JSONObject;
+
+        this.trustedSet.updateSnapshot(data);
+        this.persistMetadata(MetadataKind.Snapshot, data);
+      } catch (error) {
+        console.log('error', error);
       }
     }
   }
