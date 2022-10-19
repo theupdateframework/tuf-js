@@ -25,15 +25,29 @@ export class TrustedMetadataSet {
   }
 
   public updateRoot(data: JSONObject): Metadata<Root> {
-    const root = Metadata.fromJSON(MetadataKind.Root, data);
-    if (root.signed.type != MetadataKind.Root) {
-      throw new Error(`Expected 'root', got ${root.signed.type}`);
+    const newRoot = Metadata.fromJSON(MetadataKind.Root, data);
+    if (newRoot.signed.type != MetadataKind.Root) {
+      throw new Error(`Expected 'root', got ${newRoot.signed.type}`);
     }
-    this.trustedSet.root?.verifyDelegate(MetadataKind.Root, root);
-    root.verifyDelegate(MetadataKind.Root, root);
 
-    this.trustedSet.root = root;
-    return root;
+    if (!this.trustedSet.root) {
+      throw new Error('No trusted root metadata');
+    }
+
+    this.trustedSet.root.verifyDelegate(MetadataKind.Root, newRoot);
+
+    if (newRoot.signed.version != this.trustedSet.root.signed.version + 1) {
+      throw new Error(
+        `Expected version ${this.trustedSet.root.signed.version + 1}, got ${
+          newRoot.signed.version
+        }`
+      );
+    }
+
+    newRoot.verifyDelegate(MetadataKind.Root, newRoot);
+
+    this.trustedSet.root = newRoot;
+    return newRoot;
   }
 
   // Verifies and loads data as trusted root metadata.
