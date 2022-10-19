@@ -24,7 +24,7 @@ export class TrustedMetadataSet {
     this.loadTrustedRoot(rootData);
   }
 
-  private updateRoot(data: JSONObject): Metadata<Root> {
+  public updateRoot(data: JSONObject): Metadata<Root> {
     const root = Metadata.fromJSON(MetadataKind.Root, data);
     if (root.signed.type != MetadataKind.Root) {
       throw new Error(`Expected 'root', got ${root.signed.type}`);
