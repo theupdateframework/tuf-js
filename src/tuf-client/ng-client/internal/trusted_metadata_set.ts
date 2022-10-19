@@ -1,10 +1,10 @@
 import {
   Metadata,
-  Root,
-  Targets,
-  Snapshot,
-  Timestamp,
   MetadataKind,
+  Root,
+  Snapshot,
+  Targets,
+  Timestamp,
 } from '../../api';
 import { JSONObject } from '../../api/types';
 
@@ -16,12 +16,28 @@ interface TrustedSet {
 }
 
 export class TrustedMetadataSet {
-  public readonly trustedSet: TrustedSet = {};
-  public readonly referenceTime: number;
+  private trustedSet: TrustedSet = {};
+  private referenceTime: number;
 
   constructor(rootData: JSONObject) {
     this.referenceTime = new Date().getTime();
     this.loadTrustedRoot(rootData);
+  }
+
+  public get Root(): Metadata<Root> | undefined {
+    return this.trustedSet.root;
+  }
+
+  public get Timestamp(): Metadata<Timestamp> | undefined {
+    return this.trustedSet.timestamp;
+  }
+
+  public get Snapshot(): Metadata<Snapshot> | undefined {
+    return this.trustedSet.snapshot;
+  }
+
+  public get Targets(): Metadata<Targets> | undefined {
+    return this.trustedSet.targets;
   }
 
   public updateRoot(data: JSONObject): Metadata<Root> {

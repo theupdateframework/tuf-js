@@ -52,7 +52,9 @@ export class Updater {
     // Sequentially load and persist on local disk every newer root metadata
     // version available on the remote.
 
-    const rootVersion = this?.trustedSet?.trustedSet.root?.signed.version || 0;
+    const rootVersion = this.trustedSet.Root
+      ? this.trustedSet.Root.signed.version
+      : 0;
 
     const lowerBound = rootVersion + 1;
     const upperBound = lowerBound + this.config.maxRootRotations;
