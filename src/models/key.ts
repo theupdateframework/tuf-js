@@ -1,9 +1,9 @@
 import util from 'util';
+import { UnsignedMetadataError } from '../error';
 import { isStringRecord } from '../utils/guard';
 import { getPublicKey } from '../utils/key';
 import * as signer from '../utils/signer';
 import { Signable } from './base';
-import { UnsignedMetadataError } from './error';
 import { JSONObject, JSONValue } from './types';
 
 export interface KeyOptions {

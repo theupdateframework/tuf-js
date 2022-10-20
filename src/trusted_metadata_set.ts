@@ -1,12 +1,12 @@
 import {
+  JSONObject,
   Metadata,
   MetadataKind,
   Root,
   Snapshot,
   Targets,
   Timestamp,
-} from '../../api';
-import { JSONObject } from '../../api/types';
+} from './models';
 
 interface TrustedSet {
   root?: Metadata<Root>;

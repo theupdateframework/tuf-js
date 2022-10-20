@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { CryptoError, UnsupportedAlgorithmError } from '../api/error';
+import { CryptoError, UnsupportedAlgorithmError } from '../error';
 import { encodeOIDString } from './oid';
 
 const ASN1_TAG_SEQUENCE = 0x30;

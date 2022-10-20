@@ -1,7 +1,7 @@
 import util from 'util';
+import { UnsignedMetadataError, ValueError } from '../error';
 import { isDefined, isObject, isObjectArray } from '../utils/guard';
 import { Signable } from './base';
-import { UnsignedMetadataError, ValueError } from './error';
 import { Key } from './key';
 import { Role } from './role';
 import { Root } from './root';

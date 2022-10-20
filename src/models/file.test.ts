@@ -1,4 +1,4 @@
-import { LengthOrHashMismatchError, ValueError } from './error';
+import { LengthOrHashMismatchError, ValueError } from '../error';
 import { MetaFile, TargetFile } from './file';
 
 describe('MetaFile', () => {

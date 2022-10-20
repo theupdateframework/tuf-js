@@ -1,5 +1,5 @@
+import { ValueError } from '../error';
 import { Signed, SignedOptions } from './base';
-import { ValueError } from './error';
 import { JSONObject } from './types';
 
 describe('Signed', () => {

@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import minimatch from 'minimatch';
 import util from 'util';
+import { ValueError } from '../error';
 import { isDefined, isStringArray } from '../utils/guard';
-import { ValueError } from './error';
 import { JSONObject, JSONValue } from './types';
 
 export const TOP_LEVEL_ROLE_NAMES = [

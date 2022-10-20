@@ -1,7 +1,7 @@
 import canonicalize from 'canonicalize';
 import crypto from 'crypto';
 import * as fs from 'fs';
-import { getPublicKey } from './tuf-client/utils/key';
+import { getPublicKey } from './utils/key';
 
 describe('sigstore TUF', () => {
   const root = JSON.parse(

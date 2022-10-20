@@ -1,6 +1,6 @@
 import util from 'util';
+import { ValueError } from '../error';
 import { isDefined, isObjectArray, isObjectRecord } from '../utils/guard';
-import { ValueError } from './error';
 import { Key } from './key';
 import { DelegatedRole, TOP_LEVEL_ROLE_NAMES } from './role';
 import { JSONObject, JSONValue } from './types';

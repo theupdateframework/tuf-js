@@ -1,7 +1,7 @@
-import { Root, RootOptions } from './root';
-import { Role } from './role';
+import { ValueError } from '../error';
 import { Key } from './key';
-import { ValueError } from './error';
+import { Role } from './role';
+import { Root, RootOptions } from './root';
 
 describe('Root', () => {
   describe('constructor', () => {
