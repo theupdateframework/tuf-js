@@ -42,6 +42,7 @@ export class Updater {
     await this.loadRoot();
     await this.loadTimestamp();
     await this.loadSnapshot();
+    await this.loadTargets(MetadataKind.Targets, MetadataKind.Root);
   }
 
   private loadLocalMetadata(fileName: string): JSONObject {
@@ -107,7 +108,7 @@ export class Updater {
     //Load local (and if needed remote) snapshot metadata
     try {
       const data = this.loadLocalMetadata(MetadataKind.Snapshot);
-      this.trustedSet.updateSnapshot(data, true);
+      this.trustedSet.updateSnapshot(data);
       console.log('Local snapshot is valid: not downloading new one');
     } catch (error) {
       console.log('Local snapshot is invalid: downloading new one');
@@ -131,10 +132,66 @@ export class Updater {
         if (!response.ok) {
           return;
         }
+        const bytesData = await response.clone().arrayBuffer();
         const data = (await response.json()) as JSONObject;
 
-        this.trustedSet.updateSnapshot(data);
+        this.trustedSet.updateSnapshot(data, bytesData);
         this.persistMetadata(MetadataKind.Snapshot, data);
+      } catch (error) {
+        console.log('error', error);
+      }
+    }
+  }
+
+  private async loadTargets(role: MetadataKind, parentRole: MetadataKind) {
+    // todo
+    if (this.trustedSet.trustedSet?.[role]) {
+      return this.trustedSet.trustedSet?.[role];
+    }
+
+    try {
+      const data = this.loadLocalMetadata(role);
+      // const delegatedTargets = this.trustedSet.updateDelegatedTargets(
+      //   data,
+      //   role,
+      //   parentRole
+      // );
+      console.log('Local %s is valid: not downloading new one', role);
+    } catch (error) {
+      // Local 'role' does not exist or is invalid: update from remote
+      console.log('Local %s is invalid: downloading new one', role);
+
+      if (!this.trustedSet.trustedSet.snapshot) {
+        throw new Error('No snapshot metadata');
+      }
+
+      const metaInfo =
+        this.trustedSet.trustedSet.snapshot.signed.meta[`${role}.json`];
+      const length = metaInfo.length || this.config.targetsMaxLength;
+
+      const version = this.trustedSet.trustedSet.root?.signed.consistentSnapshot
+        ? metaInfo.version
+        : undefined;
+
+      const url = version
+        ? `${this.metadataBaseUrl}/${version}.${role}.json`
+        : `${this.metadataBaseUrl}/${role}.json`;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          return;
+        }
+        const bytesData = await response.clone().arrayBuffer();
+        const data = (await response.json()) as JSONObject;
+
+        this.trustedSet.updateDelegatedTargets(
+          data,
+          bytesData,
+          role,
+          parentRole
+        );
+        this.persistMetadata(role, data);
       } catch (error) {
         console.log('error', error);
       }

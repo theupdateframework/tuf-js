@@ -1,13 +1,12 @@
 import {
   Metadata,
-  Root,
-  Targets,
-  Snapshot,
-  Timestamp,
   MetadataKind,
+  Root,
+  Snapshot,
+  Targets,
+  Timestamp,
 } from '../../api';
 import { JSONObject } from '../../api/types';
-import canonicalize from 'canonicalize';
 
 interface TrustedSet {
   root?: Metadata<Root>;
@@ -108,7 +107,7 @@ export class TrustedMetadataSet {
 
   public updateSnapshot(
     data: JSONObject,
-    trusted?: boolean
+    bytesData?: ArrayBuffer
   ): Metadata<Snapshot> {
     if (!this.trustedSet.timestamp) {
       throw new Error('Cannot update snapshot before timestamp');
@@ -124,8 +123,8 @@ export class TrustedMetadataSet {
 
     // Verify non-trusted data against the hashes in timestamp, if any.
     // Trusted snapshot data has already been verified once.
-    if (!trusted) {
-      const bytesBuffer = Buffer.from(JSON.stringify(data));
+    if (bytesData) {
+      const bytesBuffer = Buffer.from(bytesData);
       snapshotMeta.verify(bytesBuffer);
     }
 
@@ -201,6 +200,80 @@ export class TrustedMetadataSet {
     if (this.trustedSet.snapshot.signed.version !== snapshotMeta.version) {
       throw new Error("Snapshot version doesn't match timestamp");
     }
+  }
+
+  public updateDelegatedTargets(
+    data: JSONObject,
+    bytesData: ArrayBuffer,
+    roleName: string,
+    delegatorName: string
+  ) {
+    if (!this.trustedSet.snapshot) {
+      throw new Error('Cannot update delegated targets before snapshot');
+    }
+
+    // Targets cannot be loaded if final snapshot is expired or its version
+    // does not match meta version in timestamp
+    this.checkFinalSnapsnot();
+
+    if (
+      !(
+        delegatorName === 'root' ||
+        delegatorName === 'targets' ||
+        delegatorName === 'timestamp' ||
+        delegatorName === 'snapshot'
+      )
+    ) {
+      throw new Error('Invalid delegator name');
+    }
+    if (
+      !(
+        roleName === 'root' ||
+        roleName === 'targets' ||
+        roleName === 'timestamp' ||
+        roleName === 'snapshot'
+      )
+    ) {
+      throw new Error('Invalid role name');
+    }
+
+    const delegator = this.trustedSet[delegatorName];
+    if (!delegator) {
+      throw new Error(`No trusted ${delegatorName} metadata`);
+    }
+
+    console.log('Updating %s delegated by %s', roleName, delegatorName);
+
+    // Verify against the hashes in snapshot, if any
+    const meta = this.trustedSet.snapshot.signed.meta?.[`${roleName}.json`];
+    if (!meta) {
+      throw new Error(`Missing ${roleName}.json in snapshot`);
+    }
+
+    const bytesBuffer = Buffer.from(bytesData);
+    meta.verify(bytesBuffer);
+
+    const newDelegate = Metadata.fromJSON(MetadataKind.Targets, data);
+
+    if (newDelegate.signed.type != MetadataKind.Targets) {
+      throw new Error(`Expected 'targets', got ${newDelegate.signed.type}`);
+    }
+
+    delegator.verifyDelegate(roleName, newDelegate);
+
+    const version = newDelegate.signed.version;
+    if (version != meta.version) {
+      throw new Error(
+        `Version ${version} of ${roleName} does not match snapshot version ${meta.version}`
+      );
+    }
+
+    if (newDelegate.signed.isExpired(this.referenceTime)) {
+      throw new Error(`${roleName}.json is expired`);
+    }
+
+    this.trustedSet['targets'] = newDelegate;
+    console.log('Updated ', roleName, version);
   }
 
   // Verifies and loads data as trusted root metadata.
