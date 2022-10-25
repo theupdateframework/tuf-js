@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { JSONObject, MetadataKind } from './models';
-import { updaterConfig } from './utils/config';
 import { TrustedMetadataSet } from './trusted_metadata_set';
+import { updaterConfig } from './utils/config';
 
 interface UodaterOptions {
   metadataDir: string;
@@ -28,7 +28,7 @@ export class Updater {
     this.targetDir = targetDir;
     this.targetBaseUrl = targetBaseUrl;
 
-    const data = this.loadLocalMetadata();
+    const data = this.loadLocalMetadata('1.root');
     this.trustedSet = new TrustedMetadataSet(data);
     this.config = updaterConfig;
 
@@ -39,10 +39,13 @@ export class Updater {
 
   public async refresh() {
     await this.loadRoot();
+    await this.loadTimestamp();
+    await this.loadSnapshot();
+    await this.loadTargets(MetadataKind.Targets, MetadataKind.Root);
   }
 
-  private loadLocalMetadata(): JSONObject {
-    const filePath = path.join(this.dir, '1.root.json');
+  private loadLocalMetadata(fileName: string): JSONObject {
+    const filePath = path.join(this.dir, `${fileName}.json`);
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   }
 
@@ -76,10 +79,131 @@ export class Updater {
     }
   }
 
+  private async loadTimestamp() {
+    // Load local and remote timestamp metadata
+    try {
+      const data = this.loadLocalMetadata(MetadataKind.Timestamp);
+      this.trustedSet.updateTimestamp(data);
+    } catch (error) {
+      console.error('Cannot load local timestamp metadata');
+    }
+    //Load from remote (whether local load succeeded or not)
+
+    const url = `${this.metadataBaseUrl}/timestamp.json`;
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        return;
+      }
+      const data = (await response.json()) as JSONObject;
+      this.trustedSet.updateTimestamp(data);
+    } catch (error) {
+      console.log('error', error);
+    }
+  }
+
+  private async loadSnapshot() {
+    //Load local (and if needed remote) snapshot metadata
+    try {
+      const data = this.loadLocalMetadata(MetadataKind.Snapshot);
+      this.trustedSet.updateSnapshot(data);
+      console.log('Local snapshot is valid: not downloading new one');
+    } catch (error) {
+      console.log('Local snapshot is invalid: downloading new one');
+      if (!this.trustedSet.hasTimestamp()) {
+        throw new Error('No timestamp metadata');
+      }
+      const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
+      const length = snapshotMeta.length || this.config.snapshotMaxLength;
+
+      const version = this.trustedSet.root.signed.consistentSnapshot
+        ? snapshotMeta.version
+        : undefined;
+
+      const url = version
+        ? `${this.metadataBaseUrl}/${version}.snapshot.json`
+        : `${this.metadataBaseUrl}/snapshot.json`;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          return;
+        }
+        const bytesData = await response.clone().arrayBuffer();
+        const data = (await response.json()) as JSONObject;
+
+        this.trustedSet.updateSnapshot(data, bytesData);
+        this.persistMetadata(MetadataKind.Snapshot, data);
+      } catch (error) {
+        console.log('error', error);
+      }
+    }
+  }
+
+  private async loadTargets(role: MetadataKind, parentRole: MetadataKind) {
+    try {
+      if (this.trustedSet?.[role]) {
+        return this.trustedSet?.[role];
+      }
+    } catch (error) {
+      try {
+        const data = this.loadLocalMetadata(role);
+        const stringData = JSON.stringify(data);
+        const bufferArray = Buffer.from(stringData, 'utf8');
+        const delegatedTargets = this.trustedSet.updateDelegatedTargets(
+          data,
+          bufferArray,
+          role,
+          parentRole
+        );
+        console.log('Local %s is valid: not downloading new one', role);
+      } catch (error) {
+        // Local 'role' does not exist or is invalid: update from remote
+        console.log('Local %s is invalid: downloading new one', role);
+
+        if (!this.trustedSet.hasSnapshot()) {
+          throw new Error('No snapshot metadata');
+        }
+
+        const metaInfo = this.trustedSet.snapshot.signed.meta[`${role}.json`];
+        const length = metaInfo.length || this.config.targetsMaxLength;
+
+        const version = this.trustedSet.root.signed.consistentSnapshot
+          ? metaInfo.version
+          : undefined;
+
+        const url = version
+          ? `${this.metadataBaseUrl}/${version}.${role}.json`
+          : `${this.metadataBaseUrl}/${role}.json`;
+
+        console.log('url', url);
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            return;
+          }
+          const bytesData = await response.clone().arrayBuffer();
+          const data = JSON.parse(Buffer.from(bytesData).toString('utf8'));
+
+          this.trustedSet.updateDelegatedTargets(
+            data,
+            bytesData,
+            role,
+            parentRole
+          );
+          this.persistMetadata(role, data);
+        } catch (error) {
+          console.log('error', error);
+        }
+      }
+    }
+  }
+
   private async persistMetadata(metaDataName: MetadataKind, data: JSONObject) {
     try {
       const filePath = path.join(this.dir, `${metaDataName}.json`);
-      fs.writeFileSync(filePath, JSON.stringify(data));
+      fs.writeFileSync(filePath, JSON.stringify(data, null, '\t'));
     } catch (error) {
       console.error('persistMetadata error', error);
     }
