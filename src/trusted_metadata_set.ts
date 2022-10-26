@@ -150,7 +150,7 @@ export class TrustedMetadataSet {
   }
 
   public updateSnapshot(
-    bytesData: Buffer,
+    bytesBuffer: Buffer,
     trusted?: boolean
   ): Metadata<Snapshot> {
     if (!this.trustedSet.timestamp) {
@@ -168,10 +168,10 @@ export class TrustedMetadataSet {
     // Verify non-trusted data against the hashes in timestamp, if any.
     // Trusted snapshot data has already been verified once.
     if (!trusted) {
-      snapshotMeta.verify(bytesData);
+      snapshotMeta.verify(bytesBuffer);
     }
 
-    const data = JSON.parse(bytesData.toString('utf8'));
+    const data = JSON.parse(bytesBuffer.toString('utf8'));
 
     const newSnapshot = Metadata.fromJSON(MetadataKind.Snapshot, data);
 
@@ -248,7 +248,7 @@ export class TrustedMetadataSet {
   }
 
   public updateDelegatedTargets(
-    bytesData: Buffer,
+    bytesBuffer: Buffer,
     roleName: string,
     delegatorName: string
   ) {
@@ -294,9 +294,9 @@ export class TrustedMetadataSet {
       throw new Error(`Missing ${roleName}.json in snapshot`);
     }
 
-    meta.verify(bytesData);
+    meta.verify(bytesBuffer);
 
-    const data = JSON.parse(bytesData.toString('utf8'));
+    const data = JSON.parse(bytesBuffer.toString('utf8'));
 
     const newDelegate = Metadata.fromJSON(MetadataKind.Targets, data);
 

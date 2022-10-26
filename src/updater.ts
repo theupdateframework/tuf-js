@@ -72,8 +72,7 @@ export class Updater {
           break;
         }
         const bytesData = await response.clone().arrayBuffer();
-        const data = (await response.json()) as JSONObject;
-
+        const data = JSON.parse(Buffer.from(bytesData).toString('utf8'));
         this.trustedSet.updateRoot(data);
         this.persistMetadata(MetadataKind.Root, bytesData);
 
