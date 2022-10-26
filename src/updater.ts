@@ -58,7 +58,7 @@ export class Updater {
     // Load remote root metadata.
     // Sequentially load and persist on local disk every newer root metadata
     // version available on the remote.
-
+    console.log('Loading root metadata');
     const rootVersion = this.trustedSet.root.signed.version;
 
     const lowerBound = rootVersion + 1;
@@ -82,9 +82,13 @@ export class Updater {
         break;
       }
     }
+
+    console.log('--------------------------------');
   }
 
   private async loadTimestamp() {
+    console.log('Loading timestamp metadata');
+
     // Load local and remote timestamp metadata
     try {
       const data = this.loadLocalMetadata(MetadataKind.Timestamp);
@@ -92,8 +96,8 @@ export class Updater {
     } catch (error) {
       console.error('Cannot load local timestamp metadata');
     }
-    //Load from remote (whether local load succeeded or not)
 
+    //Load from remote (whether local load succeeded or not)
     const url = `${this.metadataBaseUrl}/timestamp.json`;
     try {
       const response = await fetch(url);
@@ -101,14 +105,18 @@ export class Updater {
       if (!response.ok) {
         return;
       }
-      const data = (await response.json()) as JSONObject;
+      const bytesData = await response.clone().arrayBuffer();
+      const data = JSON.parse(Buffer.from(bytesData).toString('utf8'));
       this.trustedSet.updateTimestamp(data);
+      this.persistMetadata(MetadataKind.Timestamp, bytesData);
     } catch (error) {
       console.log('error', error);
     }
+    console.log('--------------------------------');
   }
 
   private async loadSnapshot() {
+    console.log('Loading snapshot metadata');
     //Load local (and if needed remote) snapshot metadata
     try {
       const data = this.loadLocalMetadataAsBytes(MetadataKind.Snapshot);
@@ -144,9 +152,11 @@ export class Updater {
         console.log('error', error);
       }
     }
+    console.log('--------------------------------');
   }
 
   private async loadTargets(role: MetadataKind, parentRole: MetadataKind) {
+    console.log(`Loading ${role} metadata`);
     try {
       if (this.trustedSet?.[role]) {
         return this.trustedSet?.[role];
@@ -195,6 +205,7 @@ export class Updater {
         }
       }
     }
+    console.log('--------------------------------');
   }
 
   private async persistMetadata(

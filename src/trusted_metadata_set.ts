@@ -210,7 +210,7 @@ export class TrustedMetadataSet {
     // protection of new snapshot: it is checked when targets is updated
 
     this.trustedSet.snapshot = newSnapshot;
-    console.log('Updated snapshot v', newSnapshot.signed.version);
+    console.log('Updated snapshot v%s', newSnapshot.signed.version);
 
     // snapshot is loaded, but we raise if it's not valid _final_ snapshot
     this.checkFinalSnapsnot();
@@ -318,7 +318,7 @@ export class TrustedMetadataSet {
     }
 
     this.trustedSet['targets'] = newDelegate;
-    console.log('Updated ', roleName, version);
+    console.log('Updated %s v%s', roleName, version);
   }
 
   // Verifies and loads data as trusted root metadata.
