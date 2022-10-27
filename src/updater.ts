@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { JSONObject, MetadataKind } from './models';
+import { MetadataKind } from './models';
 import { TrustedMetadataSet } from './trusted_metadata_set';
 import { updaterConfig } from './utils/config';
 
@@ -44,12 +44,7 @@ export class Updater {
     await this.loadTargets(MetadataKind.Targets, MetadataKind.Root);
   }
 
-  private loadLocalMetadata(fileName: string): JSONObject {
-    const filePath = path.join(this.dir, `${fileName}.json`);
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  }
-
-  private loadLocalMetadataAsBytes(fileName: string): Buffer {
+  private loadLocalMetadata(fileName: string): Buffer {
     const filePath = path.join(this.dir, `${fileName}.json`);
     return Buffer.from(fs.readFileSync(filePath, 'utf8'));
   }
@@ -71,9 +66,8 @@ export class Updater {
         if (!response.ok) {
           break;
         }
-        const bytesData = await response.clone().arrayBuffer();
-        const data = JSON.parse(Buffer.from(bytesData).toString('utf8'));
-        this.trustedSet.updateRoot(data);
+        const bytesData = Buffer.from(await response.arrayBuffer());
+        this.trustedSet.updateRoot(bytesData);
         this.persistMetadata(MetadataKind.Root, bytesData);
 
         // console.log('data', data, version);
@@ -105,9 +99,8 @@ export class Updater {
       if (!response.ok) {
         return;
       }
-      const bytesData = await response.clone().arrayBuffer();
-      const data = JSON.parse(Buffer.from(bytesData).toString('utf8'));
-      this.trustedSet.updateTimestamp(data);
+      const bytesData = Buffer.from(await response.arrayBuffer());
+      this.trustedSet.updateTimestamp(bytesData);
       this.persistMetadata(MetadataKind.Timestamp, bytesData);
     } catch (error) {
       console.log('error', error);
@@ -119,7 +112,7 @@ export class Updater {
     console.log('Loading snapshot metadata');
     //Load local (and if needed remote) snapshot metadata
     try {
-      const data = this.loadLocalMetadataAsBytes(MetadataKind.Snapshot);
+      const data = this.loadLocalMetadata(MetadataKind.Snapshot);
       this.trustedSet.updateSnapshot(data, true);
       console.log('Local snapshot is valid: not downloading new one');
     } catch (error) {
@@ -144,9 +137,9 @@ export class Updater {
         if (!response.ok) {
           return;
         }
-        const bytesData = await response.clone().arrayBuffer();
+        const bytesData = Buffer.from(await response.arrayBuffer());
 
-        this.trustedSet.updateSnapshot(Buffer.from(bytesData));
+        this.trustedSet.updateSnapshot(bytesData);
         this.persistMetadata(MetadataKind.Snapshot, bytesData);
       } catch (error) {
         console.log('error', error);
@@ -163,7 +156,7 @@ export class Updater {
       }
     } catch (error) {
       try {
-        const buffer = this.loadLocalMetadataAsBytes(role);
+        const buffer = this.loadLocalMetadata(role);
         this.trustedSet.updateDelegatedTargets(buffer, role, parentRole);
         console.log('Local %s is valid: not downloading new one', role);
       } catch (error) {
@@ -192,13 +185,9 @@ export class Updater {
           if (!response.ok) {
             return;
           }
-          const bytesData = await response.clone().arrayBuffer();
+          const bytesData = Buffer.from(await response.arrayBuffer());
 
-          this.trustedSet.updateDelegatedTargets(
-            Buffer.from(bytesData),
-            role,
-            parentRole
-          );
+          this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
           this.persistMetadata(role, bytesData);
         } catch (error) {
           console.log('error', error);
@@ -208,13 +197,10 @@ export class Updater {
     console.log('--------------------------------');
   }
 
-  private async persistMetadata(
-    metaDataName: MetadataKind,
-    bytesData: ArrayBuffer
-  ) {
+  private async persistMetadata(metaDataName: MetadataKind, bytesData: Buffer) {
     try {
       const filePath = path.join(this.dir, `${metaDataName}.json`);
-      fs.writeFileSync(filePath, Buffer.from(bytesData).toString('utf8'));
+      fs.writeFileSync(filePath, bytesData.toString('utf8'));
     } catch (error) {
       console.error('persistMetadata error', error);
     }

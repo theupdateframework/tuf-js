@@ -50,6 +50,17 @@ export class Key {
     const signedData = metadata.signed.toJSON();
 
     try {
+      console.log(
+        'verifySignature \n',
+        this.keyID,
+        '\n',
+        signedData,
+        '\n',
+        publicKey,
+        '\n',
+        signature.sig
+      );
+      console.log('\n');
       if (!signer.verifySignature(signedData, publicKey, signature.sig)) {
         throw new UnsignedMetadataError(
           `failed to verify ${this.keyID} signature`

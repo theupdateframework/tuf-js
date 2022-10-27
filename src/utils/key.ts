@@ -18,6 +18,8 @@ interface KeyInfo {
 
 export function getPublicKey(keyInfo: KeyInfo): crypto.KeyObject {
   // If key is already PEM-encoded we can just parse it
+  console.log('getPublicKey--------', keyInfo.keyVal);
+
   if (keyInfo.keyVal.startsWith('-----BEGIN PUBLIC KEY-----')) {
     return crypto.createPublicKey(keyInfo.keyVal);
   }

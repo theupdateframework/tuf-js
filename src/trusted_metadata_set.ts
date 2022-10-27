@@ -1,5 +1,4 @@
 import {
-  JSONObject,
   Metadata,
   MetadataKind,
   Root,
@@ -19,7 +18,7 @@ export class TrustedMetadataSet {
   private trustedSet: TrustedSet = {};
   private referenceTime: Date;
 
-  constructor(rootData: JSONObject) {
+  constructor(rootData: Buffer) {
     this.referenceTime = new Date();
     this.loadTrustedRoot(rootData);
   }
@@ -68,7 +67,8 @@ export class TrustedMetadataSet {
     return this.trustedSet.targets;
   }
 
-  public updateRoot(data: JSONObject): Metadata<Root> {
+  public updateRoot(bytesBuffer: Buffer): Metadata<Root> {
+    const data = JSON.parse(bytesBuffer.toString('utf8'));
     const newRoot = Metadata.fromJSON(MetadataKind.Root, data);
     if (newRoot.signed.type != MetadataKind.Root) {
       throw new Error(`Expected 'root', got ${newRoot.signed.type}`);
@@ -94,7 +94,9 @@ export class TrustedMetadataSet {
     return newRoot;
   }
 
-  public updateTimestamp(data: JSONObject): Metadata<Timestamp> {
+  public updateTimestamp(bytesBuffer: Buffer): Metadata<Timestamp> {
+    const data = JSON.parse(bytesBuffer.toString('utf8'));
+
     if (this.trustedSet.snapshot) {
       throw new Error('Cannot update timestamp after snapshot');
     }
@@ -323,7 +325,8 @@ export class TrustedMetadataSet {
 
   // Verifies and loads data as trusted root metadata.
   // Note that an expired initial root is still considered valid.
-  private loadTrustedRoot(data: JSONObject) {
+  private loadTrustedRoot(bytesBuffer: Buffer) {
+    const data = JSON.parse(bytesBuffer.toString('utf8'));
     const root = Metadata.fromJSON(MetadataKind.Root, data);
 
     if (root.signed.type != MetadataKind.Root) {
