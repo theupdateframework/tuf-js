@@ -43,7 +43,6 @@
     "typescript": "^4.8.4"
   },
   "dependencies": {
-    "canonicalize": "^1.0.8",
     "make-fetch-happen": "^10.2.1",
     "minimatch": "^5.1.0"
   }
