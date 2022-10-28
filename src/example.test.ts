@@ -1,6 +1,6 @@
-import canonicalize from 'canonicalize';
 import crypto from 'crypto';
 import * as fs from 'fs';
+import { canonicalize } from './utils/json';
 import { getPublicKey } from './utils/key';
 
 describe('sigstore TUF', () => {
@@ -24,7 +24,7 @@ describe('sigstore TUF', () => {
 
       const result = crypto.verify(
         undefined,
-        Buffer.from(canonicalData, 'utf8'),
+        canonicalData,
         publicKey,
         Buffer.from(sig, 'hex')
       );
@@ -57,7 +57,7 @@ describe('python TUF sample', () => {
 
         const result = crypto.verify(
           undefined,
-          Buffer.from(canonicalData, 'utf8'),
+          canonicalData,
           publicKey,
           Buffer.from(sig, 'hex')
         );
@@ -82,7 +82,7 @@ describe('python TUF sample', () => {
 
         const result = crypto.verify(
           undefined,
-          Buffer.from(canonicalData),
+          canonicalData,
           publicKey,
           Buffer.from(sig, 'hex')
         );
@@ -91,25 +91,21 @@ describe('python TUF sample', () => {
     });
 
     describe('verifying root w/ RSA key', () => {
-      xit('should verify', () => {
+      it('should verify', () => {
         const signature = root.signatures[0];
         const sig = signature.sig;
 
         const key = root.signed.keys[signature.keyid].keyval.public;
-        const publicKey = crypto.createPublicKey(key);
 
         const canonicalData = canonicalize(root.signed) || '';
 
         const result = crypto.verify(
-          'SHA256',
-          Buffer.from(canonicalData, 'utf8'),
-          // {
-          //   key: key,
-          //   format: 'pem',
-          //   padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
-          //   saltLength: crypto.constants.RSA_PSS_SALTLEN_AUTO,
-          // },
-          publicKey,
+          undefined,
+          canonicalData,
+          {
+            key: key,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+          },
           Buffer.from(sig, 'hex')
         );
         expect(result).toBe(true);
