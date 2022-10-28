@@ -1,9 +1,9 @@
 import util from 'util';
 import { isDefined, isObject, isObjectRecord } from '../utils/guard';
+import { JSONObject, JSONValue, MetadataKind } from '../utils/types';
 import { Signed, SignedOptions } from './base';
 import { Delegations } from './delegations';
 import { TargetFile } from './file';
-import { JSONObject, JSONValue, MetadataKind } from './types';
 
 type TargetFileMap = Record<string, TargetFile>;
 

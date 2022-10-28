@@ -1,7 +1,7 @@
 import { isDefined, isObject } from '../utils/guard';
+import { JSONObject, MetadataKind } from '../utils/types';
 import { Signed, SignedOptions } from './base';
 import { MetaFile } from './file';
-import { JSONObject, MetadataKind } from './types';
 
 interface TimestampOptions extends SignedOptions {
   snapshotMeta?: MetaFile;

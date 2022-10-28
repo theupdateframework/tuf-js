@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { MetadataKind } from './models';
 import { TrustedMetadataSet } from './trusted_metadata_set';
 import { updaterConfig } from './utils/config';
+import { MetadataKind } from './utils/types';
 
 interface UodaterOptions {
   metadataDir: string;

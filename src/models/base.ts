@@ -1,8 +1,8 @@
 import util from 'util';
 import { ValueError } from '../error';
 import { guard } from '../utils';
+import { JSONObject, JSONValue } from '../utils/types';
 import { Signature } from './signature';
-import { JSONObject, JSONValue } from './types';
 
 const SPECIFICATION_VERSION = ['1', '20', '30'];
 

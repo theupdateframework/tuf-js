@@ -1,12 +1,6 @@
-import {
-  Metadata,
-  MetadataKind,
-  Root,
-  Snapshot,
-  Targets,
-  Timestamp,
-} from './models';
+import { Metadata, Root, Snapshot, Targets, Timestamp } from './models';
 import { isMetadataKind } from './utils/guard';
+import { MetadataKind } from './utils/types';
 
 interface TrustedSet {
   root?: Metadata<Root>;
