@@ -23,22 +23,6 @@ export class TrustedMetadataSet {
     this.loadTrustedRoot(rootData);
   }
 
-  public hasRoot(): boolean {
-    return !!this.trustedSet.root;
-  }
-
-  public hasTimestamp(): boolean {
-    return !!this.trustedSet.timestamp;
-  }
-
-  public hasSnapshot(): boolean {
-    return !!this.trustedSet.snapshot;
-  }
-
-  public hasTargets(): boolean {
-    return !!this.trustedSet.targets;
-  }
-
   public get root(): Metadata<Root> {
     if (!this.trustedSet.root) {
       throw new Error('No trusted root metadata');
@@ -46,24 +30,15 @@ export class TrustedMetadataSet {
     return this.trustedSet.root;
   }
 
-  public get timestamp(): Metadata<Timestamp> {
-    if (!this.trustedSet.timestamp) {
-      throw new Error('No trusted timestamp metadata');
-    }
+  public get timestamp(): Metadata<Timestamp> | undefined {
     return this.trustedSet.timestamp;
   }
 
-  public get snapshot(): Metadata<Snapshot> {
-    if (!this.trustedSet.snapshot) {
-      throw new Error('No trusted snapshot metadata');
-    }
+  public get snapshot(): Metadata<Snapshot> | undefined {
     return this.trustedSet.snapshot;
   }
 
-  public get targets(): Metadata<Targets> {
-    if (!this.trustedSet.targets) {
-      throw new Error('No trusted targets metadata');
-    }
+  public get targets(): Metadata<Targets> | undefined {
     return this.trustedSet.targets;
   }
 
@@ -74,15 +49,15 @@ export class TrustedMetadataSet {
       throw new Error(`Expected 'root', got ${newRoot.signed.type}`);
     }
 
-    if (!this.trustedSet.root) {
+    if (!this.root) {
       throw new Error('No trusted root metadata');
     }
 
-    this.trustedSet.root.verifyDelegate(MetadataKind.Root, newRoot);
+    this.root.verifyDelegate(MetadataKind.Root, newRoot);
 
-    if (newRoot.signed.version != this.trustedSet.root.signed.version + 1) {
+    if (newRoot.signed.version != this.root.signed.version + 1) {
       throw new Error(
-        `Expected version ${this.trustedSet.root.signed.version + 1}, got ${
+        `Expected version ${this.root.signed.version + 1}, got ${
           newRoot.signed.version
         }`
       );
@@ -97,14 +72,14 @@ export class TrustedMetadataSet {
   public updateTimestamp(bytesBuffer: Buffer): Metadata<Timestamp> {
     const data = JSON.parse(bytesBuffer.toString('utf8'));
 
-    if (this.trustedSet.snapshot) {
+    if (this.snapshot) {
       throw new Error('Cannot update timestamp after snapshot');
     }
 
-    if (!this.trustedSet.root) {
+    if (!this.root) {
       throw new Error('No trusted root metadata');
     }
-    if (this.trustedSet.root.signed.isExpired(this.referenceTime)) {
+    if (this.root.signed.isExpired(this.referenceTime)) {
       throw new Error('Final root.json is expiredt');
     }
 
@@ -113,27 +88,23 @@ export class TrustedMetadataSet {
       throw new Error(`Expected 'timestamp', got ${newTimestamp.signed.type}`);
     }
 
-    this.trustedSet.root.verifyDelegate(MetadataKind.Timestamp, newTimestamp);
+    this.root.verifyDelegate(MetadataKind.Timestamp, newTimestamp);
 
-    if (this.trustedSet.timestamp) {
+    if (this.timestamp) {
       // Prevent rolling back timestamp version
-      if (
-        newTimestamp.signed.version < this.trustedSet.timestamp.signed.version
-      ) {
+      if (newTimestamp.signed.version < this.timestamp.signed.version) {
         throw new Error(
-          `New timestamp version ${newTimestamp.signed.version} is less than current version ${this.trustedSet.timestamp.signed.version}`
+          `New timestamp version ${newTimestamp.signed.version} is less than current version ${this.timestamp.signed.version}`
         );
       }
       //  Keep using old timestamp if versions are equal.
-      if (
-        newTimestamp.signed.version === this.trustedSet.timestamp.signed.version
-      ) {
+      if (newTimestamp.signed.version === this.timestamp.signed.version) {
         throw new Error(
-          `New timestamp version ${newTimestamp.signed.version} is equal to current version ${this.trustedSet.timestamp.signed.version}`
+          `New timestamp version ${newTimestamp.signed.version} is equal to current version ${this.timestamp.signed.version}`
         );
       }
       // Prevent rolling back snapshot version
-      const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
+      const snapshotMeta = this.timestamp.signed.snapshotMeta;
       const newSnapshotMeta = newTimestamp.signed.snapshotMeta;
       if (newSnapshotMeta.version < snapshotMeta.version) {
         throw new Error(
@@ -155,17 +126,17 @@ export class TrustedMetadataSet {
     bytesBuffer: Buffer,
     trusted?: boolean
   ): Metadata<Snapshot> {
-    if (!this.trustedSet.timestamp) {
+    if (!this.timestamp) {
       throw new Error('Cannot update snapshot before timestamp');
     }
-    if (this.trustedSet.targets) {
+    if (this.targets) {
       throw new Error('Cannot update snapshot after targets');
     }
 
     // Snapshot cannot be loaded if final timestamp is expired
     this.checkFinalTimestamp();
 
-    const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
+    const snapshotMeta = this.timestamp.signed.snapshotMeta;
 
     // Verify non-trusted data against the hashes in timestamp, if any.
     // Trusted snapshot data has already been verified once.
@@ -181,19 +152,19 @@ export class TrustedMetadataSet {
       throw new Error(`Expected 'snapshot', got ${newSnapshot.signed.type}`);
     }
 
-    if (!this.trustedSet.root) {
+    if (!this.root) {
       throw new Error('No trusted root metadata');
     }
 
-    this.trustedSet.root.verifyDelegate(MetadataKind.Snapshot, newSnapshot);
+    this.root.verifyDelegate(MetadataKind.Snapshot, newSnapshot);
 
     // version not checked against meta version to allow old snapshot to be
     // used in rollback protection: it is checked when targets is updated
 
     // If an existing trusted snapshot is updated, check for rollback attack
 
-    if (this.trustedSet.snapshot) {
-      Object.entries(this.trustedSet.snapshot.signed.meta).forEach(
+    if (this.snapshot) {
+      Object.entries(this.snapshot.signed.meta).forEach(
         ([fileName, fileInfo]) => {
           const newFileInfo = newSnapshot.signed.meta[fileName];
           if (!newFileInfo) {
@@ -221,30 +192,30 @@ export class TrustedMetadataSet {
   }
 
   private checkFinalTimestamp() {
-    if (!this.trustedSet.timestamp) {
+    if (!this.timestamp) {
       throw new Error('No trusted timestamp metadata');
     }
-    if (this.trustedSet.timestamp.signed.isExpired(this.referenceTime)) {
+    if (this.timestamp.signed.isExpired(this.referenceTime)) {
       throw new Error('Final timestamp.json is expired');
     }
   }
 
   private checkFinalSnapsnot() {
     // Raise if snapshot is expired or meta version does not match
-    if (!this.trustedSet.snapshot) {
+    if (!this.snapshot) {
       throw new Error('No trusted snapshot metadata');
     }
-    if (!this.trustedSet.timestamp) {
+    if (!this.timestamp) {
       throw new Error('No trusted timestamp metadata');
     }
 
-    if (this.trustedSet.snapshot.signed.isExpired(this.referenceTime)) {
+    if (this.snapshot.signed.isExpired(this.referenceTime)) {
       throw new Error('snapshot.json is expired');
     }
 
-    const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
+    const snapshotMeta = this.timestamp.signed.snapshotMeta;
 
-    if (this.trustedSet.snapshot.signed.version !== snapshotMeta.version) {
+    if (this.snapshot.signed.version !== snapshotMeta.version) {
       throw new Error("Snapshot version doesn't match timestamp");
     }
   }
@@ -254,7 +225,7 @@ export class TrustedMetadataSet {
     roleName: string,
     delegatorName: string
   ) {
-    if (!this.trustedSet.snapshot) {
+    if (!this.snapshot) {
       throw new Error('Cannot update delegated targets before snapshot');
     }
 
@@ -291,7 +262,7 @@ export class TrustedMetadataSet {
     console.log('Updating %s delegated by %s', roleName, delegatorName);
 
     // Verify against the hashes in snapshot, if any
-    const meta = this.trustedSet.snapshot.signed.meta?.[`${roleName}.json`];
+    const meta = this.snapshot.signed.meta?.[`${roleName}.json`];
     if (!meta) {
       throw new Error(`Missing ${roleName}.json in snapshot`);
     }

@@ -69,8 +69,6 @@ export class Updater {
         const bytesData = Buffer.from(await response.arrayBuffer());
         this.trustedSet.updateRoot(bytesData);
         this.persistMetadata(MetadataKind.Root, bytesData);
-
-        // console.log('data', data, version);
       } catch (error) {
         console.log('error', error);
         break;
@@ -117,7 +115,7 @@ export class Updater {
       console.log('Local snapshot is valid: not downloading new one');
     } catch (error) {
       console.log('Local snapshot is invalid: downloading new one');
-      if (!this.trustedSet.hasTimestamp()) {
+      if (!this.trustedSet.timestamp) {
         throw new Error('No timestamp metadata');
       }
       const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
@@ -163,7 +161,7 @@ export class Updater {
         // Local 'role' does not exist or is invalid: update from remote
         console.log('Local %s is invalid: downloading new one', role);
 
-        if (!this.trustedSet.hasSnapshot()) {
+        if (!this.trustedSet.snapshot) {
           throw new Error('No snapshot metadata');
         }
 
