@@ -1,4 +1,4 @@
-import { JSONObject } from '../models';
+import { JSONObject, MetadataKind } from '../models';
 
 export function isDefined<T>(val: T | undefined): val is T {
   return val !== undefined;
@@ -35,5 +35,12 @@ export function isObjectRecord(
     value !== null &&
     Object.keys(value).every((k) => typeof k === 'string') &&
     Object.values(value).every((v) => typeof v === 'object' && v !== null)
+  );
+}
+
+export function isMetadataKind(value: unknown): value is MetadataKind {
+  return (
+    typeof value === 'string' &&
+    Object.values(MetadataKind).includes(value as MetadataKind)
   );
 }

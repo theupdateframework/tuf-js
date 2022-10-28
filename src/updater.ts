@@ -46,7 +46,7 @@ export class Updater {
 
   private loadLocalMetadata(fileName: string): Buffer {
     const filePath = path.join(this.dir, `${fileName}.json`);
-    return Buffer.from(fs.readFileSync(filePath, 'utf8'));
+    return fs.readFileSync(filePath);
   }
 
   private async loadRoot() {
@@ -148,48 +148,47 @@ export class Updater {
 
   private async loadTargets(role: MetadataKind, parentRole: MetadataKind) {
     console.log(`Loading ${role} metadata`);
+
+    if (this.trustedSet?.[role]) {
+      return this.trustedSet?.[role];
+    }
+
     try {
-      if (this.trustedSet?.[role]) {
-        return this.trustedSet?.[role];
-      }
+      const buffer = this.loadLocalMetadata(role);
+      this.trustedSet.updateDelegatedTargets(buffer, role, parentRole);
+      console.log('Local %s is valid: not downloading new one', role);
     } catch (error) {
+      // Local 'role' does not exist or is invalid: update from remote
+      console.log('Local %s is invalid: downloading new one', role);
+
+      if (!this.trustedSet.snapshot) {
+        throw new Error('No snapshot metadata');
+      }
+
+      const metaInfo = this.trustedSet.snapshot.signed.meta[`${role}.json`];
+
+      // TODO: use length for fetching
+      // const length = metaInfo.length || this.config.targetsMaxLength;
+
+      const version = this.trustedSet.root.signed.consistentSnapshot
+        ? metaInfo.version
+        : undefined;
+
+      const url = version
+        ? `${this.metadataBaseUrl}/${version}.${role}.json`
+        : `${this.metadataBaseUrl}/${role}.json`;
+
       try {
-        const buffer = this.loadLocalMetadata(role);
-        this.trustedSet.updateDelegatedTargets(buffer, role, parentRole);
-        console.log('Local %s is valid: not downloading new one', role);
+        const response = await fetch(url);
+        if (!response.ok) {
+          return;
+        }
+        const bytesData = Buffer.from(await response.arrayBuffer());
+
+        this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
+        this.persistMetadata(role, bytesData);
       } catch (error) {
-        // Local 'role' does not exist or is invalid: update from remote
-        console.log('Local %s is invalid: downloading new one', role);
-
-        if (!this.trustedSet.snapshot) {
-          throw new Error('No snapshot metadata');
-        }
-
-        const metaInfo = this.trustedSet.snapshot.signed.meta[`${role}.json`];
-
-        // TODO: use length for fetching
-        // const length = metaInfo.length || this.config.targetsMaxLength;
-
-        const version = this.trustedSet.root.signed.consistentSnapshot
-          ? metaInfo.version
-          : undefined;
-
-        const url = version
-          ? `${this.metadataBaseUrl}/${version}.${role}.json`
-          : `${this.metadataBaseUrl}/${role}.json`;
-
-        try {
-          const response = await fetch(url);
-          if (!response.ok) {
-            return;
-          }
-          const bytesData = Buffer.from(await response.arrayBuffer());
-
-          this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
-          this.persistMetadata(role, bytesData);
-        } catch (error) {
-          console.log('error', error);
-        }
+        console.log('error', error);
       }
     }
     console.log('--------------------------------');

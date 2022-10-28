@@ -6,6 +6,7 @@ import {
   Targets,
   Timestamp,
 } from './models';
+import { isMetadataKind } from './utils/guard';
 
 interface TrustedSet {
   root?: Metadata<Root>;
@@ -49,10 +50,6 @@ export class TrustedMetadataSet {
       throw new Error(`Expected 'root', got ${newRoot.signed.type}`);
     }
 
-    if (!this.root) {
-      throw new Error('No trusted root metadata');
-    }
-
     this.root.verifyDelegate(MetadataKind.Root, newRoot);
 
     if (newRoot.signed.version != this.root.signed.version + 1) {
@@ -70,20 +67,17 @@ export class TrustedMetadataSet {
   }
 
   public updateTimestamp(bytesBuffer: Buffer): Metadata<Timestamp> {
-    const data = JSON.parse(bytesBuffer.toString('utf8'));
-
     if (this.snapshot) {
       throw new Error('Cannot update timestamp after snapshot');
     }
 
-    if (!this.root) {
-      throw new Error('No trusted root metadata');
-    }
     if (this.root.signed.isExpired(this.referenceTime)) {
       throw new Error('Final root.json is expiredt');
     }
 
+    const data = JSON.parse(bytesBuffer.toString('utf8'));
     const newTimestamp = Metadata.fromJSON(MetadataKind.Timestamp, data);
+
     if (newTimestamp.signed.type != MetadataKind.Timestamp) {
       throw new Error(`Expected 'timestamp', got ${newTimestamp.signed.type}`);
     }
@@ -124,7 +118,7 @@ export class TrustedMetadataSet {
 
   public updateSnapshot(
     bytesBuffer: Buffer,
-    trusted?: boolean
+    trusted = false
   ): Metadata<Snapshot> {
     if (!this.timestamp) {
       throw new Error('Cannot update snapshot before timestamp');
@@ -145,15 +139,10 @@ export class TrustedMetadataSet {
     }
 
     const data = JSON.parse(bytesBuffer.toString('utf8'));
-
     const newSnapshot = Metadata.fromJSON(MetadataKind.Snapshot, data);
 
     if (newSnapshot.signed.type != MetadataKind.Snapshot) {
       throw new Error(`Expected 'snapshot', got ${newSnapshot.signed.type}`);
-    }
-
-    if (!this.root) {
-      throw new Error('No trusted root metadata');
     }
 
     this.root.verifyDelegate(MetadataKind.Snapshot, newSnapshot);
@@ -233,24 +222,10 @@ export class TrustedMetadataSet {
     // does not match meta version in timestamp
     this.checkFinalSnapsnot();
 
-    if (
-      !(
-        delegatorName === 'root' ||
-        delegatorName === 'targets' ||
-        delegatorName === 'timestamp' ||
-        delegatorName === 'snapshot'
-      )
-    ) {
+    if (!isMetadataKind(delegatorName)) {
       throw new Error('Invalid delegator name');
     }
-    if (
-      !(
-        roleName === 'root' ||
-        roleName === 'targets' ||
-        roleName === 'timestamp' ||
-        roleName === 'snapshot'
-      )
-    ) {
+    if (!isMetadataKind(roleName)) {
       throw new Error('Invalid role name');
     }
 
@@ -270,7 +245,6 @@ export class TrustedMetadataSet {
     meta.verify(bytesBuffer);
 
     const data = JSON.parse(bytesBuffer.toString('utf8'));
-
     const newDelegate = Metadata.fromJSON(MetadataKind.Targets, data);
 
     if (newDelegate.signed.type != MetadataKind.Targets) {
