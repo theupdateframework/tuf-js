@@ -1,10 +1,10 @@
 import util from 'util';
 import { ValueError } from '../error';
 import { isDefined, isObjectRecord } from '../utils/guard';
+import { JSONObject, JSONValue, MetadataKind } from '../utils/types';
 import { Signed, SignedOptions } from './base';
 import { Key } from './key';
 import { Role, TOP_LEVEL_ROLE_NAMES } from './role';
-import { JSONObject, JSONValue, MetadataKind } from './types';
 
 type KeyMap = Record<string, Key>;
 type RoleMap = Record<string, Role>;

@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { JSONObject } from '../models';
+import { JSONObject } from '../utils/types';
 import { canonicalize } from './json';
 
 export const verifySignature = (

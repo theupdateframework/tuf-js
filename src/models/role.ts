@@ -3,7 +3,7 @@ import minimatch from 'minimatch';
 import util from 'util';
 import { ValueError } from '../error';
 import { isDefined, isStringArray } from '../utils/guard';
-import { JSONObject, JSONValue } from './types';
+import { JSONObject, JSONValue } from '../utils/types';
 
 export const TOP_LEVEL_ROLE_NAMES = [
   'root',

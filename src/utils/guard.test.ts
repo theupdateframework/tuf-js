@@ -1,5 +1,6 @@
 import {
   isDefined,
+  isMetadataKind,
   isObject,
   isObjectRecord,
   isStringArray,
@@ -126,6 +127,47 @@ describe('isObjectRecord', () => {
   describe('when the value is a not an object', () => {
     it('returns false', () => {
       expect(isObjectRecord(2)).toBe(false);
+    });
+  });
+});
+
+describe('isMetadataKind', () => {
+  describe('when the value is root', () => {
+    it('returns true', () => {
+      expect(isMetadataKind('root')).toBe(true);
+    });
+  });
+
+  describe('when the value is targets', () => {
+    it('returns true', () => {
+      expect(isMetadataKind('targets')).toBe(true);
+    });
+  });
+  describe('when the value is snapshot', () => {
+    it('returns true', () => {
+      expect(isMetadataKind('snapshot')).toBe(true);
+    });
+  });
+  describe('when the value is timestamp', () => {
+    it('returns true', () => {
+      expect(isMetadataKind('timestamp')).toBe(true);
+    });
+  });
+  describe('when the value is undefined', () => {
+    it('returns false', () => {
+      expect(isMetadataKind(undefined)).toBe(false);
+    });
+  });
+
+  describe('when the value is null', () => {
+    it('returns false', () => {
+      expect(isMetadataKind(null)).toBe(false);
+    });
+  });
+
+  describe('when the value is some random string', () => {
+    it('returns false', () => {
+      expect(isMetadataKind('random')).toBe(false);
     });
   });
 });

@@ -1,9 +1,9 @@
 import util from 'util';
 import { ValueError } from '../error';
 import { isDefined, isObjectArray, isObjectRecord } from '../utils/guard';
+import { JSONObject, JSONValue } from '../utils/types';
 import { Key } from './key';
 import { DelegatedRole, TOP_LEVEL_ROLE_NAMES } from './role';
-import { JSONObject, JSONValue } from './types';
 
 type DelegatedRoleMap = Record<string, DelegatedRole>;
 type KeyMap = Record<string, Key>;

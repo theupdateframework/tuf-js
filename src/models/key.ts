@@ -3,8 +3,8 @@ import { UnsignedMetadataError } from '../error';
 import { isStringRecord } from '../utils/guard';
 import { getPublicKey } from '../utils/key';
 import * as signer from '../utils/signer';
+import { JSONObject, JSONValue } from '../utils/types';
 import { Signable } from './base';
-import { JSONObject, JSONValue } from './types';
 
 export interface KeyOptions {
   keyID: string;
