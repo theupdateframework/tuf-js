@@ -4,7 +4,7 @@ import { canonicalize } from './json';
 
 export const verifySignature = (
   metaDataSignedData: JSONObject,
-  key: crypto.KeyObject,
+  key: crypto.VerifyKeyObjectInput,
   signature: string
 ): boolean => {
   const canonicalData = canonicalize(metaDataSignedData) || '';
