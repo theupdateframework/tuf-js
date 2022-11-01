@@ -43,7 +43,7 @@
     "typescript": "^4.8.4"
   },
   "dependencies": {
-    "make-fetch-happen": "^10.2.1",
+    "make-fetch-happen": "^11.0.1",
     "minimatch": "^5.1.0"
   }
 }
