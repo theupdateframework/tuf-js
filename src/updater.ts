@@ -1,7 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { Metadata, Targets } from './models';
 import { TrustedMetadataSet } from './trusted_metadata_set';
 import { updaterConfig } from './utils/config';
+import { isMetadataKind } from './utils/guard';
 import { MetadataKind } from './utils/types';
 
 interface UodaterOptions {
@@ -9,6 +11,11 @@ interface UodaterOptions {
   metadataBaseUrl: string;
   targetDir?: string;
   targetBaseUrl?: string;
+}
+
+interface Delegation {
+  roleName: MetadataKind;
+  parentRoleName: MetadataKind;
 }
 
 export class Updater {
@@ -146,11 +153,14 @@ export class Updater {
     console.log('--------------------------------');
   }
 
-  private async loadTargets(role: MetadataKind, parentRole: MetadataKind) {
+  private async loadTargets(
+    role: MetadataKind,
+    parentRole: MetadataKind
+  ): Promise<Metadata<Targets> | undefined> {
     console.log(`Loading ${role} metadata`);
 
-    if (this.trustedSet?.[role]) {
-      return this.trustedSet?.[role];
+    if (this.trustedSet.targets) {
+      return this.trustedSet.targets;
     }
 
     try {
@@ -192,6 +202,128 @@ export class Updater {
       }
     }
     console.log('--------------------------------');
+  }
+
+  private async getTargetInfo(targetPath: string) {
+    /***
+     * Returns ``TargetFile`` instance with information for ``target_path``.
+
+    The return value can be used as an argument to
+    ``download_target()`` and ``find_cached_target()``.
+
+    If ``refresh()`` has not been called before calling
+    ``get_targetinfo()``, the refresh will be done implicitly.
+
+    As a side-effect this method downloads all the additional (delegated
+    targets) metadata it needs to return the target information.
+
+    Args:
+        target_path: `path-relative-URL string
+            <https://url.spec.whatwg.org/#path-relative-url-string>`_
+            that uniquely identifies the target within the repository.
+
+    Raises:
+        OSError: New metadata could not be written to disk
+        RepositoryError: Metadata failed to verify in some way
+        DownloadError: Download of a metadata file failed in some way
+
+    Returns:
+        ``TargetFile`` instance or ``None``.
+    ***/
+    try {
+      if (this.trustedSet.root) {
+        return this.preorderDepthFirstWalk(targetPath);
+      }
+    } catch (error) {
+      this.refresh();
+    }
+  }
+
+  private async preorderDepthFirstWalk(targetPath: string) {
+    // Interrogates the tree of target delegations in order of appearance
+    // (which implicitly order trustworthiness), and returns the matching
+    // target found in the most trusted role.
+
+    // List of delegations to be interrogated. A (role, parent role) pair
+    // is needed to load and verify the delegated targets metadata.
+    const delegationsToVisist: Delegation[] = [
+      {
+        roleName: MetadataKind.Targets,
+        parentRoleName: MetadataKind.Root,
+      },
+    ];
+    const visitedRoleNames: Set<string> = new Set();
+
+    // Preorder depth-first traversal of the graph of target delegations.
+    while (
+      visitedRoleNames.size <= this.config.maxDelegations &&
+      delegationsToVisist.length > 0
+    ) {
+      //  Pop the role name from the top of the stack.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const { roleName, parentRoleName } = delegationsToVisist.pop()!;
+
+      if (!roleName || !parentRoleName) {
+        break;
+      }
+
+      // Skip any visited current role to prevent cycles.
+      if (visitedRoleNames.has(roleName)) {
+        console.log('Skipping visited current role %s', roleName);
+        continue;
+      }
+
+      // The metadata for 'role_name' must be downloaded/updated before
+      // its targets, delegations, and child roles can be inspected.
+      const targets = (await this.loadTargets(roleName, parentRoleName))
+        ?.signed;
+
+      if (!targets) {
+        continue;
+      }
+
+      const target = targets.targets?.[targetPath];
+      if (target) {
+        console.log('Found target %s in role %s', targetPath, roleName);
+        return target;
+      }
+
+      // After preorder check, add current role to set of visited roles.
+      visitedRoleNames.add(roleName);
+
+      if (targets.delegations) {
+        const childRolesToVisit: Delegation[] = [];
+
+        // NOTE: This may be a slow operation if there are many delegated roles.
+        const rolesForTarget = targets.delegations.rolesForTarget(targetPath);
+
+        for (const role of rolesForTarget) {
+          const { role: childName, terminating } = role;
+          console.log('Adding child role %s', childName);
+          if (!isMetadataKind(childName)) {
+            throw new Error(`Invalid child role name: ${childName}`);
+          }
+          childRolesToVisit.push({
+            roleName: childName,
+            parentRoleName: roleName,
+          });
+          if (terminating) {
+            console.log('Terminating delegation at %s', childName);
+            delegationsToVisist.splice(0); // empty the array
+            break;
+          }
+        }
+        childRolesToVisit.reverse();
+        delegationsToVisist.push(...childRolesToVisit);
+      }
+    }
+    if (delegationsToVisist.length > 0) {
+      console.log(
+        '%d delegations left to visit but allowed at most %d delegations',
+        delegationsToVisist.length,
+        this.config.maxDelegations
+      );
+    }
   }
 
   private async persistMetadata(metaDataName: MetadataKind, bytesData: Buffer) {
