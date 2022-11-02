@@ -371,7 +371,7 @@ export class Updater {
       targetBaseUrl = this.targetBaseUrl;
     }
 
-    var targetFilePath = targetInfo.path;
+    let targetFilePath = targetInfo.path;
     const consistentSnapshot = this.trustedSet.root.signed.consistentSnapshot;
 
     if (consistentSnapshot && this.config.prefixTargetsWithHash) {
