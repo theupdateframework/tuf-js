@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Metadata, Targets } from './models';
+import { TargetFile } from './models/file';
 import { TrustedMetadataSet } from './trusted_metadata_set';
 import { updaterConfig } from './utils/config';
 import { isMetadataKind } from './utils/guard';
@@ -204,7 +205,9 @@ export class Updater {
     console.log('--------------------------------');
   }
 
-  private async getTargetInfo(targetPath: string) {
+  public async getTargetInfo(
+    targetPath: string
+  ): Promise<TargetFile | undefined> {
     /***
      * Returns ``TargetFile`` instance with information for ``target_path``.
 
@@ -239,7 +242,9 @@ export class Updater {
     }
   }
 
-  private async preorderDepthFirstWalk(targetPath: string) {
+  private async preorderDepthFirstWalk(
+    targetPath: string
+  ): Promise<TargetFile | undefined> {
     // Interrogates the tree of target delegations in order of appearance
     // (which implicitly order trustworthiness), and returns the matching
     // target found in the most trusted role.
@@ -324,6 +329,69 @@ export class Updater {
         this.config.maxDelegations
       );
     }
+  }
+
+  public async findCachedTarget(
+    targetInfo: TargetFile,
+    filePath?: string
+  ): Promise<string | undefined> {
+    if (!filePath) {
+      filePath = this.generateTargetPath(targetInfo);
+    }
+
+    try {
+      const targetFile = fs.readFileSync(filePath);
+      targetInfo.verify(targetFile);
+      return filePath;
+    } catch (error) {
+      return;
+    }
+  }
+
+  private generateTargetPath(targetInfo: TargetFile): string {
+    if (!this.targetDir) {
+      throw new Error('Target directory not set');
+    }
+    return path.join(this.targetDir, targetInfo.path);
+  }
+
+  public async downloadTarget(
+    targetInfo: TargetFile,
+    filePath?: string,
+    targetBaseUrl?: string
+  ): Promise<string> {
+    if (!filePath) {
+      filePath = this.generateTargetPath(targetInfo);
+    }
+
+    if (!targetBaseUrl) {
+      if (!this.targetBaseUrl) {
+        throw new Error('Target base URL not set');
+      }
+      targetBaseUrl = this.targetBaseUrl;
+    }
+
+    var targetFilePath = targetInfo.path;
+    const consistentSnapshot = this.trustedSet.root.signed.consistentSnapshot;
+
+    if (consistentSnapshot && this.config.prefixTargetsWithHash) {
+      const hashes = Object.values(targetInfo.hashes);
+      const basename = path.basename(targetFilePath);
+      targetFilePath = `${hashes[0]}.${basename}`;
+    }
+
+    const url = `${targetBaseUrl}/targets/${targetFilePath}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status}`);
+    }
+    const targetFile = Buffer.from(await response.arrayBuffer());
+
+    targetInfo.verify(targetFile);
+
+    fs.writeFileSync(filePath, targetFile);
+
+    return filePath;
   }
 
   private async persistMetadata(metaDataName: MetadataKind, bytesData: Buffer) {
