@@ -10,18 +10,19 @@ function initDir() {}
 // fulcio_intermediate_v1.crt.pem
 // fulcio_v1.crt.pem
 // rekor.pub
-const target = 'artifact.pub';
+const target = 'rekor.pub';
 
 const metadataBaseUrl = 'https://sigstore-tuf-root.storage.googleapis.com';
 const metadataDir = './';
 const targetDir = './';
+const targetBaseUrl = metadataBaseUrl + '/targets';
 
 async function downloadTarget() {
   const updater = new Updater({
     metadataBaseUrl,
     metadataDir,
     targetDir,
-    targetBaseUrl: metadataBaseUrl,
+    targetBaseUrl,
   });
   await updater.refresh();
   const targetInfo = await updater.getTargetInfo(target);

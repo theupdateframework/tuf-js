@@ -380,7 +380,7 @@ export class Updater {
       targetFilePath = `${hashes[0]}.${basename}`;
     }
 
-    const url = `${targetBaseUrl}/targets/${targetFilePath}`;
+    const url = `${targetBaseUrl}/${targetFilePath}`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Download failed: ${response.status}`);
