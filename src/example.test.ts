@@ -95,17 +95,19 @@ describe('python TUF sample', () => {
         const signature = root.signatures[0];
         const sig = signature.sig;
 
-        const key = root.signed.keys[signature.keyid].keyval.public;
+        const key = root.signed.keys[signature.keyid];
+        const publicKey = getPublicKey({
+          keyType: key.keytype,
+          scheme: key.scheme,
+          keyVal: key.keyval.public,
+        });
 
         const canonicalData = canonicalize(root.signed) || '';
 
         const result = crypto.verify(
           undefined,
           canonicalData,
-          {
-            key: key,
-            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
-          },
+          publicKey,
           Buffer.from(sig, 'hex')
         );
         expect(result).toBe(true);

@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto, { KeyObject, VerifyKeyObjectInput } from 'crypto';
 import { CryptoError, UnsupportedAlgorithmError } from '../error';
 import { encodeOIDString } from './oid';
 
@@ -10,47 +10,92 @@ const OID_EDDSA = '1.3.101.112';
 const OID_EC_PUBLIC_KEY = '1.2.840.10045.2.1';
 const OID_EC_CURVE_P256V1 = '1.2.840.10045.3.1.7';
 
+const PEM_HEADER = '-----BEGIN PUBLIC KEY-----';
+
 interface KeyInfo {
   keyType: string;
   scheme: string;
   keyVal: string;
 }
 
-export function getPublicKey(keyInfo: KeyInfo): crypto.KeyObject {
-  // If key is already PEM-encoded we can just parse it
-  if (keyInfo.keyVal.startsWith('-----BEGIN PUBLIC KEY-----')) {
-    return crypto.createPublicKey(keyInfo.keyVal);
-  }
-
-  // If key is not PEM-encoded it had better be hex
-  if (!isHex(keyInfo.keyVal)) {
-    throw new CryptoError('Invalid key format');
-  }
-
-  // Create proper DER format and convert it to PEM
-  let der: Buffer;
+export function getPublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
   switch (keyInfo.keyType) {
     case 'rsa':
-      throw new Error('not implemented');
+      return getRSAPublicKey(keyInfo);
     case 'ed25519':
-      der = ed25519.hexToDER(keyInfo.keyVal);
-      break;
+      return getED25519PublicKey(keyInfo);
     case 'ecdsa':
     case 'ecdsa-sha2-nistp256':
     case 'ecdsa-sha2-nistp384':
-      der = ecdsa.hexToDER(keyInfo.keyVal);
-      break;
+      return getECDCSAPublicKey(keyInfo);
     default:
       throw new UnsupportedAlgorithmError(
         `Unsupported key type: ${keyInfo.keyType}`
       );
   }
+}
 
-  return crypto.createPublicKey({
-    key: der,
-    format: 'der',
-    type: 'spki',
-  });
+function getRSAPublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
+  // Only support PEM-encoded RSA keys
+  if (!keyInfo.keyVal.startsWith(PEM_HEADER)) {
+    throw new CryptoError('Invalid key format');
+  }
+
+  const key = crypto.createPublicKey(keyInfo.keyVal);
+
+  switch (keyInfo.scheme) {
+    case 'rsassa-pss-sha256':
+      return {
+        key: key,
+        padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+      };
+    default:
+      throw new UnsupportedAlgorithmError(
+        `Unsupported RSA scheme: ${keyInfo.scheme}`
+      );
+  }
+}
+
+function getED25519PublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
+  let key: KeyObject;
+  // If key is already PEM-encoded we can just parse it
+  if (keyInfo.keyVal.startsWith(PEM_HEADER)) {
+    key = crypto.createPublicKey(keyInfo.keyVal);
+  } else {
+    // If key is not PEM-encoded it had better be hex
+    if (!isHex(keyInfo.keyVal)) {
+      throw new CryptoError('Invalid key format');
+    }
+
+    key = crypto.createPublicKey({
+      key: ed25519.hexToDER(keyInfo.keyVal),
+      format: 'der',
+      type: 'spki',
+    });
+  }
+
+  return { key };
+}
+
+function getECDCSAPublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
+  let key: KeyObject;
+  // If key is already PEM-encoded we can just parse it
+  if (keyInfo.keyVal.startsWith(PEM_HEADER)) {
+    key = crypto.createPublicKey(keyInfo.keyVal);
+  } else {
+    // If key is not PEM-encoded it had better be hex
+    if (!isHex(keyInfo.keyVal)) {
+      throw new CryptoError('Invalid key format');
+    }
+
+    key = crypto.createPublicKey({
+      key: ecdsa.hexToDER(keyInfo.keyVal),
+      format: 'der',
+      type: 'spki',
+    });
+  }
+
+  return { key };
 }
 
 const ed25519 = {
