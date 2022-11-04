@@ -1,7 +1,7 @@
-import { UnsignedMetadataError } from '../error';
-import { Signed } from './base';
-import { Key } from './key';
-import { Signature } from './signature';
+import { UnsignedMetadataError } from '../../error';
+import { Signed } from '../../models/base';
+import { Key } from '../../models/key';
+import { Signature } from '../../models/signature';
 
 describe('Key', () => {
   describe('constructor', () => {

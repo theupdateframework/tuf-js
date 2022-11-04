@@ -1,7 +1,7 @@
-import { ValueError } from '../error';
-import { Delegations } from './delegations';
-import { Key } from './key';
-import { DelegatedRole } from './role';
+import { ValueError } from '../../error';
+import { Delegations } from '../../models/delegations';
+import { Key } from '../../models/key';
+import { DelegatedRole } from '../../models/role';
 
 describe('Delegations', () => {
   describe('constructor', () => {

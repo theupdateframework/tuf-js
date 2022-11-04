@@ -1,4 +1,4 @@
-import { getPublicKey } from './key';
+import { getPublicKey } from '../../utils/key';
 
 describe('getPublicKey', () => {
   describe('when key is ed25519', () => {

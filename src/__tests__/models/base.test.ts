@@ -1,6 +1,6 @@
-import { ValueError } from '../error';
-import { JSONObject } from '../utils/types';
-import { Signed, SignedOptions } from './base';
+import { ValueError } from '../../error';
+import { Signed, SignedOptions } from '../../models/base';
+import { JSONObject } from '../../utils/types';
 
 describe('Signed', () => {
   class DummySigned extends Signed {

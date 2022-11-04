@@ -1,5 +1,5 @@
-import { ValueError } from '../error';
-import { DelegatedRole, Role } from './role';
+import { ValueError } from '../../error';
+import { DelegatedRole, Role } from '../../models/role';
 
 describe('Role', () => {
   describe('constructor', () => {

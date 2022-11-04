@@ -1,4 +1,4 @@
-import { canonicalize } from './json';
+import { canonicalize } from '../../utils/json';
 
 describe('canonicalize', () => {
   it('should canonicalize a string', () => {
