@@ -1,5 +1,5 @@
-import { MetaFile } from './file';
-import { Timestamp } from './timestamp';
+import { MetaFile } from '../../models/file';
+import { Timestamp } from '../../models/timestamp';
 
 describe('Timestamp', () => {
   describe('constructor', () => {

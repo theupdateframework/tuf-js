@@ -1,5 +1,5 @@
-import { LengthOrHashMismatchError, ValueError } from '../error';
-import { MetaFile, TargetFile } from './file';
+import { LengthOrHashMismatchError, ValueError } from '../../error';
+import { MetaFile, TargetFile } from '../../models/file';
 
 describe('MetaFile', () => {
   describe('constructor', () => {

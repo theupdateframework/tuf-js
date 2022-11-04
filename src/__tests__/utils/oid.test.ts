@@ -1,4 +1,4 @@
-import { encodeOIDString } from './oid';
+import { encodeOIDString } from '../../utils/oid';
 
 describe('encodeOIDString', () => {
   const testCases = [

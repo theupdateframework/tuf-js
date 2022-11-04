@@ -1,6 +1,6 @@
-import { Targets } from './targets';
-import { TargetFile } from './file';
-import { Delegations } from './delegations';
+import { Delegations } from '../../models/delegations';
+import { TargetFile } from '../../models/file';
+import { Targets } from '../../models/targets';
 
 describe('Targets', () => {
   describe('constructor', () => {

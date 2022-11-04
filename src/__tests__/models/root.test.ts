@@ -1,7 +1,7 @@
-import { ValueError } from '../error';
-import { Key } from './key';
-import { Role } from './role';
-import { Root, RootOptions } from './root';
+import { ValueError } from '../../error';
+import { Key } from '../../models/key';
+import { Role } from '../../models/role';
+import { Root, RootOptions } from '../../models/root';
 
 describe('Root', () => {
   describe('constructor', () => {

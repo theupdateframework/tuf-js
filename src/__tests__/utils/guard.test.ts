@@ -5,7 +5,7 @@ import {
   isObjectRecord,
   isStringArray,
   isStringRecord,
-} from './guard';
+} from '../../utils/guard';
 
 describe('isDefined', () => {
   describe('when the value is defined', () => {

@@ -1,5 +1,5 @@
-import { MetaFile } from './file';
-import { Snapshot } from './snapshot';
+import { MetaFile } from '../../models/file';
+import { Snapshot } from '../../models/snapshot';
 
 describe('Snapshot', () => {
   describe('constructor', () => {

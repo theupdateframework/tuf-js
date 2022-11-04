@@ -1,4 +1,4 @@
-import { Signature } from './signature';
+import { Signature } from '../../models/signature';
 
 describe('Signature', () => {
   describe('constructor', () => {
