@@ -377,6 +377,7 @@ export class Updater {
     }
 
     const url = `${targetBaseUrl}/${targetFilePath}`;
+    console.log('url', url);
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Download failed: ${response.status}`);
