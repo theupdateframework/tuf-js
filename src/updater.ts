@@ -233,13 +233,10 @@ export class Updater {
     Returns:
         ``TargetFile`` instance or ``None``.
     ***/
-    try {
-      if (this.trustedSet.root) {
-        return this.preorderDepthFirstWalk(targetPath);
-      }
-    } catch (error) {
+    if (!this.trustedSet.targets) {
       this.refresh();
     }
+    return this.preorderDepthFirstWalk(targetPath);
   }
 
   private async preorderDepthFirstWalk(
@@ -251,7 +248,7 @@ export class Updater {
 
     // List of delegations to be interrogated. A (role, parent role) pair
     // is needed to load and verify the delegated targets metadata.
-    const delegationsToVisist: Delegation[] = [
+    const delegationsToVisit: Delegation[] = [
       {
         roleName: MetadataKind.Targets,
         parentRoleName: MetadataKind.Root,
@@ -262,11 +259,11 @@ export class Updater {
     // Preorder depth-first traversal of the graph of target delegations.
     while (
       visitedRoleNames.size <= this.config.maxDelegations &&
-      delegationsToVisist.length > 0
+      delegationsToVisit.length > 0
     ) {
       //  Pop the role name from the top of the stack.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const { roleName, parentRoleName } = delegationsToVisist.pop()!;
+      const { roleName, parentRoleName } = delegationsToVisit.pop()!;
 
       if (!roleName || !parentRoleName) {
         break;
@@ -302,8 +299,7 @@ export class Updater {
         // NOTE: This may be a slow operation if there are many delegated roles.
         const rolesForTarget = targets.delegations.rolesForTarget(targetPath);
 
-        for (const role of rolesForTarget) {
-          const { role: childName, terminating } = role;
+        for (const { role: childName, terminating } of rolesForTarget) {
           console.log('Adding child role %s', childName);
           if (!isMetadataKind(childName)) {
             throw new Error(`Invalid child role name: ${childName}`);
@@ -314,18 +310,18 @@ export class Updater {
           });
           if (terminating) {
             console.log('Terminating delegation at %s', childName);
-            delegationsToVisist.splice(0); // empty the array
+            delegationsToVisit.splice(0); // empty the array
             break;
           }
         }
         childRolesToVisit.reverse();
-        delegationsToVisist.push(...childRolesToVisit);
+        delegationsToVisit.push(...childRolesToVisit);
       }
     }
-    if (delegationsToVisist.length > 0) {
+    if (delegationsToVisit.length > 0) {
       console.log(
         '%d delegations left to visit but allowed at most %d delegations',
-        delegationsToVisist.length,
+        delegationsToVisit.length,
         this.config.maxDelegations
       );
     }
