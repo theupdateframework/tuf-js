@@ -1,6 +1,4 @@
 export abstract class FetcherInterface {
-  constructor() {}
-
   abstract fetch(url: string): Promise<ReadableStreamDefaultReader<Uint8Array>>;
 
   public async downloadBytes(
@@ -11,7 +9,7 @@ export abstract class FetcherInterface {
 
     const reader = await this.fetch(url);
 
-    let chunks = []; // array of received binary chunks (comprises the body)
+    const chunks = []; // array of received binary chunks (comprises the body)
     while (numberOfBytesReceived < maxLength) {
       const { done, value } = await reader.read();
 
@@ -24,9 +22,9 @@ export abstract class FetcherInterface {
     }
 
     // concatenate chunks into single Uint8Array
-    let chunksAll = new Uint8Array(numberOfBytesReceived); // (4.1)
+    const chunksAll = new Uint8Array(numberOfBytesReceived); // (4.1)
     let position = 0;
-    for (let chunk of chunks) {
+    for (const chunk of chunks) {
       chunksAll.set(chunk, position); // (4.2)
       position += chunk.length;
     }
