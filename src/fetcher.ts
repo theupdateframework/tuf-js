@@ -1,24 +1,24 @@
 export abstract class FetcherInterface {
-  abstract fetch(url: string): Promise<ReadableStreamDefaultReader<Uint8Array>>;
+  abstract fetch(url: string): Promise<NodeJS.ReadableStream>;
 
   public async downloadBytes(
     url: string,
     maxLength: number
   ): Promise<Uint8Array> {
-    let numberOfBytesReceived = 0;
-
     const reader = await this.fetch(url);
 
-    const chunks = []; // array of received binary chunks (comprises the body)
-    while (numberOfBytesReceived < maxLength) {
-      const { done, value } = await reader.read();
+    let numberOfBytesReceived = 0;
+    const chunks: Buffer[] = [];
 
-      if (done) {
-        break;
+    for await (const chunk of reader) {
+      const bufferChunk = Buffer.from(chunk);
+      numberOfBytesReceived += bufferChunk.length;
+
+      if (numberOfBytesReceived > maxLength) {
+        throw new Error('Max length reached');
       }
 
-      chunks.push(value);
-      numberOfBytesReceived += value.length;
+      chunks.push(bufferChunk);
     }
 
     // concatenate chunks into single Uint8Array

@@ -1,30 +1,32 @@
-import fetch from 'make-fetch-happen';
+import nock from 'nock';
 import { Fetcher } from '../requestsFetcher';
 
 describe('Fetcher Test', () => {
   const fetcher = new Fetcher();
-  const testURL =
-    'https://sigstore-tuf-root.storage.googleapis.com/1.root.json';
+  const baseURL = 'http://localhost:8080';
+  const response = 'THIS IS THE TEST RESPONSE';
 
   describe('fetch without reaching the max limit', () => {
-    it('example with sigstore root', async () => {
-      const fromFetcher = await fetcher.downloadBytes(testURL, 10000000000);
-      const fromNode = new Uint8Array(
-        await (await fetch(testURL)).arrayBuffer()
-      );
+    beforeAll(() => {
+      nock(baseURL).get('/').reply(200, response);
+    });
 
-      expect(fromFetcher).toEqual(fromNode);
+    it('Fetch all the bytes', async () => {
+      const fromFetcher = await fetcher.downloadBytes(baseURL, 10000000000);
+
+      expect(new TextDecoder().decode(fromFetcher)).toEqual(response);
     });
   });
 
   describe('fetch with reaching the max limit', () => {
-    it('example with sigstore root', async () => {
-      const fromFetcher = await fetcher.downloadBytes(testURL, 10);
-      const fromNode = new Uint8Array(
-        await (await fetch(testURL)).arrayBuffer()
-      );
+    beforeAll(() => {
+      nock(baseURL).get('/').reply(200, response);
+    });
 
-      expect(fromFetcher).not.toEqual(fromNode);
+    it('Reach the max limit', async () => {
+      await expect(fetcher.downloadBytes(baseURL, 1)).rejects.toThrow(
+        'Max length reached'
+      );
     });
   });
 });
