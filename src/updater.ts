@@ -1,7 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { FetcherInterface } from './fetcher';
 import { Metadata, Targets } from './models';
 import { TargetFile } from './models/file';
+import { Fetcher } from './requestsFetcher';
 import { TrustedMetadataSet } from './trusted_metadata_set';
 import { updaterConfig } from './utils/config';
 import { isMetadataKind } from './utils/guard';
@@ -12,6 +14,7 @@ interface UodaterOptions {
   metadataBaseUrl: string;
   targetDir?: string;
   targetBaseUrl?: string;
+  fetcher?: FetcherInterface;
 }
 
 interface Delegation {
@@ -26,9 +29,11 @@ export class Updater {
   private targetBaseUrl?: string;
   private trustedSet: TrustedMetadataSet;
   private config: typeof updaterConfig;
+  private fetcher: FetcherInterface;
 
   constructor(options: UodaterOptions) {
-    const { metadataDir, metadataBaseUrl, targetDir, targetBaseUrl } = options;
+    const { metadataDir, metadataBaseUrl, targetDir, targetBaseUrl, fetcher } =
+      options;
 
     this.dir = metadataDir;
     this.metadataBaseUrl = metadataBaseUrl;
@@ -40,8 +45,9 @@ export class Updater {
     this.trustedSet = new TrustedMetadataSet(data);
     this.config = updaterConfig;
 
+    this.fetcher = fetcher || new Fetcher();
+
     // self._trusted_set = trusted_metadata_set.TrustedMetadataSet(data)
-    // self._fetcher = fetcher or requests_fetcher.RequestsFetcher()
     // self.config = config or UpdaterConfig()
   }
 
@@ -70,11 +76,11 @@ export class Updater {
     for (let version = lowerBound; version <= upperBound; version++) {
       const url = `${this.metadataBaseUrl}/${version}.root.json`;
       try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          break;
-        }
-        const bytesData = Buffer.from(await response.arrayBuffer());
+        const response = await this.fetcher.downloadBytes(
+          url,
+          this.config.rootMaxLength
+        );
+        const bytesData = Buffer.from(response);
         this.trustedSet.updateRoot(bytesData);
         this.persistMetadata(MetadataKind.Root, bytesData);
       } catch (error) {
@@ -100,12 +106,12 @@ export class Updater {
     //Load from remote (whether local load succeeded or not)
     const url = `${this.metadataBaseUrl}/timestamp.json`;
     try {
-      const response = await fetch(url);
+      const response = await this.fetcher.downloadBytes(
+        url,
+        this.config.timestampMaxLength
+      );
 
-      if (!response.ok) {
-        return;
-      }
-      const bytesData = Buffer.from(await response.arrayBuffer());
+      const bytesData = Buffer.from(response);
       this.trustedSet.updateTimestamp(bytesData);
       this.persistMetadata(MetadataKind.Timestamp, bytesData);
     } catch (error) {
@@ -127,8 +133,8 @@ export class Updater {
         throw new Error('No timestamp metadata');
       }
       const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
-      // TODO: use length for fetching
-      // const length = snapshotMeta.length || this.config.snapshotMaxLength;
+
+      const maxLength = snapshotMeta.length || this.config.snapshotMaxLength;
 
       const version = this.trustedSet.root.signed.consistentSnapshot
         ? snapshotMeta.version
@@ -139,11 +145,9 @@ export class Updater {
         : `${this.metadataBaseUrl}/snapshot.json`;
 
       try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          return;
-        }
-        const bytesData = Buffer.from(await response.arrayBuffer());
+        const response = await this.fetcher.downloadBytes(url, maxLength);
+
+        const bytesData = Buffer.from(response);
 
         this.trustedSet.updateSnapshot(bytesData);
         this.persistMetadata(MetadataKind.Snapshot, bytesData);
@@ -179,7 +183,7 @@ export class Updater {
       const metaInfo = this.trustedSet.snapshot.signed.meta[`${role}.json`];
 
       // TODO: use length for fetching
-      // const length = metaInfo.length || this.config.targetsMaxLength;
+      const maxLength = metaInfo.length || this.config.targetsMaxLength;
 
       const version = this.trustedSet.root.signed.consistentSnapshot
         ? metaInfo.version
@@ -190,11 +194,9 @@ export class Updater {
         : `${this.metadataBaseUrl}/${role}.json`;
 
       try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          return;
-        }
-        const bytesData = Buffer.from(await response.arrayBuffer());
+        const response = await this.fetcher.downloadBytes(url, maxLength);
+
+        const bytesData = Buffer.from(response);
 
         this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
         this.persistMetadata(role, bytesData);
@@ -377,11 +379,9 @@ export class Updater {
     }
 
     const url = `${targetBaseUrl}/${targetFilePath}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Download failed: ${response.status}`);
-    }
-    const targetFile = Buffer.from(await response.arrayBuffer());
+    const response = await this.fetcher.downloadBytes(url, targetInfo.length);
+
+    const targetFile = Buffer.from(response);
 
     targetInfo.verify(targetFile);
 
