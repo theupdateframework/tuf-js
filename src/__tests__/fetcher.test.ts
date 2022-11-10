@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import { Fetcher } from '../requestsFetcher';
 
 describe('Fetcher Test', () => {
