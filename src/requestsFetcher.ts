@@ -13,8 +13,6 @@ export class Fetcher extends FetcherInterface {
       throw new Error('Failed to download');
     }
 
-    const reader = response.body;
-
-    return reader;
+    return response.body;
   }
 }
