@@ -22,10 +22,10 @@ export abstract class FetcherInterface {
     }
 
     // concatenate chunks into single Uint8Array
-    const chunksAll = new Uint8Array(numberOfBytesReceived); // (4.1)
+    const chunksAll = new Uint8Array(numberOfBytesReceived);
     let position = 0;
     for (const chunk of chunks) {
-      chunksAll.set(chunk, position); // (4.2)
+      chunksAll.set(chunk, position);
       position += chunk.length;
     }
 
