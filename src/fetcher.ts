@@ -1,10 +1,7 @@
 export abstract class FetcherInterface {
   abstract fetch(url: string): Promise<NodeJS.ReadableStream>;
 
-  public async downloadBytes(
-    url: string,
-    maxLength: number
-  ): Promise<Uint8Array> {
+  public async downloadBytes(url: string, maxLength: number): Promise<Buffer> {
     const reader = await this.fetch(url);
 
     let numberOfBytesReceived = 0;
@@ -21,14 +18,7 @@ export abstract class FetcherInterface {
       chunks.push(bufferChunk);
     }
 
-    // concatenate chunks into single Uint8Array
-    const chunksAll = new Uint8Array(numberOfBytesReceived); // (4.1)
-    let position = 0;
-    for (const chunk of chunks) {
-      chunksAll.set(chunk, position); // (4.2)
-      position += chunk.length;
-    }
-
-    return chunksAll;
+    // concatenate chunks into a single buffer
+    return Buffer.concat(chunks);
   }
 }

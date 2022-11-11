@@ -76,11 +76,10 @@ export class Updater {
     for (let version = lowerBound; version <= upperBound; version++) {
       const url = `${this.metadataBaseUrl}/${version}.root.json`;
       try {
-        const response = await this.fetcher.downloadBytes(
+        const bytesData = await this.fetcher.downloadBytes(
           url,
           this.config.rootMaxLength
         );
-        const bytesData = Buffer.from(response);
         this.trustedSet.updateRoot(bytesData);
         this.persistMetadata(MetadataKind.Root, bytesData);
       } catch (error) {
@@ -106,12 +105,10 @@ export class Updater {
     //Load from remote (whether local load succeeded or not)
     const url = `${this.metadataBaseUrl}/timestamp.json`;
     try {
-      const response = await this.fetcher.downloadBytes(
+      const bytesData = await this.fetcher.downloadBytes(
         url,
         this.config.timestampMaxLength
       );
-
-      const bytesData = Buffer.from(response);
       this.trustedSet.updateTimestamp(bytesData);
       this.persistMetadata(MetadataKind.Timestamp, bytesData);
     } catch (error) {
@@ -145,10 +142,7 @@ export class Updater {
         : `${this.metadataBaseUrl}/snapshot.json`;
 
       try {
-        const response = await this.fetcher.downloadBytes(url, maxLength);
-
-        const bytesData = Buffer.from(response);
-
+        const bytesData = await this.fetcher.downloadBytes(url, maxLength);
         this.trustedSet.updateSnapshot(bytesData);
         this.persistMetadata(MetadataKind.Snapshot, bytesData);
       } catch (error) {
@@ -194,10 +188,7 @@ export class Updater {
         : `${this.metadataBaseUrl}/${role}.json`;
 
       try {
-        const response = await this.fetcher.downloadBytes(url, maxLength);
-
-        const bytesData = Buffer.from(response);
-
+        const bytesData = await this.fetcher.downloadBytes(url, maxLength);
         this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
         this.persistMetadata(role, bytesData);
       } catch (error) {
@@ -379,9 +370,7 @@ export class Updater {
     }
 
     const url = `${targetBaseUrl}/${targetFilePath}`;
-    const response = await this.fetcher.downloadBytes(url, targetInfo.length);
-
-    const targetFile = Buffer.from(response);
+    const targetFile = await this.fetcher.downloadBytes(url, targetInfo.length);
 
     targetInfo.verify(targetFile);
 
