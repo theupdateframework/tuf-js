@@ -1,7 +1,8 @@
+to run the example:
 
-to run the example: 
-1. ```cd examples/clientExample```
-2. ```npx ts-node  clientExample.ts```
+1. `python3 -m http.server -d repository_data `
+2. `cd examples/clientExample`
+3. `npx ts-node clientExample.ts`
 
 ## Data Model
 

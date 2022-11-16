@@ -6,7 +6,6 @@ import { TargetFile } from './models/file';
 import { Fetcher } from './requestsFetcher';
 import { TrustedMetadataSet } from './trusted_metadata_set';
 import { updaterConfig } from './utils/config';
-import { isMetadataKind } from './utils/guard';
 import { MetadataKind } from './utils/types';
 
 interface UodaterOptions {
@@ -18,8 +17,8 @@ interface UodaterOptions {
 }
 
 interface Delegation {
-  roleName: MetadataKind;
-  parentRoleName: MetadataKind;
+  roleName: string;
+  parentRoleName: string;
 }
 
 export class Updater {
@@ -153,13 +152,13 @@ export class Updater {
   }
 
   private async loadTargets(
-    role: MetadataKind,
-    parentRole: MetadataKind
+    role: string,
+    parentRole: string
   ): Promise<Metadata<Targets> | undefined> {
     console.log(`Loading ${role} metadata`);
 
-    if (this.trustedSet.targets) {
-      return this.trustedSet.targets;
+    if (this.trustedSet.getTarget(role)) {
+      return this.trustedSet.getTarget(role);
     }
 
     try {
@@ -196,6 +195,7 @@ export class Updater {
       }
     }
     console.log('--------------------------------');
+    return this.trustedSet.getTarget(role);
   }
 
   public async getTargetInfo(
@@ -226,7 +226,7 @@ export class Updater {
     Returns:
         ``TargetFile`` instance or ``None``.
     ***/
-    if (!this.trustedSet.targets) {
+    if (!this.trustedSet.getTarget(MetadataKind.Targets)) {
       this.refresh();
     }
     return this.preorderDepthFirstWalk(targetPath);
@@ -258,10 +258,6 @@ export class Updater {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const { roleName, parentRoleName } = delegationsToVisit.pop()!;
 
-      if (!roleName || !parentRoleName) {
-        break;
-      }
-
       // Skip any visited current role to prevent cycles.
       if (visitedRoleNames.has(roleName)) {
         console.log('Skipping visited current role %s', roleName);
@@ -272,7 +268,6 @@ export class Updater {
       // its targets, delegations, and child roles can be inspected.
       const targets = (await this.loadTargets(roleName, parentRoleName))
         ?.signed;
-
       if (!targets) {
         continue;
       }
@@ -294,9 +289,7 @@ export class Updater {
 
         for (const { role: childName, terminating } of rolesForTarget) {
           console.log('Adding child role %s', childName);
-          if (!isMetadataKind(childName)) {
-            throw new Error(`Invalid child role name: ${childName}`);
-          }
+
           childRolesToVisit.push({
             roleName: childName,
             parentRoleName: roleName,
@@ -379,7 +372,7 @@ export class Updater {
     return filePath;
   }
 
-  private async persistMetadata(metaDataName: MetadataKind, bytesData: Buffer) {
+  private async persistMetadata(metaDataName: string, bytesData: Buffer) {
     try {
       const filePath = path.join(this.dir, `${metaDataName}.json`);
       fs.writeFileSync(filePath, bytesData.toString('utf8'));

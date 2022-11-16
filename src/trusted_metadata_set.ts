@@ -6,12 +6,16 @@ interface TrustedSet {
   root?: Metadata<Root>;
   timestamp?: Metadata<Timestamp>;
   snapshot?: Metadata<Snapshot>;
-  targets?: Metadata<Targets>;
+}
+
+interface TargetsTrustedSet {
+  [key: string]: Metadata<Targets>;
 }
 
 export class TrustedMetadataSet {
   private trustedSet: TrustedSet = {};
   private referenceTime: Date;
+  private targetsTrustedSet: TargetsTrustedSet = {};
 
   constructor(rootData: Buffer) {
     this.referenceTime = new Date();
@@ -33,8 +37,8 @@ export class TrustedMetadataSet {
     return this.trustedSet.snapshot;
   }
 
-  public get targets(): Metadata<Targets> | undefined {
-    return this.trustedSet.targets;
+  public getTarget(name: string): Metadata<Targets> | undefined {
+    return this.targetsTrustedSet[name];
   }
 
   public updateRoot(bytesBuffer: Buffer): Metadata<Root> {
@@ -117,7 +121,7 @@ export class TrustedMetadataSet {
     if (!this.timestamp) {
       throw new Error('Cannot update snapshot before timestamp');
     }
-    if (this.targets) {
+    if (this.getTarget(MetadataKind.Targets)) {
       throw new Error('Cannot update snapshot after targets');
     }
 
@@ -216,14 +220,10 @@ export class TrustedMetadataSet {
     // does not match meta version in timestamp
     this.checkFinalSnapsnot();
 
-    if (!isMetadataKind(delegatorName)) {
-      throw new Error('Invalid delegator name');
-    }
-    if (!isMetadataKind(roleName)) {
-      throw new Error('Invalid role name');
-    }
-
-    const delegator = this.trustedSet[delegatorName];
+    const delegator =
+      isMetadataKind(delegatorName) && delegatorName !== MetadataKind.Targets
+        ? this.trustedSet[delegatorName]
+        : this.targetsTrustedSet[delegatorName];
     if (!delegator) {
       throw new Error(`No trusted ${delegatorName} metadata`);
     }
@@ -258,7 +258,7 @@ export class TrustedMetadataSet {
       throw new Error(`${roleName}.json is expired`);
     }
 
-    this.trustedSet['targets'] = newDelegate;
+    this.targetsTrustedSet[roleName] = newDelegate;
     console.log('Updated %s v%s', roleName, version);
   }
 

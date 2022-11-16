@@ -2,20 +2,12 @@ import { Updater } from '../../src';
 
 function initDir() {}
 
-// Target example:
-// artifact.pub
-// ctfe.pub
-// ctfe_2022.pub
-// fulcio.crt.pem
-// fulcio_intermediate_v1.crt.pem
-// fulcio_v1.crt.pem
-// rekor.pub
-const target = 'rekor.pub';
+const target = 'file2.txt';
 
-const metadataBaseUrl = 'https://sigstore-tuf-root.storage.googleapis.com';
+const metadataBaseUrl = 'http://127.0.0.1:8000/metadata';
 const metadataDir = './';
 const targetDir = './';
-const targetBaseUrl = metadataBaseUrl + '/targets';
+const targetBaseUrl = 'http://127.0.0.1:8000/targets';
 
 async function downloadTarget() {
   const updater = new Updater({
