@@ -41,8 +41,15 @@ export class Metadata<T extends MetadataType> implements Signable {
         role = this.signed.roles[delegatedRole];
         break;
       case MetadataKind.Targets:
-        // TODO implement this
-        throw new Error('not implemented');
+        if (!this.signed.delegations) {
+          throw new Error(`No delegations found for ${delegatedRole}`);
+        }
+        keys = this.signed.delegations.keys;
+        if (this.signed.delegations.roles) {
+          role = this.signed.delegations.roles[delegatedRole];
+        }
+        // TODO: succinct roles
+        break;
       default:
         throw new TypeError('invalid metadata type');
     }

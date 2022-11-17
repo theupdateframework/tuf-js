@@ -1,13 +1,12 @@
 import { Metadata, Root, Snapshot, Targets, Timestamp } from './models';
-import { isMetadataKind } from './utils/guard';
 import { MetadataKind } from './utils/types';
 
-interface TrustedSet {
+type TrustedSet = {
   root?: Metadata<Root>;
   timestamp?: Metadata<Timestamp>;
   snapshot?: Metadata<Snapshot>;
   targets?: Metadata<Targets>;
-}
+} & { [key: string]: Metadata<Targets> };
 
 export class TrustedMetadataSet {
   private trustedSet: TrustedSet = {};
@@ -35,6 +34,10 @@ export class TrustedMetadataSet {
 
   public get targets(): Metadata<Targets> | undefined {
     return this.trustedSet.targets;
+  }
+
+  public getRole(name: string): Metadata<Targets> | undefined {
+    return this.trustedSet[name];
   }
 
   public updateRoot(bytesBuffer: Buffer): Metadata<Root> {
@@ -216,14 +219,8 @@ export class TrustedMetadataSet {
     // does not match meta version in timestamp
     this.checkFinalSnapsnot();
 
-    if (!isMetadataKind(delegatorName)) {
-      throw new Error('Invalid delegator name');
-    }
-    if (!isMetadataKind(roleName)) {
-      throw new Error('Invalid role name');
-    }
-
     const delegator = this.trustedSet[delegatorName];
+
     if (!delegator) {
       throw new Error(`No trusted ${delegatorName} metadata`);
     }
@@ -258,7 +255,7 @@ export class TrustedMetadataSet {
       throw new Error(`${roleName}.json is expired`);
     }
 
-    this.trustedSet['targets'] = newDelegate;
+    this.trustedSet[roleName] = newDelegate;
     console.log('Updated %s v%s', roleName, version);
   }
 
