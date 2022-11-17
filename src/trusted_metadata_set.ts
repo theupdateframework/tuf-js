@@ -1,21 +1,16 @@
 import { Metadata, Root, Snapshot, Targets, Timestamp } from './models';
-import { isMetadataKind } from './utils/guard';
 import { MetadataKind } from './utils/types';
 
-interface TrustedSet {
+type TrustedSet = {
   root?: Metadata<Root>;
   timestamp?: Metadata<Timestamp>;
   snapshot?: Metadata<Snapshot>;
-}
-
-interface TargetsTrustedSet {
-  [key: string]: Metadata<Targets>;
-}
+  targets?: Metadata<Targets>;
+} & { [key: string]: Metadata<Targets> };
 
 export class TrustedMetadataSet {
   private trustedSet: TrustedSet = {};
   private referenceTime: Date;
-  private targetsTrustedSet: TargetsTrustedSet = {};
 
   constructor(rootData: Buffer) {
     this.referenceTime = new Date();
@@ -37,8 +32,12 @@ export class TrustedMetadataSet {
     return this.trustedSet.snapshot;
   }
 
-  public getTarget(name: string): Metadata<Targets> | undefined {
-    return this.targetsTrustedSet[name];
+  public get targets(): Metadata<Targets> | undefined {
+    return this.trustedSet.targets;
+  }
+
+  public getRole(name: string): Metadata<Targets> | undefined {
+    return this.trustedSet[name];
   }
 
   public updateRoot(bytesBuffer: Buffer): Metadata<Root> {
@@ -121,7 +120,7 @@ export class TrustedMetadataSet {
     if (!this.timestamp) {
       throw new Error('Cannot update snapshot before timestamp');
     }
-    if (this.getTarget(MetadataKind.Targets)) {
+    if (this.targets) {
       throw new Error('Cannot update snapshot after targets');
     }
 
@@ -220,10 +219,8 @@ export class TrustedMetadataSet {
     // does not match meta version in timestamp
     this.checkFinalSnapsnot();
 
-    const delegator =
-      isMetadataKind(delegatorName) && delegatorName !== MetadataKind.Targets
-        ? this.trustedSet[delegatorName]
-        : this.targetsTrustedSet[delegatorName];
+    const delegator = this.trustedSet[delegatorName];
+
     if (!delegator) {
       throw new Error(`No trusted ${delegatorName} metadata`);
     }
@@ -258,7 +255,7 @@ export class TrustedMetadataSet {
       throw new Error(`${roleName}.json is expired`);
     }
 
-    this.targetsTrustedSet[roleName] = newDelegate;
+    this.trustedSet[roleName] = newDelegate;
     console.log('Updated %s v%s', roleName, version);
   }
 

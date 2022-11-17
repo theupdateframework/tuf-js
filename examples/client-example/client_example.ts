@@ -2,7 +2,7 @@ import { Updater } from '../../src';
 
 function initDir() {}
 
-const target = 'file2.txt';
+const target = 'file1.txt';
 
 const metadataBaseUrl = 'http://127.0.0.1:8000/metadata';
 const metadataDir = './';

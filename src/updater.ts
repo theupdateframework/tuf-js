@@ -157,8 +157,8 @@ export class Updater {
   ): Promise<Metadata<Targets> | undefined> {
     console.log(`Loading ${role} metadata`);
 
-    if (this.trustedSet.getTarget(role)) {
-      return this.trustedSet.getTarget(role);
+    if (this.trustedSet.getRole(role)) {
+      return this.trustedSet.getRole(role);
     }
 
     try {
@@ -195,7 +195,7 @@ export class Updater {
       }
     }
     console.log('--------------------------------');
-    return this.trustedSet.getTarget(role);
+    return this.trustedSet.getRole(role);
   }
 
   public async getTargetInfo(
@@ -226,7 +226,7 @@ export class Updater {
     Returns:
         ``TargetFile`` instance or ``None``.
     ***/
-    if (!this.trustedSet.getTarget(MetadataKind.Targets)) {
+    if (!this.trustedSet.targets) {
       this.refresh();
     }
     return this.preorderDepthFirstWalk(targetPath);
