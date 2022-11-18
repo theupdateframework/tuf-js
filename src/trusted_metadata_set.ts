@@ -127,9 +127,7 @@ export class TrustedMetadataSet {
     trusted = false
   ): Metadata<Snapshot> {
     if (!this.timestamp) {
-      throw new UnsignedMetadataError(
-        'Cannot update snapshot before timestamp'
-      );
+      throw new RuntimeError('Cannot update snapshot before timestamp');
     }
     if (this.targets) {
       throw new RuntimeError('Cannot update snapshot after targets');
@@ -211,7 +209,7 @@ export class TrustedMetadataSet {
     }
 
     if (this.snapshot.signed.isExpired(this.referenceTime)) {
-      throw new RuntimeError('snapshot.json is expired');
+      throw new ExpiredMetadataError('snapshot.json is expired');
     }
 
     const snapshotMeta = this.timestamp.signed.snapshotMeta;
@@ -227,9 +225,7 @@ export class TrustedMetadataSet {
     delegatorName: string
   ) {
     if (!this.snapshot) {
-      throw new UnsignedMetadataError(
-        'Cannot update delegated targets before snapshot'
-      );
+      throw new RuntimeError('Cannot update delegated targets before snapshot');
     }
 
     // Targets cannot be loaded if final snapshot is expired or its version
