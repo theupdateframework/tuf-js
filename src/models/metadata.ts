@@ -42,7 +42,7 @@ export class Metadata<T extends MetadataType> implements Signable {
         break;
       case MetadataKind.Targets:
         if (!this.signed.delegations) {
-          throw new Error(`No delegations found for ${delegatedRole}`);
+          throw new ValueError(`No delegations found for ${delegatedRole}`);
         }
         keys = this.signed.delegations.keys;
         if (this.signed.delegations.roles) {

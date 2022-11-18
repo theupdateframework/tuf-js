@@ -29,4 +29,16 @@ describe('Fetcher Test', () => {
       );
     });
   });
+
+  describe('fetch with reaching timeout limit', () => {
+    beforeAll(() => {
+      nock(baseURL).get('/').reply(200, response);
+    });
+
+    it('Reach the timeout limit', async () => {
+      await expect(fetcher.downloadBytes(baseURL, 1, 1)).rejects.toThrow(
+        'network timeout at: http://localhost:8080/'
+      );
+    });
+  });
 });

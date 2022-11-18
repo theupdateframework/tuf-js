@@ -1,8 +1,14 @@
-export abstract class FetcherInterface {
-  abstract fetch(url: string): Promise<NodeJS.ReadableStream>;
+import { DownloadLengthMismatchError } from './error';
 
-  public async downloadBytes(url: string, maxLength: number): Promise<Buffer> {
-    const reader = await this.fetch(url);
+export abstract class FetcherInterface {
+  abstract fetch(url: string, timeout?: number): Promise<NodeJS.ReadableStream>;
+
+  public async downloadBytes(
+    url: string,
+    maxLength: number,
+    timeout?: number
+  ): Promise<Buffer> {
+    const reader = await this.fetch(url, timeout);
 
     let numberOfBytesReceived = 0;
     const chunks: Buffer[] = [];
@@ -12,7 +18,7 @@ export abstract class FetcherInterface {
       numberOfBytesReceived += bufferChunk.length;
 
       if (numberOfBytesReceived > maxLength) {
-        throw new Error('Max length reached');
+        throw new DownloadLengthMismatchError('Max length reached');
       }
 
       chunks.push(bufferChunk);

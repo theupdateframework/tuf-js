@@ -1,4 +1,5 @@
 import fetch from 'make-fetch-happen';
+import { DownloadHTTPError } from './error';
 import { FetcherInterface } from './fetcher';
 
 export class Fetcher extends FetcherInterface {
@@ -6,11 +7,14 @@ export class Fetcher extends FetcherInterface {
     super();
   }
 
-  public override async fetch(url: string): Promise<NodeJS.ReadableStream> {
-    const response = await fetch(url);
+  public override async fetch(
+    url: string,
+    timeout?: number
+  ): Promise<NodeJS.ReadableStream> {
+    const response = await fetch(url, { timeout: timeout });
 
     if (!response.ok || !response?.body) {
-      throw new Error('Failed to download');
+      throw new DownloadHTTPError('Failed to download', response.status);
     }
 
     return response.body;

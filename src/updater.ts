@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { UnsignedMetadataError, ValueError } from './error';
 import { FetcherInterface } from './fetcher';
 import { Metadata, Targets } from './models';
 import { TargetFile } from './models/file';
@@ -77,7 +78,8 @@ export class Updater {
       try {
         const bytesData = await this.fetcher.downloadBytes(
           url,
-          this.config.rootMaxLength
+          this.config.rootMaxLength,
+          this.config.fetchTimeout
         );
         this.trustedSet.updateRoot(bytesData);
         this.persistMetadata(MetadataKind.Root, bytesData);
@@ -126,7 +128,7 @@ export class Updater {
     } catch (error) {
       console.log('Local snapshot is invalid: downloading new one');
       if (!this.trustedSet.timestamp) {
-        throw new Error('No timestamp metadata');
+        throw new UnsignedMetadataError('No timestamp metadata');
       }
       const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
 
@@ -141,7 +143,11 @@ export class Updater {
         : `${this.metadataBaseUrl}/snapshot.json`;
 
       try {
-        const bytesData = await this.fetcher.downloadBytes(url, maxLength);
+        const bytesData = await this.fetcher.downloadBytes(
+          url,
+          maxLength,
+          this.config.fetchTimeout
+        );
         this.trustedSet.updateSnapshot(bytesData);
         this.persistMetadata(MetadataKind.Snapshot, bytesData);
       } catch (error) {
@@ -170,7 +176,7 @@ export class Updater {
       console.log('Local %s is invalid: downloading new one', role);
 
       if (!this.trustedSet.snapshot) {
-        throw new Error('No snapshot metadata');
+        throw new UnsignedMetadataError('No snapshot metadata');
       }
 
       const metaInfo = this.trustedSet.snapshot.signed.meta[`${role}.json`];
@@ -187,7 +193,11 @@ export class Updater {
         : `${this.metadataBaseUrl}/${role}.json`;
 
       try {
-        const bytesData = await this.fetcher.downloadBytes(url, maxLength);
+        const bytesData = await this.fetcher.downloadBytes(
+          url,
+          maxLength,
+          this.config.fetchTimeout
+        );
         this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
         this.persistMetadata(role, bytesData);
       } catch (error) {
@@ -332,7 +342,7 @@ export class Updater {
 
   private generateTargetPath(targetInfo: TargetFile): string {
     if (!this.targetDir) {
-      throw new Error('Target directory not set');
+      throw new ValueError('Target directory not set');
     }
     return path.join(this.targetDir, targetInfo.path);
   }
@@ -348,7 +358,7 @@ export class Updater {
 
     if (!targetBaseUrl) {
       if (!this.targetBaseUrl) {
-        throw new Error('Target base URL not set');
+        throw new ValueError('Target base URL not set');
       }
       targetBaseUrl = this.targetBaseUrl;
     }
@@ -363,7 +373,11 @@ export class Updater {
     }
 
     const url = `${targetBaseUrl}/${targetFilePath}`;
-    const targetFile = await this.fetcher.downloadBytes(url, targetInfo.length);
+    const targetFile = await this.fetcher.downloadBytes(
+      url,
+      targetInfo.length,
+      this.config.fetchTimeout
+    );
 
     targetInfo.verify(targetFile);
 
