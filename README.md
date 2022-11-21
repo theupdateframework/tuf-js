@@ -6,18 +6,9 @@
 
 [The Update Framework (TUF)](https://theupdateframework.io/) is a framework for
 secure content delivery and updates. It protects against various types of
-supply chain attacks and provides resilience to compromise. This repository is a
-**reference implementation** written in Typescript. It is intended to conform to
+supply chain attacks and provides resilience to compromise. This repository is written in Typescript. It is intended to conform to
 version 1.0 of the [TUF
 specification](https://theupdateframework.github.io/specification/latest/).
-
-TUF-JS provides two APIs:
-
-- [`tuf.model`],
-  a "low-level" API, designed to provide easy and safe access to TUF
-  metadata and to handle (de)serialization from/to files.
-- [`tuf.updater`],
-  a client implementation
 
 ## About The Update Framework
 
@@ -54,14 +45,6 @@ We strive to make the specification easy to implement, so if you come across
 any inconsistencies or experience any difficulty, do let us know by sending an
 email, or by reporting an issue in the GitHub [specification
 repo](https://github.com/theupdateframework/specification/issues).
-
-## Licensing
-
-`tuf-js` is licensed under the Apache 2.0 License.
-
-<!-- ## Contributing
-
-See [the contributing docs](https://github.com/sigstore/.github/blob/main/CONTRIBUTING.md) for details. -->
 
 ## Code of Conduct
 
