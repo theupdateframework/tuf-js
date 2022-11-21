@@ -8,8 +8,7 @@ export class RuntimeError extends Error {}
 // looking from the perspective of users of metadata API or ngclient.
 export class RepositoryError extends Error {}
 
-// An error about metadata object with insufficient threshold of
-// signatures.
+// An error about metadata object with insufficient threshold of signatures.
 export class UnsignedMetadataError extends RepositoryError {}
 
 // An error for metadata that contains an invalid version number.
