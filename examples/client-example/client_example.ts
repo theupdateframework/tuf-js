@@ -4,10 +4,10 @@ function initDir() {}
 
 const target = 'file1.txt';
 
-const metadataBaseUrl = 'http://127.0.0.1:8000/metadata';
+const metadataBaseUrl = 'http://127.0.0.1:8080/metadata';
 const metadataDir = './';
 const targetDir = './';
-const targetBaseUrl = 'http://127.0.0.1:8000/targets';
+const targetBaseUrl = 'http://127.0.0.1:8080/targets';
 
 async function downloadTarget() {
   const updater = new Updater({
