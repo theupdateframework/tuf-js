@@ -15,7 +15,7 @@ export class UnsignedMetadataError extends RepositoryError {}
 export class BadVersionError extends RepositoryError {}
 
 // An error for metadata containing a previously verified version number.
-export class EqualVersionNumberError extends RepositoryError {}
+export class EqualVersionError extends BadVersionError {}
 
 // Indicate that a TUF Metadata file has expired.
 export class ExpiredMetadataError extends RepositoryError {}
