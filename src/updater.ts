@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { RepositoryError, ValueError } from './error';
+import { EqualVersionError, ValueError } from './error';
 import { FetcherInterface } from './fetcher';
 import { Metadata, Targets } from './models';
 import { TargetFile } from './models/file';
@@ -104,16 +104,25 @@ export class Updater {
 
     //Load from remote (whether local load succeeded or not)
     const url = `${this.metadataBaseUrl}/timestamp.json`;
+    const bytesData = await this.fetcher.downloadBytes(
+      url,
+      this.config.timestampMaxLength
+    );
+
     try {
-      const bytesData = await this.fetcher.downloadBytes(
-        url,
-        this.config.timestampMaxLength
-      );
       this.trustedSet.updateTimestamp(bytesData);
-      this.persistMetadata(MetadataKind.Timestamp, bytesData);
     } catch (error) {
-      console.log('error', error);
+      // If new timestamp version is same as current, discardd the new one.
+      // This is normal and should NOT raise an error.
+      if (error instanceof EqualVersionError) {
+        return;
+      }
+
+      // Re-raise any other error
+      throw error;
     }
+
+    this.persistMetadata(MetadataKind.Timestamp, bytesData);
     console.log('--------------------------------');
   }
 
@@ -127,7 +136,7 @@ export class Updater {
     } catch (error) {
       console.log('Local snapshot is invalid: downloading new one');
       if (!this.trustedSet.timestamp) {
-        throw new RepositoryError('No timestamp metadata');
+        throw new ReferenceError('No timestamp metadata');
       }
       const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
 
@@ -171,7 +180,7 @@ export class Updater {
       console.log('Local %s is invalid: downloading new one', role);
 
       if (!this.trustedSet.snapshot) {
-        throw new RepositoryError('No snapshot metadata');
+        throw new ReferenceError('No snapshot metadata');
       }
 
       const metaInfo = this.trustedSet.snapshot.signed.meta[`${role}.json`];

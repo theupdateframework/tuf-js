@@ -1,9 +1,9 @@
 import {
   BadVersionError,
+  EqualVersionError,
   ExpiredMetadataError,
   RepositoryError,
   RuntimeError,
-  UnsignedMetadataError,
 } from './error';
 import { Metadata, Root, Snapshot, Targets, Timestamp } from './models';
 import { MetadataKind } from './utils/types';
@@ -26,7 +26,7 @@ export class TrustedMetadataSet {
 
   public get root(): Metadata<Root> {
     if (!this.trustedSet.root) {
-      throw new UnsignedMetadataError('No trusted root metadata');
+      throw new ReferenceError('No trusted root metadata');
     }
     return this.trustedSet.root;
   }
@@ -99,7 +99,7 @@ export class TrustedMetadataSet {
       }
       //  Keep using old timestamp if versions are equal.
       if (newTimestamp.signed.version === this.timestamp.signed.version) {
-        throw new BadVersionError(
+        throw new EqualVersionError(
           `New timestamp version ${newTimestamp.signed.version} is equal to current version ${this.timestamp.signed.version}`
         );
       }
@@ -192,7 +192,7 @@ export class TrustedMetadataSet {
 
   private checkFinalTimestamp() {
     if (!this.timestamp) {
-      throw new UnsignedMetadataError('No trusted timestamp metadata');
+      throw new ReferenceError('No trusted timestamp metadata');
     }
     if (this.timestamp.signed.isExpired(this.referenceTime)) {
       throw new ExpiredMetadataError('Final timestamp.json is expired');
@@ -202,10 +202,10 @@ export class TrustedMetadataSet {
   private checkFinalSnapsnot() {
     // Raise if snapshot is expired or meta version does not match
     if (!this.snapshot) {
-      throw new UnsignedMetadataError('No trusted snapshot metadata');
+      throw new ReferenceError('No trusted snapshot metadata');
     }
     if (!this.timestamp) {
-      throw new UnsignedMetadataError('No trusted timestamp metadata');
+      throw new ReferenceError('No trusted timestamp metadata');
     }
 
     if (this.snapshot.signed.isExpired(this.referenceTime)) {
@@ -235,7 +235,7 @@ export class TrustedMetadataSet {
     const delegator = this.trustedSet[delegatorName];
 
     if (!delegator) {
-      throw new UnsignedMetadataError(`No trusted ${delegatorName} metadata`);
+      throw new RuntimeError(`No trusted ${delegatorName} metadata`);
     }
 
     console.log('Updating %s delegated by %s', roleName, delegatorName);
