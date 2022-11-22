@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { EqualVersionError, ValueError } from './error';
 import { FetcherInterface } from './fetcher';
 import { Metadata, Targets } from './models';
 import { TargetFile } from './models/file';
@@ -44,7 +45,7 @@ export class Updater {
     this.trustedSet = new TrustedMetadataSet(data);
     this.config = updaterConfig;
 
-    this.fetcher = fetcher || new Fetcher();
+    this.fetcher = fetcher || new Fetcher(this.config.fetchTimeout);
 
     // self._trusted_set = trusted_metadata_set.TrustedMetadataSet(data)
     // self.config = config or UpdaterConfig()
@@ -103,16 +104,25 @@ export class Updater {
 
     //Load from remote (whether local load succeeded or not)
     const url = `${this.metadataBaseUrl}/timestamp.json`;
+    const bytesData = await this.fetcher.downloadBytes(
+      url,
+      this.config.timestampMaxLength
+    );
+
     try {
-      const bytesData = await this.fetcher.downloadBytes(
-        url,
-        this.config.timestampMaxLength
-      );
       this.trustedSet.updateTimestamp(bytesData);
-      this.persistMetadata(MetadataKind.Timestamp, bytesData);
     } catch (error) {
-      console.log('error', error);
+      // If new timestamp version is same as current, discardd the new one.
+      // This is normal and should NOT raise an error.
+      if (error instanceof EqualVersionError) {
+        return;
+      }
+
+      // Re-raise any other error
+      throw error;
     }
+
+    this.persistMetadata(MetadataKind.Timestamp, bytesData);
     console.log('--------------------------------');
   }
 
@@ -126,7 +136,7 @@ export class Updater {
     } catch (error) {
       console.log('Local snapshot is invalid: downloading new one');
       if (!this.trustedSet.timestamp) {
-        throw new Error('No timestamp metadata');
+        throw new ReferenceError('No timestamp metadata');
       }
       const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
 
@@ -170,7 +180,7 @@ export class Updater {
       console.log('Local %s is invalid: downloading new one', role);
 
       if (!this.trustedSet.snapshot) {
-        throw new Error('No snapshot metadata');
+        throw new ReferenceError('No snapshot metadata');
       }
 
       const metaInfo = this.trustedSet.snapshot.signed.meta[`${role}.json`];
@@ -332,7 +342,7 @@ export class Updater {
 
   private generateTargetPath(targetInfo: TargetFile): string {
     if (!this.targetDir) {
-      throw new Error('Target directory not set');
+      throw new ValueError('Target directory not set');
     }
     return path.join(this.targetDir, targetInfo.path);
   }
@@ -348,7 +358,7 @@ export class Updater {
 
     if (!targetBaseUrl) {
       if (!this.targetBaseUrl) {
-        throw new Error('Target base URL not set');
+        throw new ValueError('Target base URL not set');
       }
       targetBaseUrl = this.targetBaseUrl;
     }

@@ -6,4 +6,5 @@ export const updaterConfig = {
   snapshotMaxLength: 2000000, // bytes
   targetsMaxLength: 5000000, // bytes
   prefixTargetsWithHash: true,
+  fetchTimeout: 100000, // milliseconds
 };
