@@ -4,9 +4,9 @@
 
 This project uses GitHub issues to track bugs and feature requests. Please search the existing issues before filing new issues to avoid duplicates. For new issues, file your bug or feature request as a new issue.
 
-For help or questions about using TUF-JS, please email ejahnGithub@github.com
+For help or questions about using TUF-JS, please [open an issue](https://github.com/github/tuf-js/issues/new) or a pull request.
 
-TUF-JS is under active development and maintained by GitHub staff. We will do our best to respond to support, feature requests, and community questions in a timely manner.
+`tuf-js` is under active development and maintained by the Package Security team at GitHub. We will do our best to respond to support, feature requests, and community questions in a timely manner.
 
 ## GitHub Support Policy
 

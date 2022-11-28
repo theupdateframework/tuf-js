@@ -57,17 +57,8 @@ This project is licensed under the terms of the MIT open source license. Please 
 
 ## Code of Conduct
 
-Everyone interacting with this project is expected to follow the [Code of
-Conduct](./CODE_OF_CONDUCT.md).
+Please note that this project is released with a [Contributor Code of Conduct](./CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
 ## Maintainers
 
-@ejahnGithub
-
-## Support
-
-Please follow the [Support](./SUPPORT.md).
-
-## Security
-
-Please follow the [Security](./SECURITY.md).
+`tuf-js` is maintained by [@ejahnGithub](https://github.com/ejahnGithub) and [@bdehamer](https://github.com/bdehamer) on the Package Security team at GitHub.
