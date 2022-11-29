@@ -41,11 +41,6 @@ Please see [TUF's website](https://theupdateframework.com/) for more information
 
 Questions, feedback, and suggestions are welcomed. Feel free to email ejahnGithub@github.com
 
-We strive to make the specification easy to implement, so if you come across
-any inconsistencies or experience any difficulty, do let us know by sending an
-email, or by reporting an issue in the GitHub [specification
-repo](https://github.com/theupdateframework/specification/issues).
-
 ## Requirements
 
 NODE >= 14
