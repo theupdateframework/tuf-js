@@ -37,31 +37,19 @@ Please see [TUF's website](https://theupdateframework.com/) for more information
   [API reference](https://theupdateframework.readthedocs.io/en/latest/api/api-reference.html)
 - [Usage examples](https://github.com/github/tuf-js/tree/main/examples/client-example)
 
-## Contact
+## Requirements
 
-Questions, feedback, and suggestions are welcomed. Feel free to email ejahnGithub@github.com
+NODE >= 14
+NPM >= 6
 
-We strive to make the specification easy to implement, so if you come across
-any inconsistencies or experience any difficulty, do let us know by sending an
-email, or by reporting an issue in the GitHub [specification
-repo](https://github.com/theupdateframework/specification/issues).
+## License
+
+This project is licensed under the terms of the MIT open source license. Please refer to [MIT](./LICENSE.md) for the full terms.
 
 ## Code of Conduct
 
-Everyone interacting with this project is expected to follow the [CNCF Community Code of
-Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md).
+Please note that this project is released with a [Contributor Code of Conduct](./CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
-## Security
+## Maintainers
 
-Should you discover any security issues, can be reported by emailing ejahnGithub@github.com
-
-At a minimum, the report must contain the following:
-
-- Description of the vulnerability.
-- Steps to reproduce the issue.
-
-<!-- ## Info
-
-`sigstore-js` is developed as part of the [`sigstore`](https://sigstore.dev) project.
-
-We also use a [slack channel](https://sigstore.slack.com)! Click [here](https://join.slack.com/t/sigstore/shared_invite/zt-mhs55zh0-XmY3bcfWn4XEyMqUUutbUQ) for the invite link. -->
+`tuf-js` is maintained by [@ejahnGithub](https://github.com/ejahnGithub) and [@bdehamer](https://github.com/bdehamer) on the Package Security team at GitHub.
