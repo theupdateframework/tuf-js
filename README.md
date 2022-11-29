@@ -37,10 +37,6 @@ Please see [TUF's website](https://theupdateframework.com/) for more information
   [API reference](https://theupdateframework.readthedocs.io/en/latest/api/api-reference.html)
 - [Usage examples](https://github.com/github/tuf-js/tree/main/examples/client-example)
 
-## Contact
-
-Questions, feedback, and suggestions are welcomed. Feel free to email ejahnGithub@github.com
-
 ## Requirements
 
 NODE >= 14
