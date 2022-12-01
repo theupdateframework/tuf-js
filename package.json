@@ -1,5 +1,5 @@
 {
-  "name": "tuf",
+  "name": "tuf-js",
   "version": "0.0.0",
   "description": "JavaScript implementation of The Update Framework (TUF)",
   "main": "dist/index.js",
@@ -20,7 +20,7 @@
     "tuf"
   ],
   "author": "bdehamer@github.com",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/github/tuf-js/issues"
   },
