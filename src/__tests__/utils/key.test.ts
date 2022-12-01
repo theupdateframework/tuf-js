@@ -40,4 +40,14 @@ describe('getPublicKey', () => {
       });
     });
   });
+
+  describe('when unsupported key', () => {
+    describe('Unsupported Algorithm', () => {
+      it('throws an error', () => {
+        expect(() => {
+          getPublicKey({ keyType: 'unspported', scheme: '', keyVal: '' });
+        }).toThrow();
+      });
+    });
+  });
 });

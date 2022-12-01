@@ -44,4 +44,15 @@ describe('Fetcher Test', () => {
       );
     });
   });
+
+  describe('Request Fetcher Fetch Test', () => {
+    it('fetch with bad status code', async () => {
+      nock(baseURL).get('/').reply(404, 'error');
+
+      const fetcher = new Fetcher();
+      await expect(fetcher.fetch(baseURL)).rejects.toThrow(
+        'Failed to download'
+      );
+    });
+  });
 });
