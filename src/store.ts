@@ -15,7 +15,7 @@ type TrustedSet = {
   targets?: Metadata<Targets>;
 } & { [key: string]: Metadata<Targets> };
 
-export class TrustedMetadataSet {
+export class TrustedMetadataStore {
   private trustedSet: TrustedSet = {};
   private referenceTime: Date;
 
