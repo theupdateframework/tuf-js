@@ -6,10 +6,10 @@ import { Metadata, Targets } from './models';
 import { TargetFile } from './models/file';
 import { Fetcher } from './requestsFetcher';
 import { TrustedMetadataSet } from './trusted_metadata_set';
-import { Config, updaterConfig } from './utils/config';
+import { Config, defaultConfig } from './utils/config';
 import { MetadataKind } from './utils/types';
 
-interface UodaterOptions {
+interface UpdaterOptions {
   metadataDir: string;
   metadataBaseUrl: string;
   targetDir?: string;
@@ -29,10 +29,10 @@ export class Updater {
   private targetDir?: string;
   private targetBaseUrl?: string;
   private trustedSet: TrustedMetadataSet;
-  private config: typeof updaterConfig;
+  private config: Config;
   private fetcher: FetcherInterface;
 
-  constructor(options: UodaterOptions) {
+  constructor(options: UpdaterOptions) {
     const {
       metadataDir,
       metadataBaseUrl,
@@ -50,10 +50,9 @@ export class Updater {
 
     const data = this.loadLocalMetadata('1.root');
     this.trustedSet = new TrustedMetadataSet(data);
-    this.config = updaterConfig;
 
+    this.config = { ...defaultConfig, ...config };
     this.fetcher = fetcher || new Fetcher(this.config.fetchTimeout);
-    this.config = config || updaterConfig;
   }
 
   public async refresh() {
