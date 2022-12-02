@@ -8,3 +8,5 @@ export const updaterConfig = {
   prefixTargetsWithHash: true,
   fetchTimeout: 100000, // milliseconds
 };
+
+export type Config = typeof updaterConfig;

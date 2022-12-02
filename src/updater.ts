@@ -6,7 +6,7 @@ import { Metadata, Targets } from './models';
 import { TargetFile } from './models/file';
 import { Fetcher } from './requestsFetcher';
 import { TrustedMetadataSet } from './trusted_metadata_set';
-import { updaterConfig } from './utils/config';
+import { Config, updaterConfig } from './utils/config';
 import { MetadataKind } from './utils/types';
 
 interface UodaterOptions {
@@ -15,6 +15,7 @@ interface UodaterOptions {
   targetDir?: string;
   targetBaseUrl?: string;
   fetcher?: FetcherInterface;
+  config?: Config;
 }
 
 interface Delegation {
@@ -32,8 +33,14 @@ export class Updater {
   private fetcher: FetcherInterface;
 
   constructor(options: UodaterOptions) {
-    const { metadataDir, metadataBaseUrl, targetDir, targetBaseUrl, fetcher } =
-      options;
+    const {
+      metadataDir,
+      metadataBaseUrl,
+      targetDir,
+      targetBaseUrl,
+      fetcher,
+      config,
+    } = options;
 
     this.dir = metadataDir;
     this.metadataBaseUrl = metadataBaseUrl;
@@ -46,9 +53,7 @@ export class Updater {
     this.config = updaterConfig;
 
     this.fetcher = fetcher || new Fetcher(this.config.fetchTimeout);
-
-    // self._trusted_set = trusted_metadata_set.TrustedMetadataSet(data)
-    // self.config = config or UpdaterConfig()
+    this.config = config || updaterConfig;
   }
 
   public async refresh() {
