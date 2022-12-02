@@ -4,7 +4,7 @@ import { guard } from '../utils';
 import { JSONObject, JSONValue } from '../utils/types';
 import { Signature } from './signature';
 
-const SPECIFICATION_VERSION = ['1', '0', '30'];
+const SPECIFICATION_VERSION = ['1', '0', '31'];
 
 export interface Signable {
   signatures: Record<string, Signature>;
