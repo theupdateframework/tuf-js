@@ -28,6 +28,6 @@ const withTempDir = async <T>(handler: TempDirHandler<T>) => {
   try {
     return await handler(dir);
   } finally {
-    fs.rmdir(dir, { recursive: true });
+    fs.rm(dir, { recursive: true });
   }
 };
