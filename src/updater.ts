@@ -41,7 +41,7 @@ export class Updater {
     this.targetDir = targetDir;
     this.targetBaseUrl = targetBaseUrl;
 
-    const data = this.loadLocalMetadata('1.root');
+    const data = this.loadLocalMetadata(MetadataKind.Root);
     this.trustedSet = new TrustedMetadataSet(data);
     this.config = updaterConfig;
 

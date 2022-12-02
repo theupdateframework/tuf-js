@@ -1,13 +1,27 @@
+import fs from 'fs';
+import path from 'path';
 import { Updater } from '../../src';
-
-function initDir() {}
 
 const target = 'file1.txt';
 
 const metadataBaseUrl = 'http://127.0.0.1:8080/metadata';
-const metadataDir = './';
-const targetDir = './';
+const metadataDir = './metadata';
+const targetDir = './targets';
 const targetBaseUrl = 'http://127.0.0.1:8080/targets';
+
+function initDir() {
+  if (!fs.existsSync(metadataDir)) {
+    fs.mkdirSync(metadataDir);
+  }
+
+  if (!fs.existsSync(path.join(metadataDir, 'root.json'))) {
+    fs.copyFileSync('./1.root.json', path.join(metadataDir, 'root.json'));
+  }
+
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir);
+  }
+}
 
 async function downloadTarget() {
   const updater = new Updater({
