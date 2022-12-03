@@ -1,5 +1,5 @@
 import nock from 'nock';
-import { Fetcher } from '../requestsFetcher';
+import { Fetcher } from '../fetcher';
 
 describe('Fetcher Test', () => {
   const baseURL = 'http://localhost:8080';
