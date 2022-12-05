@@ -5,15 +5,16 @@ import { BaseFetcher, Fetcher } from './fetcher';
 import { Metadata, Targets } from './models';
 import { TargetFile } from './models/file';
 import { TrustedMetadataStore } from './store';
-import { updaterConfig } from './utils/config';
+import { Config, defaultConfig } from './utils/config';
 import { MetadataKind } from './utils/types';
 
-interface UodaterOptions {
+interface UpdaterOptions {
   metadataDir: string;
   metadataBaseUrl: string;
   targetDir?: string;
   targetBaseUrl?: string;
   fetcher?: BaseFetcher;
+  config?: Config;
 }
 
 interface Delegation {
@@ -27,12 +28,18 @@ export class Updater {
   private targetDir?: string;
   private targetBaseUrl?: string;
   private trustedSet: TrustedMetadataStore;
-  private config: typeof updaterConfig;
+  private config: Config;
   private fetcher: BaseFetcher;
 
-  constructor(options: UodaterOptions) {
-    const { metadataDir, metadataBaseUrl, targetDir, targetBaseUrl, fetcher } =
-      options;
+  constructor(options: UpdaterOptions) {
+    const {
+      metadataDir,
+      metadataBaseUrl,
+      targetDir,
+      targetBaseUrl,
+      fetcher,
+      config,
+    } = options;
 
     this.dir = metadataDir;
     this.metadataBaseUrl = metadataBaseUrl;
@@ -41,13 +48,10 @@ export class Updater {
     this.targetBaseUrl = targetBaseUrl;
 
     const data = this.loadLocalMetadata(MetadataKind.Root);
+
     this.trustedSet = new TrustedMetadataStore(data);
-    this.config = updaterConfig;
-
+    this.config = { ...defaultConfig, ...config };
     this.fetcher = fetcher || new Fetcher(this.config.fetchTimeout);
-
-    // self._trusted_set = trusted_metadata_set.TrustedMetadataSet(data)
-    // self.config = config or UpdaterConfig()
   }
 
   public async refresh() {

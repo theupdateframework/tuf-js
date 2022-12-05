@@ -1,4 +1,4 @@
-export const updaterConfig = {
+export const defaultConfig = {
   maxRootRotations: 32,
   maxDelegations: 32,
   rootMaxLength: 512000, //bytes
@@ -8,3 +8,5 @@ export const updaterConfig = {
   prefixTargetsWithHash: true,
   fetchTimeout: 100000, // milliseconds
 };
+
+export type Config = typeof defaultConfig;
