@@ -1,6 +1,7 @@
-import { DownloadLengthMismatchError } from './error';
+import fetch from 'make-fetch-happen';
+import { DownloadHTTPError, DownloadLengthMismatchError } from './error';
 
-export abstract class FetcherInterface {
+export abstract class BaseFetcher {
   protected timeout?: number;
 
   constructor(timeout?: number) {
@@ -28,5 +29,21 @@ export abstract class FetcherInterface {
 
     // concatenate chunks into a single buffer
     return Buffer.concat(chunks);
+  }
+}
+
+export class Fetcher extends BaseFetcher {
+  constructor(timeout?: number) {
+    super(timeout);
+  }
+
+  public override async fetch(url: string): Promise<NodeJS.ReadableStream> {
+    const response = await fetch(url, { timeout: this.timeout });
+
+    if (!response.ok || !response?.body) {
+      throw new DownloadHTTPError('Failed to download', response.status);
+    }
+
+    return response.body;
   }
 }

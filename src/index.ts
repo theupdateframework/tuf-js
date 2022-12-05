@@ -1,2 +1,2 @@
-export { FetcherInterface } from './fetcher';
+export { BaseFetcher } from './fetcher';
 export { Updater } from './updater';
