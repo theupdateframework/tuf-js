@@ -1,3 +1,4 @@
+import { UnsupportedAlgorithmError } from '../../error';
 import { getPublicKey } from '../../utils/key';
 
 describe('getPublicKey', () => {
@@ -46,7 +47,7 @@ describe('getPublicKey', () => {
       it('throws an error', () => {
         expect(() => {
           getPublicKey({ keyType: 'unspported', scheme: '', keyVal: '' });
-        }).toThrow();
+        }).toThrow(UnsupportedAlgorithmError);
       });
     });
   });

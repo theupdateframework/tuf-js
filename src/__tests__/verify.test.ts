@@ -1,3 +1,4 @@
+import { ValueError } from '../error';
 import { Metadata } from '../models/metadata';
 import { MetadataKind } from '../utils/types';
 import { rootJson } from './__fixtures__/roots';
@@ -41,7 +42,7 @@ describe('Verify TUF local sample', () => {
 
       expect(() => {
         delegator.verifyDelegate('wrongrole', newDelegate);
-      }).toThrow('no delegation found for wrongrole');
+      }).toThrow(ValueError);
     });
   });
 
@@ -50,7 +51,7 @@ describe('Verify TUF local sample', () => {
       const snapshot = Metadata.fromJSON(MetadataKind.Snapshot, snapshotJson);
       expect(() => {
         snapshot.verifyDelegate('snapshot', snapshot);
-      }).toThrow('invalid metadata type');
+      }).toThrow(TypeError);
     });
 
     it('cannot use timestamp metadata to verify', () => {
@@ -60,7 +61,7 @@ describe('Verify TUF local sample', () => {
       );
       expect(() => {
         timestamp.verifyDelegate('timestamp', timestamp);
-      }).toThrow('invalid metadata type');
+      }).toThrow(TypeError);
     });
   });
 });
