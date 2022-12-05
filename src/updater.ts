@@ -1,20 +1,20 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { EqualVersionError, ValueError } from './error';
-import { FetcherInterface } from './fetcher';
+import { BaseFetcher, Fetcher } from './fetcher';
 import { Metadata, Targets } from './models';
 import { TargetFile } from './models/file';
-import { Fetcher } from './requestsFetcher';
-import { TrustedMetadataSet } from './trusted_metadata_set';
-import { updaterConfig } from './utils/config';
+import { TrustedMetadataStore } from './store';
+import { Config, defaultConfig } from './utils/config';
 import { MetadataKind } from './utils/types';
 
-interface UodaterOptions {
+interface UpdaterOptions {
   metadataDir: string;
   metadataBaseUrl: string;
   targetDir?: string;
   targetBaseUrl?: string;
-  fetcher?: FetcherInterface;
+  fetcher?: BaseFetcher;
+  config?: Config;
 }
 
 interface Delegation {
@@ -27,13 +27,19 @@ export class Updater {
   private metadataBaseUrl: string;
   private targetDir?: string;
   private targetBaseUrl?: string;
-  private trustedSet: TrustedMetadataSet;
-  private config: typeof updaterConfig;
-  private fetcher: FetcherInterface;
+  private trustedSet: TrustedMetadataStore;
+  private config: Config;
+  private fetcher: BaseFetcher;
 
-  constructor(options: UodaterOptions) {
-    const { metadataDir, metadataBaseUrl, targetDir, targetBaseUrl, fetcher } =
-      options;
+  constructor(options: UpdaterOptions) {
+    const {
+      metadataDir,
+      metadataBaseUrl,
+      targetDir,
+      targetBaseUrl,
+      fetcher,
+      config,
+    } = options;
 
     this.dir = metadataDir;
     this.metadataBaseUrl = metadataBaseUrl;
@@ -42,13 +48,10 @@ export class Updater {
     this.targetBaseUrl = targetBaseUrl;
 
     const data = this.loadLocalMetadata(MetadataKind.Root);
-    this.trustedSet = new TrustedMetadataSet(data);
-    this.config = updaterConfig;
 
+    this.trustedSet = new TrustedMetadataStore(data);
+    this.config = { ...defaultConfig, ...config };
     this.fetcher = fetcher || new Fetcher(this.config.fetchTimeout);
-
-    // self._trusted_set = trusted_metadata_set.TrustedMetadataSet(data)
-    // self.config = config or UpdaterConfig()
   }
 
   public async refresh() {
@@ -208,34 +211,12 @@ export class Updater {
     return this.trustedSet.getRole(role);
   }
 
+  // Returns the TargetFile instance with information for the given target path.
+  //
+  // Implicitly calls refresh if it hasn't already been called.
   public async getTargetInfo(
     targetPath: string
   ): Promise<TargetFile | undefined> {
-    /***
-     * Returns ``TargetFile`` instance with information for ``target_path``.
-
-    The return value can be used as an argument to
-    ``download_target()`` and ``find_cached_target()``.
-
-    If ``refresh()`` has not been called before calling
-    ``get_targetinfo()``, the refresh will be done implicitly.
-
-    As a side-effect this method downloads all the additional (delegated
-    targets) metadata it needs to return the target information.
-
-    Args:
-        target_path: `path-relative-URL string
-            <https://url.spec.whatwg.org/#path-relative-url-string>`_
-            that uniquely identifies the target within the repository.
-
-    Raises:
-        OSError: New metadata could not be written to disk
-        RepositoryError: Metadata failed to verify in some way
-        DownloadError: Download of a metadata file failed in some way
-
-    Returns:
-        ``TargetFile`` instance or ``None``.
-    ***/
     if (!this.trustedSet.targets) {
       this.refresh();
     }
