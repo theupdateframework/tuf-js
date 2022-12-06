@@ -15,6 +15,7 @@ describe('Updater Test', () => {
   const metadataDir = './metadata';
   const targetDir = './targets';
 
+  // create the directory for metadata and targets and copy the root.json
   beforeEach(() => {
     if (!fs.existsSync(metadataDir)) {
       fs.mkdirSync(metadataDir);
@@ -22,7 +23,7 @@ describe('Updater Test', () => {
 
     if (!fs.existsSync(path.join(metadataDir, 'root.json'))) {
       fs.copyFileSync(
-        'examples/client-example/1.root.json',
+        path.resolve(__dirname, '../../examples/client-example/1.root.json'),
         path.join(metadataDir, 'root.json')
       );
     }
@@ -32,17 +33,19 @@ describe('Updater Test', () => {
     }
   });
 
+  // remove the directory for metadata and targets
   afterEach(() => {
-    // fs.rmSync(metadataDir, { recursive: true });
-    // fs.rmSync(targetDir, { recursive: true });
+    fs.rmSync(metadataDir, { recursive: true });
+    fs.rmSync(targetDir, { recursive: true });
   });
 
-  describe('Init Updater', () => {
-    it('Init Updater with empty metadata dir', () => {
+  describe('Init updater', () => {
+    it('Init updater with empty metadata dir', () => {
       const options: UpdaterOptions = {
-        metadataDir: '',
+        metadataDir: 'invalid dir',
+        targetDir: 'invalid dir',
         metadataBaseUrl: '',
-        targetDir: '',
+        targetBaseUrl: '',
       };
 
       expect(() => new Updater(options)).toThrow(
@@ -50,18 +53,20 @@ describe('Updater Test', () => {
       );
     });
 
-    it('Init Updater with existing metadata base url', () => {
+    it('Init updater with existing metadata base url', () => {
       const options: UpdaterOptions = {
         metadataDir: metadataDir,
-        metadataBaseUrl: '',
-        targetDir: '',
+        targetDir: targetDir,
+        metadataBaseUrl: metadataBaseUrl,
+        targetBaseUrl: targetBaseUrl,
       };
 
       expect(() => new Updater(options)).not.toThrow();
     });
   });
 
-  describe('Updater Refresh', () => {
+  describe('Updater functionality', () => {
+    // mock the http request for all metadata and targets
     beforeEach(() => {
       nock(baseURL).get('/metadata/1.root.json').reply(200, rawRootJson);
       nock(baseURL).get('/metadata/snapshot.json').reply(200, rawSnapshotJson);
@@ -75,8 +80,9 @@ describe('Updater Test', () => {
     it('Pass in invalid url', async () => {
       const options: UpdaterOptions = {
         metadataDir: metadataDir,
-        metadataBaseUrl: '',
         targetDir: targetDir,
+        metadataBaseUrl: 'invalid url',
+        targetBaseUrl: 'invalid url',
       };
 
       const updater = new Updater(options);
@@ -84,40 +90,21 @@ describe('Updater Test', () => {
       await expect(updater.refresh()).rejects.toThrow('Invalid URL');
     });
 
-    it('Pass in valid url and refresh', async () => {
+    it('Successfully download the target', async () => {
       const options: UpdaterOptions = {
         metadataDir: metadataDir,
-        metadataBaseUrl: metadataBaseUrl,
         targetDir: targetDir,
-        targetBaseUrl: targetBaseUrl,
-      };
-
-      const updater = new Updater(options);
-
-      await expect(updater.refresh()).resolves.not.toThrow();
-    });
-
-    it('Pass in valid url and refresh', async () => {
-      const options: UpdaterOptions = {
-        metadataDir: metadataDir,
         metadataBaseUrl: metadataBaseUrl,
-        targetDir: targetDir,
         targetBaseUrl: targetBaseUrl,
       };
 
       const updater = new Updater(options);
       const target = 'file1.txt';
 
-      await updater.refresh();
+      await expect(updater.refresh()).resolves.not.toThrow();
       const targetInfo = await updater.getTargetInfo(target);
 
       if (!targetInfo) {
-        // console.log(`Target ${target} doesn't exist`);
-        return;
-      }
-      const targetPath = await updater.findCachedTarget(targetInfo);
-      if (targetPath) {
-        // console.log(`Target ${target} is cached at ${targetPath}`);
         return;
       }
 
