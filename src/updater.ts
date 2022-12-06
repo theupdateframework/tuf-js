@@ -77,7 +77,7 @@ export class Updater {
     const upperBound = lowerBound + this.config.maxRootRotations;
 
     for (let version = lowerBound; version <= upperBound; version++) {
-      const url = `${this.metadataBaseUrl}/${version}.root.json`;
+      const url = path.join(this.metadataBaseUrl, `${version}.root.json`);
       try {
         const bytesData = await this.fetcher.downloadBytes(
           url,
@@ -106,7 +106,8 @@ export class Updater {
     }
 
     //Load from remote (whether local load succeeded or not)
-    const url = `${this.metadataBaseUrl}/timestamp.json`;
+    const url = path.join(this.metadataBaseUrl, `timestamp.json`);
+
     const bytesData = await this.fetcher.downloadBytes(
       url,
       this.config.timestampMaxLength
@@ -149,9 +150,10 @@ export class Updater {
         ? snapshotMeta.version
         : undefined;
 
-      const url = version
-        ? `${this.metadataBaseUrl}/${version}.snapshot.json`
-        : `${this.metadataBaseUrl}/snapshot.json`;
+      const url = path.join(
+        this.metadataBaseUrl,
+        version ? `${version}.snapshot.json` : `snapshot.json`
+      );
 
       try {
         const bytesData = await this.fetcher.downloadBytes(url, maxLength);
@@ -195,9 +197,10 @@ export class Updater {
         ? metaInfo.version
         : undefined;
 
-      const url = version
-        ? `${this.metadataBaseUrl}/${version}.${role}.json`
-        : `${this.metadataBaseUrl}/${role}.json`;
+      const url = path.join(
+        this.metadataBaseUrl,
+        version ? `${version}.${role}.json` : `${role}.json`
+      );
 
       try {
         const bytesData = await this.fetcher.downloadBytes(url, maxLength);
@@ -353,7 +356,8 @@ export class Updater {
       targetFilePath = `${hashes[0]}.${basename}`;
     }
 
-    const url = `${targetBaseUrl}/${targetFilePath}`;
+    const url = path.join(targetBaseUrl, targetFilePath);
+
     const targetFile = await this.fetcher.downloadBytes(url, targetInfo.length);
 
     targetInfo.verify(targetFile);
