@@ -7,3 +7,7 @@ export const rootJson = JSON.parse(
     'utf-8'
   )
 );
+
+export const rawRootJson = fs.readFileSync(
+  path.resolve(__dirname, '../../../repository_data/metadata/root.json')
+);

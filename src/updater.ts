@@ -8,7 +8,7 @@ import { TrustedMetadataStore } from './store';
 import { Config, defaultConfig } from './utils/config';
 import { MetadataKind } from './utils/types';
 
-interface UpdaterOptions {
+export interface UpdaterOptions {
   metadataDir: string;
   metadataBaseUrl: string;
   targetDir?: string;
@@ -70,7 +70,7 @@ export class Updater {
     // Load remote root metadata.
     // Sequentially load and persist on local disk every newer root metadata
     // version available on the remote.
-    console.log('Loading root metadata');
+    // console.log('Loading root metadata');
     const rootVersion = this.trustedSet.root.signed.version;
 
     const lowerBound = rootVersion + 1;
@@ -86,23 +86,23 @@ export class Updater {
         this.trustedSet.updateRoot(bytesData);
         this.persistMetadata(MetadataKind.Root, bytesData);
       } catch (error) {
-        console.log('error', error);
+        // console.log('error', error);
         break;
       }
     }
 
-    console.log('--------------------------------');
+    // console.log('--------------------------------');
   }
 
   private async loadTimestamp() {
-    console.log('Loading timestamp metadata');
+    // console.log('Loading timestamp metadata');
 
     // Load local and remote timestamp metadata
     try {
       const data = this.loadLocalMetadata(MetadataKind.Timestamp);
       this.trustedSet.updateTimestamp(data);
     } catch (error) {
-      console.error('Cannot load local timestamp metadata');
+      // console.error('Cannot load local timestamp metadata');
     }
 
     //Load from remote (whether local load succeeded or not)
@@ -127,18 +127,18 @@ export class Updater {
     }
 
     this.persistMetadata(MetadataKind.Timestamp, bytesData);
-    console.log('--------------------------------');
+    // console.log('--------------------------------');
   }
 
   private async loadSnapshot() {
-    console.log('Loading snapshot metadata');
+    // console.log('Loading snapshot metadata');
     //Load local (and if needed remote) snapshot metadata
     try {
       const data = this.loadLocalMetadata(MetadataKind.Snapshot);
       this.trustedSet.updateSnapshot(data, true);
-      console.log('Local snapshot is valid: not downloading new one');
+      // console.log('Local snapshot is valid: not downloading new one');
     } catch (error) {
-      console.log('Local snapshot is invalid: downloading new one');
+      // console.log('Local snapshot is invalid: downloading new one');
       if (!this.trustedSet.timestamp) {
         throw new ReferenceError('No timestamp metadata');
       }
@@ -160,17 +160,17 @@ export class Updater {
         this.trustedSet.updateSnapshot(bytesData);
         this.persistMetadata(MetadataKind.Snapshot, bytesData);
       } catch (error) {
-        console.log('error', error);
+        // console.log('error', error);
       }
     }
-    console.log('--------------------------------');
+    // console.log('--------------------------------');
   }
 
   private async loadTargets(
     role: string,
     parentRole: string
   ): Promise<Metadata<Targets> | undefined> {
-    console.log(`Loading ${role} metadata`);
+    // console.log(`Loading ${role} metadata`);
 
     if (this.trustedSet.getRole(role)) {
       return this.trustedSet.getRole(role);
@@ -179,10 +179,10 @@ export class Updater {
     try {
       const buffer = this.loadLocalMetadata(role);
       this.trustedSet.updateDelegatedTargets(buffer, role, parentRole);
-      console.log('Local %s is valid: not downloading new one', role);
+      // console.log('Local %s is valid: not downloading new one', role);
     } catch (error) {
       // Local 'role' does not exist or is invalid: update from remote
-      console.log('Local %s is invalid: downloading new one', role);
+      // console.log('Local %s is invalid: downloading new one', role);
 
       if (!this.trustedSet.snapshot) {
         throw new ReferenceError('No snapshot metadata');
@@ -207,10 +207,10 @@ export class Updater {
         this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
         this.persistMetadata(role, bytesData);
       } catch (error) {
-        console.log('error', error);
+        // console.log('error', error);
       }
     }
-    console.log('--------------------------------');
+    // console.log('--------------------------------');
     return this.trustedSet.getRole(role);
   }
 
@@ -254,7 +254,7 @@ export class Updater {
 
       // Skip any visited current role to prevent cycles.
       if (visitedRoleNames.has(roleName)) {
-        console.log('Skipping visited current role %s', roleName);
+        // console.log('Skipping visited current role %s', roleName);
         continue;
       }
 
@@ -268,7 +268,7 @@ export class Updater {
 
       const target = targets.targets?.[targetPath];
       if (target) {
-        console.log('Found target %s in role %s', targetPath, roleName);
+        // console.log('Found target %s in role %s', targetPath, roleName);
         return target;
       }
 
@@ -282,14 +282,14 @@ export class Updater {
         const rolesForTarget = targets.delegations.rolesForTarget(targetPath);
 
         for (const { role: childName, terminating } of rolesForTarget) {
-          console.log('Adding child role %s', childName);
+          // console.log('Adding child role %s', childName);
 
           childRolesToVisit.push({
             roleName: childName,
             parentRoleName: roleName,
           });
           if (terminating) {
-            console.log('Terminating delegation at %s', childName);
+            // console.log('Terminating delegation at %s', childName);
             delegationsToVisit.splice(0); // empty the array
             break;
           }
@@ -299,11 +299,11 @@ export class Updater {
       }
     }
     if (delegationsToVisit.length > 0) {
-      console.log(
-        '%d delegations left to visit but allowed at most %d delegations',
-        delegationsToVisit.length,
-        this.config.maxDelegations
-      );
+      // console.log(
+      //   '%d delegations left to visit but allowed at most %d delegations',
+      //   delegationsToVisit.length,
+      //   this.config.maxDelegations
+      // );
     }
   }
 
@@ -372,7 +372,7 @@ export class Updater {
       const filePath = path.join(this.dir, `${metaDataName}.json`);
       fs.writeFileSync(filePath, bytesData.toString('utf8'));
     } catch (error) {
-      console.error('persistMetadata error', error);
+      // console.error('persistMetadata error', error);
     }
   }
 }

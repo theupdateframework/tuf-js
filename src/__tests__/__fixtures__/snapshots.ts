@@ -7,3 +7,7 @@ export const snapshotJson = JSON.parse(
     'utf-8'
   )
 );
+
+export const rawSnapshotJson = fs.readFileSync(
+  path.resolve(__dirname, '../../../repository_data/metadata/snapshot.json')
+);

@@ -14,3 +14,11 @@ export const role1Json = JSON.parse(
     'utf-8'
   )
 );
+
+export const rawTargetsJson = fs.readFileSync(
+  path.resolve(__dirname, '../../../repository_data/metadata/targets.json')
+);
+
+export const rawFile1Txt = fs.readFileSync(
+  path.resolve(__dirname, '../../../repository_data/targets/file1.txt')
+);
