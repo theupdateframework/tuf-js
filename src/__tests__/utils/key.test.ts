@@ -1,3 +1,4 @@
+import { UnsupportedAlgorithmError } from '../../error';
 import { getPublicKey } from '../../utils/key';
 
 describe('getPublicKey', () => {
@@ -37,6 +38,16 @@ describe('getPublicKey', () => {
             namedCurve: 'prime256v1',
           });
         }
+      });
+    });
+  });
+
+  describe('when unsupported key', () => {
+    describe('Unsupported Algorithm', () => {
+      it('throws an error', () => {
+        expect(() => {
+          getPublicKey({ keyType: 'unspported', scheme: '', keyVal: '' });
+        }).toThrow(UnsupportedAlgorithmError);
       });
     });
   });

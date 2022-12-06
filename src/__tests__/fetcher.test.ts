@@ -1,4 +1,5 @@
 import nock from 'nock';
+import { DownloadHTTPError, DownloadLengthMismatchError } from '../error';
 import { Fetcher } from '../fetcher';
 
 describe('Fetcher Test', () => {
@@ -27,7 +28,7 @@ describe('Fetcher Test', () => {
       const fetcher = new Fetcher();
 
       await expect(fetcher.downloadBytes(baseURL, 1)).rejects.toThrow(
-        'Max length reached'
+        DownloadLengthMismatchError
       );
     });
   });
@@ -42,6 +43,15 @@ describe('Fetcher Test', () => {
       await expect(fetcher.downloadBytes(baseURL, 1)).rejects.toThrow(
         'network timeout at: http://localhost:8080/'
       );
+    });
+  });
+
+  describe('Request Fetcher Fetch Test', () => {
+    it('fetch with bad status code', async () => {
+      nock(baseURL).get('/').reply(404, 'error');
+
+      const fetcher = new Fetcher();
+      await expect(fetcher.fetch(baseURL)).rejects.toThrow(DownloadHTTPError);
     });
   });
 });
