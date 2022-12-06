@@ -9,5 +9,6 @@ export const timestampJson = JSON.parse(
 );
 
 export const rawTimestampJson = fs.readFileSync(
-  path.resolve(__dirname, '../../../repository_data/metadata/timestamp.json')
+  path.resolve(__dirname, '../../../repository_data/metadata/timestamp.json'),
+  'utf8'
 );

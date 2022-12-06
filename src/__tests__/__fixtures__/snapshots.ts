@@ -9,5 +9,6 @@ export const snapshotJson = JSON.parse(
 );
 
 export const rawSnapshotJson = fs.readFileSync(
-  path.resolve(__dirname, '../../../repository_data/metadata/snapshot.json')
+  path.resolve(__dirname, '../../../repository_data/metadata/snapshot.json'),
+  'utf8'
 );
