@@ -102,7 +102,7 @@ export class Updater {
       const data = this.loadLocalMetadata(MetadataKind.Timestamp);
       this.trustedSet.updateTimestamp(data);
     } catch (error) {
-      // console.error('Cannot load local timestamp metadata');
+      console.error('Cannot load local timestamp metadata');
     }
 
     //Load from remote (whether local load succeeded or not)
@@ -160,7 +160,7 @@ export class Updater {
         this.trustedSet.updateSnapshot(bytesData);
         this.persistMetadata(MetadataKind.Snapshot, bytesData);
       } catch (error) {
-        // console.log('error', error);
+        console.error('Loading snapshot', error);
       }
     }
     // console.log('--------------------------------');
@@ -207,7 +207,7 @@ export class Updater {
         this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
         this.persistMetadata(role, bytesData);
       } catch (error) {
-        // console.log('error', error);
+        console.error('Loading targets', error);
       }
     }
     // console.log('--------------------------------');
@@ -372,7 +372,7 @@ export class Updater {
       const filePath = path.join(this.dir, `${metaDataName}.json`);
       fs.writeFileSync(filePath, bytesData.toString('utf8'));
     } catch (error) {
-      // console.error('persistMetadata error', error);
+      console.error('persistMetadata error', error);
     }
   }
 }

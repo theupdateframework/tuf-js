@@ -34,17 +34,17 @@ async function downloadTarget() {
   const targetInfo = await updater.getTargetInfo(target);
 
   if (!targetInfo) {
-    // console.log(`Target ${target} doesn't exist`);
+    console.log(`Target ${target} doesn't exist`);
     return;
   }
   const targetPath = await updater.findCachedTarget(targetInfo);
   if (targetPath) {
-    // console.log(`Target ${target} is cached at ${targetPath}`);
+    console.log(`Target ${target} is cached at ${targetPath}`);
     return;
   }
 
   const targetFile = await updater.downloadTarget(targetInfo);
-  // console.log(`Target ${target} downloaded to ${targetFile}`);
+  console.log(`Target ${target} downloaded to ${targetFile}`);
 }
 
 initDir();
