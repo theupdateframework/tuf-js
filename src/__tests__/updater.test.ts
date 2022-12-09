@@ -130,7 +130,7 @@ describe('Updater', () => {
     describe('when the target exists', () => {
       const target = 'file1.txt';
 
-      it('returns the path to the downloaded file', async () => {
+      it.skipWindows('returns the path to the downloaded file', async () => {
         const targetInfo = await updater.getTargetInfo(target);
 
         if (!targetInfo) {

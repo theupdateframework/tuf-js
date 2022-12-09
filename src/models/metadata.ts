@@ -70,11 +70,7 @@ export class Metadata<T extends MetadataType> implements Signable {
       try {
         key.verifySignature(delegatedMetadata);
         signingKeys.add(key.keyID);
-      } catch (error) {
-        console.error(
-          `Key ${key.keyID} failed to verify ${delegatedRole} with error ${error}`
-        );
-      }
+      } catch (error) {}
     });
 
     if (signingKeys.size < role.threshold) {
