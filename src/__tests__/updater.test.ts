@@ -7,13 +7,20 @@ import { rawSnapshotJson } from './__fixtures__/snapshots';
 import { rawFile1Txt, rawTargetsJson } from './__fixtures__/targets';
 import { rawTimestampJson } from './__fixtures__/timestamps';
 
-describe('Updater Test', () => {
+describe('Updater', () => {
   const baseURL = 'http://localhost:8080';
   const metadataBaseUrl = `${baseURL}/metadata`;
   const targetBaseUrl = `${baseURL}/targets`;
 
   const metadataDir = './metadata';
   const targetDir = './targets';
+
+  const options: UpdaterOptions = {
+    metadataDir: metadataDir,
+    targetDir: targetDir,
+    metadataBaseUrl: metadataBaseUrl,
+    targetBaseUrl: targetBaseUrl,
+  };
 
   // create the directory for metadata and targets and copy the root.json
   beforeEach(() => {
@@ -33,82 +40,111 @@ describe('Updater Test', () => {
     }
   });
 
+  beforeEach(() => {
+    nock(baseURL).get('/metadata/1.root.json').reply(200, rawRootJson);
+    nock(baseURL).get('/metadata/snapshot.json').reply(200, rawSnapshotJson);
+    nock(baseURL).get('/metadata/timestamp.json').reply(200, rawTimestampJson);
+    nock(baseURL).get('/metadata/targets.json').reply(200, rawTargetsJson);
+    nock(baseURL).get('/targets/file1.txt').reply(200, rawFile1Txt);
+  });
+
   // remove the directory for metadata and targets
   afterEach(() => {
     fs.rmSync(metadataDir, { recursive: true });
     fs.rmSync(targetDir, { recursive: true });
   });
 
-  describe('Init updater', () => {
-    it('Init updater with empty metadata dir', () => {
-      const options: UpdaterOptions = {
-        metadataDir: 'invalid dir',
-        targetDir: 'invalid dir',
-        metadataBaseUrl: '',
-        targetBaseUrl: '',
-      };
-
-      expect(() => new Updater(options)).toThrow(
-        'ENOENT: no such file or directory'
-      );
+  describe('constructor', () => {
+    describe('when the trusted root does NOT exist', () => {
+      it('throws an error', () => {
+        expect(
+          () => new Updater({ ...options, metadataDir: 'invalid' })
+        ).toThrow('ENOENT: no such file or directory');
+      });
     });
 
-    it('Init updater with existing metadata base url', () => {
-      const options: UpdaterOptions = {
-        metadataDir: metadataDir,
-        targetDir: targetDir,
-        metadataBaseUrl: metadataBaseUrl,
-        targetBaseUrl: targetBaseUrl,
-      };
-
-      expect(() => new Updater(options)).not.toThrow();
+    describe('when the trusted root does exist', () => {
+      it('does NOT throw an error', () => {
+        expect(() => new Updater(options)).not.toThrow();
+      });
     });
   });
 
-  describe('Updater functionality', () => {
-    // mock the http request for all metadata and targets
-    beforeEach(() => {
-      nock(baseURL).get('/metadata/1.root.json').reply(200, rawRootJson);
-      nock(baseURL).get('/metadata/snapshot.json').reply(200, rawSnapshotJson);
-      nock(baseURL)
-        .get('/metadata/timestamp.json')
-        .reply(200, rawTimestampJson);
-      nock(baseURL).get('/metadata/targets.json').reply(200, rawTargetsJson);
-      nock(baseURL).get('/targets/file1.txt').reply(200, rawFile1Txt);
+  describe('#refresh', () => {
+    describe('when the repo URL is invalid', () => {
+      it('throws an error', async () => {
+        const updater = new Updater({
+          ...options,
+          metadataBaseUrl: 'invalid url',
+        });
+        await expect(updater.refresh()).rejects.toThrow('Invalid URL');
+      });
     });
 
-    it('Pass in invalid url', async () => {
-      const options: UpdaterOptions = {
-        metadataDir: metadataDir,
-        targetDir: targetDir,
-        metadataBaseUrl: 'invalid url',
-        targetBaseUrl: 'invalid url',
-      };
-
-      const updater = new Updater(options);
-
-      await expect(updater.refresh()).rejects.toThrow('Invalid URL');
+    describe('when the repo URL is valid', () => {
+      it('resolves with no error', async () => {
+        const updater = new Updater(options);
+        await expect(updater.refresh()).resolves.toBe(undefined);
+      });
     });
+  });
 
-    it('Successfully download the target', async () => {
-      const options: UpdaterOptions = {
-        metadataDir: metadataDir,
-        targetDir: targetDir,
-        metadataBaseUrl: metadataBaseUrl,
-        targetBaseUrl: targetBaseUrl,
-      };
-
-      const updater = new Updater(options);
+  describe('#getTargetInfo', () => {
+    describe('when the target exists', () => {
       const target = 'file1.txt';
 
-      await expect(updater.refresh()).resolves.not.toThrow();
-      const targetInfo = await updater.getTargetInfo(target);
+      it('retrieves the target info', async () => {
+        const updater = new Updater(options);
+        await updater.refresh();
 
-      if (!targetInfo) {
-        return;
-      }
+        const targetInfo = await updater.getTargetInfo(target);
 
-      await expect(updater.downloadTarget(targetInfo)).resolves.not.toThrow();
+        expect(targetInfo).toBeDefined();
+        expect(targetInfo?.path).toBe('file1.txt');
+        expect(targetInfo?.length).toBe(31);
+      });
+    });
+
+    describe('when the target does NOT exist', () => {
+      const target = 'file9.txt';
+
+      it('retrieves the target info', async () => {
+        const updater = new Updater(options);
+        await updater.refresh();
+
+        const targetInfo = await updater.getTargetInfo(target);
+
+        expect(targetInfo).toBeUndefined();
+      });
+    });
+  });
+
+  describe('#downloadTarget', () => {
+    let updater: Updater;
+
+    beforeEach(async () => {
+      updater = new Updater(options);
+      await updater.refresh();
+    });
+
+    describe('when the target exists', () => {
+      const target = 'file1.txt';
+
+      it('returns the path to the downloaded file', async () => {
+        const targetInfo = await updater.getTargetInfo(target);
+
+        if (!targetInfo) {
+          fail('targetInfo is undefined');
+        }
+
+        const file = await updater.downloadTarget(targetInfo);
+        expect(file).toBeDefined();
+        expect(file).toEqual('targets/file1.txt');
+      });
+
+      it('writes the file to the target directory', async () => {
+        // TODO
+      });
     });
   });
 });
