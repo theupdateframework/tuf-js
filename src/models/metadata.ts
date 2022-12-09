@@ -70,7 +70,9 @@ export class Metadata<T extends MetadataType> implements Signable {
       try {
         key.verifySignature(delegatedMetadata);
         signingKeys.add(key.keyID);
-      } catch (error) {}
+      } catch (error) {
+        // continue
+      }
     });
 
     if (signingKeys.size < role.threshold) {

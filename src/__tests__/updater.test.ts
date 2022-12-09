@@ -130,7 +130,7 @@ describe('Updater', () => {
     describe('when the target exists', () => {
       const target = 'file1.txt';
 
-      it.skipWindows('returns the path to the downloaded file', async () => {
+      it('returns the path to the downloaded file', async () => {
         const targetInfo = await updater.getTargetInfo(target);
 
         if (!targetInfo) {
@@ -139,7 +139,7 @@ describe('Updater', () => {
 
         const file = await updater.downloadTarget(targetInfo);
         expect(file).toBeDefined();
-        expect(file).toEqual('targets/file1.txt');
+        expect(file).toEqual(path.join(targetDir, target));
       });
 
       it('writes the file to the target directory', async () => {

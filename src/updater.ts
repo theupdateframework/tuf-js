@@ -100,7 +100,9 @@ export class Updater {
     try {
       const data = this.loadLocalMetadata(MetadataKind.Timestamp);
       this.trustedSet.updateTimestamp(data);
-    } catch (error) {}
+    } catch (error) {
+      // continue
+    }
 
     //Load from remote (whether local load succeeded or not)
     const url = path.join(this.metadataBaseUrl, `timestamp.json`);
