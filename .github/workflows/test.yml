@@ -1,4 +1,4 @@
-name: build-tuf-node
+name: test
 
 on:
   push:

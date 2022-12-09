@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/github/tuf-js#readme",
   "devDependencies": {
-    "@tsconfig/node12": "^1.0.11",
+    "@tsconfig/node14": "^1.0.3",
     "@types/jest": "^28.1.8",
     "@types/lodash.isequal": "^4.5.6",
     "@types/make-fetch-happen": "^10.0.1",
@@ -51,5 +51,8 @@
   "dependencies": {
     "make-fetch-happen": "^11.0.1",
     "minimatch": "^5.1.1"
+  },
+  "engines": {
+    "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
   }
 }
