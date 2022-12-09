@@ -1,9 +1,14 @@
 import util from 'util';
 import { ValueError } from '../error';
-import { isDefined, isObjectArray, isObjectRecord } from '../utils/guard';
+import {
+  isDefined,
+  isObject,
+  isObjectArray,
+  isObjectRecord,
+} from '../utils/guard';
 import { JSONObject, JSONValue } from '../utils/types';
 import { Key } from './key';
-import { DelegatedRole, TOP_LEVEL_ROLE_NAMES } from './role';
+import { DelegatedRole, SuccinctRoles, TOP_LEVEL_ROLE_NAMES } from './role';
 
 type DelegatedRoleMap = Record<string, DelegatedRole>;
 type KeyMap = Record<string, Key>;
@@ -11,6 +16,7 @@ type KeyMap = Record<string, Key>;
 interface DelegationsOptions {
   keys: KeyMap;
   roles?: DelegatedRoleMap;
+  succinct_roles?: SuccinctRoles;
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
@@ -18,6 +24,7 @@ export class Delegations {
   readonly keys: KeyMap;
   readonly roles?: DelegatedRoleMap;
   readonly unrecognizedFields?: Record<string, JSONValue>;
+  readonly succinct_roles?: SuccinctRoles;
 
   constructor(options: DelegationsOptions) {
     this.keys = options.keys;
@@ -34,6 +41,9 @@ export class Delegations {
         );
       }
     }
+
+    this.succinct_roles = options.succinct_roles;
+
     this.roles = options.roles;
   }
 
@@ -45,7 +55,11 @@ export class Delegations {
     return (
       util.isDeepStrictEqual(this.keys, other.keys) &&
       util.isDeepStrictEqual(this.roles, other.roles) &&
-      util.isDeepStrictEqual(this.unrecognizedFields, other.unrecognizedFields)
+      util.isDeepStrictEqual(
+        this.unrecognizedFields,
+        other.unrecognizedFields
+      ) &&
+      util.isDeepStrictEqual(this.succinct_roles, other.succinct_roles)
     );
   }
 
@@ -58,6 +72,11 @@ export class Delegations {
           yield { role: role.name, terminating: role.terminating };
         }
       }
+    } else if (this.succinct_roles) {
+      yield {
+        role: this.succinct_roles.getRoleForTarget(targetPath),
+        terminating: true,
+      };
     }
   }
 
@@ -69,13 +88,24 @@ export class Delegations {
 
     if (this.roles) {
       json.roles = rolesToJSON(this.roles);
+    } else if (this.succinct_roles) {
+      json.succinct_roles = this.succinct_roles.toJSON();
     }
 
     return json;
   }
 
   public static fromJSON(data: JSONObject): Delegations {
-    const { keys, roles, ...unrecognizedFields } = data;
+    const { keys, roles, succinct_roles, ...unrecognizedFields } = data;
+
+    if (isObject(succinct_roles)) {
+      return new Delegations({
+        keys: keysFromJSON(keys),
+        roles: rolesFromJSON(roles),
+        succinct_roles: SuccinctRoles.fromJSON(succinct_roles),
+        unrecognizedFields,
+      });
+    }
 
     return new Delegations({
       keys: keysFromJSON(keys),

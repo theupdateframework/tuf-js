@@ -222,3 +222,124 @@ function isTargetInPathPattern(target: string, pattern: string): boolean {
     minimatch(targetPart, patternPart)
   );
 }
+
+interface SuccinctRolesOption extends RoleOptions {
+  bitLength: number;
+  namePrefix: string;
+}
+
+export class SuccinctRoles extends Role {
+  readonly bitLength: number;
+  readonly namePrefix: string;
+  readonly numberOfBins: number;
+  readonly suffixLen: number;
+
+  constructor(opts: SuccinctRolesOption) {
+    super(opts);
+    const { keyIDs, threshold, bitLength, namePrefix, unrecognizedFields } =
+      opts;
+
+    if (bitLength <= 0 || bitLength > 32) {
+      throw new ValueError('bitLength must be between 1 and 32');
+    }
+
+    this.bitLength = bitLength;
+    this.namePrefix = namePrefix;
+    this.numberOfBins = Math.pow(2, bitLength);
+    this.suffixLen = this.numberOfBins.toString(16).length;
+  }
+
+  public equals(other: SuccinctRoles): boolean {
+    if (!(other instanceof SuccinctRoles)) {
+      return false;
+    }
+
+    return (
+      super.equals(other) &&
+      this.bitLength === other.bitLength &&
+      this.namePrefix === other.namePrefix
+    );
+  }
+
+  public getRoleForTarget(targetFilepath: string): string {
+    const hasher = crypto.createHash('sha256');
+    const hasherBuffer = hasher.update(targetFilepath).digest();
+
+    const hashBytes = hasherBuffer.subarray(0, 4);
+
+    const shiftValue = 32 - this.bitLength;
+
+    const binNumber = parseInt(hashBytes.toString('hex'), 16) >> shiftValue;
+
+    const suffix = binNumber.toString(16).padStart(this.suffixLen, '0');
+
+    return `${this.namePrefix}-${suffix}`;
+  }
+
+  *getRoles(): Generator<string> {
+    for (let i = 0; i < this.numberOfBins; i++) {
+      const suffix = i.toString(16).padStart(this.suffixLen, '0');
+      yield `${this.namePrefix}-${suffix}`;
+    }
+  }
+
+  public isDelegatedRole(roleName: string): boolean {
+    const desiredPrefix = this.namePrefix + '-';
+
+    if (!roleName.startsWith(desiredPrefix)) {
+      return false;
+    }
+    const suffix = roleName.slice(desiredPrefix.length, roleName.length);
+    if (suffix.length != this.suffixLen) {
+      return false;
+    }
+
+    try {
+      var num = parseInt(suffix, 16);
+    } catch (e) {
+      return false;
+    }
+
+    return 0 <= num && num < this.numberOfBins;
+  }
+
+  public toJSON(): JSONObject {
+    const json: JSONObject = {
+      ...super.toJSON(),
+      bitLength: this.bitLength,
+      namePrefix: this.namePrefix,
+      numberOfBins: this.numberOfBins,
+      suffixLen: this.suffixLen,
+    };
+
+    return json;
+  }
+
+  public static fromJSON(data: JSONObject): SuccinctRoles {
+    const { keyids, threshold, bit_length, name_prefix, ...rest } = data;
+
+    if (!isStringArray(keyids)) {
+      throw new TypeError('keyids must be an array of strings');
+    }
+
+    if (typeof threshold !== 'number') {
+      throw new TypeError('threshold must be a number');
+    }
+
+    if (typeof bit_length !== 'number') {
+      throw new TypeError('bit_length must be a number');
+    }
+
+    if (typeof name_prefix !== 'string') {
+      throw new TypeError('name_prefix must be a string');
+    }
+
+    return new SuccinctRoles({
+      keyIDs: keyids,
+      threshold,
+      bitLength: bit_length,
+      namePrefix: name_prefix,
+      unrecognizedFields: rest,
+    });
+  }
+}
