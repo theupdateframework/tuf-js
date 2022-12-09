@@ -180,9 +180,7 @@ export class TrustedMetadataStore {
 
     // expiry not checked to allow old snapshot to be used for rollback
     // protection of new snapshot: it is checked when targets is updated
-
     this.trustedSet.snapshot = newSnapshot;
-    console.log('Updated snapshot v%s', newSnapshot.signed.version);
 
     // snapshot is loaded, but we raise if it's not valid _final_ snapshot
     this.checkFinalSnapsnot();
@@ -238,8 +236,6 @@ export class TrustedMetadataStore {
       throw new RuntimeError(`No trusted ${delegatorName} metadata`);
     }
 
-    console.log('Updating %s delegated by %s', roleName, delegatorName);
-
     // Verify against the hashes in snapshot, if any
     const meta = this.snapshot.signed.meta?.[`${roleName}.json`];
     if (!meta) {
@@ -271,7 +267,6 @@ export class TrustedMetadataStore {
     }
 
     this.trustedSet[roleName] = newDelegate;
-    console.log('Updated %s v%s', roleName, version);
   }
 
   // Verifies and loads data as trusted root metadata.
@@ -286,6 +281,5 @@ export class TrustedMetadataStore {
     root.verifyDelegate(MetadataKind.Root, root);
 
     this.trustedSet['root'] = root;
-    console.info('Loaded trusted root v%d', root.signed.version);
   }
 }

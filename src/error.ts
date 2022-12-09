@@ -3,6 +3,8 @@ export class ValueError extends Error {}
 
 export class RuntimeError extends Error {}
 
+export class PersistError extends Error {}
+
 // An error with a repository's state, such as a missing file.
 // It covers all exceptions that come from the repository side when
 // looking from the perspective of users of metadata API or ngclient.
