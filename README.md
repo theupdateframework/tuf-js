@@ -39,8 +39,7 @@ Please see [TUF's website](https://theupdateframework.com/) for more information
 
 ## Requirements
 
-NODE >= 14
-NPM >= 6
+* node: ^14.17.0 || ^16.13.0 || >=18.0.0
 
 ## License
 
