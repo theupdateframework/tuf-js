@@ -47,8 +47,15 @@ export class Metadata<T extends MetadataType> implements Signable {
         keys = this.signed.delegations.keys;
         if (this.signed.delegations.roles) {
           role = this.signed.delegations.roles[delegatedRole];
+        } else if (this.signed.delegations.succinct_roles) {
+          if (
+            this.signed.delegations.succinct_roles.isDelegatedRole(
+              delegatedRole
+            )
+          ) {
+            role = this.signed.delegations.succinct_roles;
+          }
         }
-        // TODO: succinct roles
         break;
       default:
         throw new TypeError('invalid metadata type');
