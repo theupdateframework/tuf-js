@@ -66,15 +66,83 @@ export class Updater {
     await this.loadTargets(MetadataKind.Targets, MetadataKind.Root);
   }
 
+  // Returns the TargetFile instance with information for the given target path.
+  //
+  // Implicitly calls refresh if it hasn't already been called.
+  public async getTargetInfo(
+    targetPath: string
+  ): Promise<TargetFile | undefined> {
+    if (!this.trustedSet.targets) {
+      this.refresh();
+    }
+
+    return this.preorderDepthFirstWalk(targetPath);
+  }
+
+  public async downloadTarget(
+    targetInfo: TargetFile,
+    filePath?: string,
+    targetBaseUrl?: string
+  ): Promise<string> {
+    if (!filePath) {
+      filePath = this.generateTargetPath(targetInfo);
+    }
+
+    if (!targetBaseUrl) {
+      if (!this.targetBaseUrl) {
+        throw new ValueError('Target base URL not set');
+      }
+      targetBaseUrl = this.targetBaseUrl;
+    }
+
+    let targetFilePath = targetInfo.path;
+    const consistentSnapshot = this.trustedSet.root.signed.consistentSnapshot;
+
+    if (consistentSnapshot && this.config.prefixTargetsWithHash) {
+      const hashes = Object.values(targetInfo.hashes);
+      const basename = path.basename(targetFilePath);
+      targetFilePath = `${hashes[0]}.${basename}`;
+    }
+
+    const url = path.join(targetBaseUrl, targetFilePath);
+
+    // Client workflow 5.7.3: download target file
+    const targetFile = await this.fetcher.downloadBytes(url, targetInfo.length);
+
+    targetInfo.verify(targetFile);
+
+    fs.writeFileSync(filePath, targetFile);
+
+    return filePath;
+  }
+
+  public async findCachedTarget(
+    targetInfo: TargetFile,
+    filePath?: string
+  ): Promise<string | undefined> {
+    if (!filePath) {
+      filePath = this.generateTargetPath(targetInfo);
+    }
+
+    try {
+      const targetFile = fs.readFileSync(filePath);
+      targetInfo.verify(targetFile);
+      return filePath;
+    } catch (error) {
+      return;
+    }
+  }
+
   private loadLocalMetadata(fileName: string): Buffer {
     const filePath = path.join(this.dir, `${fileName}.json`);
     return fs.readFileSync(filePath);
   }
 
+  // Sequentially load and persist on local disk every newer root metadata
+  // version available on the remote.
+  // Client workflow 5.3: update root role
   private async loadRoot() {
-    // Load remote root metadata.
-    // Sequentially load and persist on local disk every newer root metadata
-    // version available on the remote.
+    // Client workflow 5.3.2: version of trusted root metadata file
     const rootVersion = this.trustedSet.root.signed.version;
 
     const lowerBound = rootVersion + 1;
@@ -83,11 +151,16 @@ export class Updater {
     for (let version = lowerBound; version <= upperBound; version++) {
       const url = path.join(this.metadataBaseUrl, `${version}.root.json`);
       try {
+        // Client workflow 5.3.3: download new root metadata file
         const bytesData = await this.fetcher.downloadBytes(
           url,
           this.config.rootMaxLength
         );
+
+        // Client workflow 5.3.4 - 5.4.7
         this.trustedSet.updateRoot(bytesData);
+
+        // Client workflow 5.3.8: persist root metadata file
         this.persistMetadata(MetadataKind.Root, bytesData);
       } catch (error) {
         break;
@@ -95,6 +168,8 @@ export class Updater {
     }
   }
 
+  // Load local and remote timestamp metadata.
+  // Client workflow 5.4: update timestamp role
   private async loadTimestamp() {
     // Load local and remote timestamp metadata
     try {
@@ -107,12 +182,14 @@ export class Updater {
     //Load from remote (whether local load succeeded or not)
     const url = path.join(this.metadataBaseUrl, `timestamp.json`);
 
+    // Client workflow 5.4.1: download timestamp metadata file
     const bytesData = await this.fetcher.downloadBytes(
       url,
       this.config.timestampMaxLength
     );
 
     try {
+      // Client workflow 5.4.2 - 5.4.4
       this.trustedSet.updateTimestamp(bytesData);
     } catch (error) {
       // If new timestamp version is same as current, discardd the new one.
@@ -125,9 +202,12 @@ export class Updater {
       throw error;
     }
 
+    // Client workflow 5.4.5: persist timestamp metadata
     this.persistMetadata(MetadataKind.Timestamp, bytesData);
   }
 
+  // Load local and remote snapshot metadata.
+  // Client workflow 5.5: update snapshot role
   private async loadSnapshot() {
     //Load local (and if needed remote) snapshot metadata
     try {
@@ -151,8 +231,13 @@ export class Updater {
       );
 
       try {
+        // Client workflow 5.5.1: download snapshot metadata file
         const bytesData = await this.fetcher.downloadBytes(url, maxLength);
+
+        // Client workflow 5.5.2 - 5.5.6
         this.trustedSet.updateSnapshot(bytesData);
+
+        // Client workflow 5.5.7: persist snapshot metadata file
         this.persistMetadata(MetadataKind.Snapshot, bytesData);
       } catch (error) {
         throw new RuntimeError(
@@ -162,6 +247,8 @@ export class Updater {
     }
   }
 
+  // Load local and remote targets metadata.
+  // Client workflow 5.6: update targets role
   private async loadTargets(
     role: string,
     parentRole: string
@@ -194,26 +281,19 @@ export class Updater {
       );
 
       try {
+        // Client workflow 5.6.1: download targets metadata file
         const bytesData = await this.fetcher.downloadBytes(url, maxLength);
+
+        // Client workflow 5.6.2 - 5.6.6
         this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
+
+        // Client workflow 5.6.7: persist targets metadata file
         this.persistMetadata(role, bytesData);
       } catch (error) {
         throw new RuntimeError(`Unable to load targets error ${error}`);
       }
     }
     return this.trustedSet.getRole(role);
-  }
-
-  // Returns the TargetFile instance with information for the given target path.
-  //
-  // Implicitly calls refresh if it hasn't already been called.
-  public async getTargetInfo(
-    targetPath: string
-  ): Promise<TargetFile | undefined> {
-    if (!this.trustedSet.targets) {
-      this.refresh();
-    }
-    return this.preorderDepthFirstWalk(targetPath);
   }
 
   private async preorderDepthFirstWalk(
@@ -233,7 +313,8 @@ export class Updater {
     ];
     const visitedRoleNames: Set<string> = new Set();
 
-    // Preorder depth-first traversal of the graph of target delegations.
+    // Client workflow 5.6.7: preorder depth-first traversal of the graph of
+    // target delegations
     while (
       visitedRoleNames.size <= this.config.maxDelegations &&
       delegationsToVisit.length > 0
@@ -243,6 +324,7 @@ export class Updater {
       const { roleName, parentRoleName } = delegationsToVisit.pop()!;
 
       // Skip any visited current role to prevent cycles.
+      // Client workflow 5.6.7.1: skip already-visited roles
       if (visitedRoleNames.has(roleName)) {
         continue;
       }
@@ -274,6 +356,8 @@ export class Updater {
             roleName: childName,
             parentRoleName: roleName,
           });
+
+          // Client workflow 5.6.7.2.1
           if (terminating) {
             delegationsToVisit.splice(0); // empty the array
             break;
@@ -285,64 +369,11 @@ export class Updater {
     }
   }
 
-  public async findCachedTarget(
-    targetInfo: TargetFile,
-    filePath?: string
-  ): Promise<string | undefined> {
-    if (!filePath) {
-      filePath = this.generateTargetPath(targetInfo);
-    }
-
-    try {
-      const targetFile = fs.readFileSync(filePath);
-      targetInfo.verify(targetFile);
-      return filePath;
-    } catch (error) {
-      return;
-    }
-  }
-
   private generateTargetPath(targetInfo: TargetFile): string {
     if (!this.targetDir) {
       throw new ValueError('Target directory not set');
     }
     return path.join(this.targetDir, targetInfo.path);
-  }
-
-  public async downloadTarget(
-    targetInfo: TargetFile,
-    filePath?: string,
-    targetBaseUrl?: string
-  ): Promise<string> {
-    if (!filePath) {
-      filePath = this.generateTargetPath(targetInfo);
-    }
-
-    if (!targetBaseUrl) {
-      if (!this.targetBaseUrl) {
-        throw new ValueError('Target base URL not set');
-      }
-      targetBaseUrl = this.targetBaseUrl;
-    }
-
-    let targetFilePath = targetInfo.path;
-    const consistentSnapshot = this.trustedSet.root.signed.consistentSnapshot;
-
-    if (consistentSnapshot && this.config.prefixTargetsWithHash) {
-      const hashes = Object.values(targetInfo.hashes);
-      const basename = path.basename(targetFilePath);
-      targetFilePath = `${hashes[0]}.${basename}`;
-    }
-
-    const url = path.join(targetBaseUrl, targetFilePath);
-
-    const targetFile = await this.fetcher.downloadBytes(url, targetInfo.length);
-
-    targetInfo.verify(targetFile);
-
-    fs.writeFileSync(filePath, targetFile);
-
-    return filePath;
   }
 
   private async persistMetadata(metaDataName: string, bytesData: Buffer) {
