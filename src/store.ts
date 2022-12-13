@@ -20,7 +20,10 @@ export class TrustedMetadataStore {
   private referenceTime: Date;
 
   constructor(rootData: Buffer) {
+    // Client workflow 5.1: record fixed update start time
     this.referenceTime = new Date();
+
+    // Client workflow 5.2: load trusted root metadata
     this.loadTrustedRoot(rootData);
   }
 
@@ -54,8 +57,10 @@ export class TrustedMetadataStore {
       throw new RepositoryError(`Expected 'root', got ${newRoot.signed.type}`);
     }
 
+    // Client workflow 5.4: check for arbitrary software attack
     this.root.verifyDelegate(MetadataKind.Root, newRoot);
 
+    // Client workflow 5.5: check for rollback attack
     if (newRoot.signed.version != this.root.signed.version + 1) {
       throw new BadVersionError(
         `Expected version ${this.root.signed.version + 1}, got ${
@@ -64,8 +69,10 @@ export class TrustedMetadataStore {
       );
     }
 
+    // Check that new root is signed by self
     newRoot.verifyDelegate(MetadataKind.Root, newRoot);
 
+    // Client workflow 5.7: set new root as trusted root
     this.trustedSet.root = newRoot;
     return newRoot;
   }
@@ -88,10 +95,12 @@ export class TrustedMetadataStore {
       );
     }
 
+    // Client workflow 5.4.2: check for arbitrary software attack
     this.root.verifyDelegate(MetadataKind.Timestamp, newTimestamp);
 
     if (this.timestamp) {
       // Prevent rolling back timestamp version
+      // Client workflow 5.4.3.1: check for rollback attack
       if (newTimestamp.signed.version < this.timestamp.signed.version) {
         throw new BadVersionError(
           `New timestamp version ${newTimestamp.signed.version} is less than current version ${this.timestamp.signed.version}`
@@ -103,7 +112,9 @@ export class TrustedMetadataStore {
           `New timestamp version ${newTimestamp.signed.version} is equal to current version ${this.timestamp.signed.version}`
         );
       }
+
       // Prevent rolling back snapshot version
+      // Client workflow 5.4.3.2: check for rollback attack
       const snapshotMeta = this.timestamp.signed.snapshotMeta;
       const newSnapshotMeta = newTimestamp.signed.snapshotMeta;
       if (newSnapshotMeta.version < snapshotMeta.version) {
@@ -114,9 +125,11 @@ export class TrustedMetadataStore {
     }
 
     // expiry not checked to allow old timestamp to be used for rollback
-    // protection of new timestamp: expiry is checked in update_snapshot()
+    // protection of new timestamp: expiry is checked in update_snapshot
 
     this.trustedSet.timestamp = newTimestamp;
+
+    // Client workflow 5.4.4: check for freeze attack
     this.checkFinalTimestamp();
 
     return newTimestamp;
@@ -140,6 +153,7 @@ export class TrustedMetadataStore {
 
     // Verify non-trusted data against the hashes in timestamp, if any.
     // Trusted snapshot data has already been verified once.
+    // Client workflow 5.5.2: check against timestamp role's snaphsot hash
     if (!trusted) {
       snapshotMeta.verify(bytesBuffer);
     }
@@ -153,13 +167,13 @@ export class TrustedMetadataStore {
       );
     }
 
+    // Client workflow 5.5.3: check for arbitrary software attack
     this.root.verifyDelegate(MetadataKind.Snapshot, newSnapshot);
 
-    // version not checked against meta version to allow old snapshot to be
-    // used in rollback protection: it is checked when targets is updated
+    // version check against meta version (5.5.4) is deferred to allow old
+    // snapshot to be used in rollback protection
 
-    // If an existing trusted snapshot is updated, check for rollback attack
-
+    // Client workflow 5.5.5: check for rollback attack
     if (this.snapshot) {
       Object.entries(this.snapshot.signed.meta).forEach(
         ([fileName, fileInfo]) => {
@@ -178,43 +192,13 @@ export class TrustedMetadataStore {
       );
     }
 
-    // expiry not checked to allow old snapshot to be used for rollback
-    // protection of new snapshot: it is checked when targets is updated
     this.trustedSet.snapshot = newSnapshot;
 
     // snapshot is loaded, but we raise if it's not valid _final_ snapshot
+    // Client workflow 5.5.4 & 5.5.6
     this.checkFinalSnapsnot();
 
     return newSnapshot;
-  }
-
-  private checkFinalTimestamp() {
-    if (!this.timestamp) {
-      throw new ReferenceError('No trusted timestamp metadata');
-    }
-    if (this.timestamp.signed.isExpired(this.referenceTime)) {
-      throw new ExpiredMetadataError('Final timestamp.json is expired');
-    }
-  }
-
-  private checkFinalSnapsnot() {
-    // Raise if snapshot is expired or meta version does not match
-    if (!this.snapshot) {
-      throw new ReferenceError('No trusted snapshot metadata');
-    }
-    if (!this.timestamp) {
-      throw new ReferenceError('No trusted timestamp metadata');
-    }
-
-    if (this.snapshot.signed.isExpired(this.referenceTime)) {
-      throw new ExpiredMetadataError('snapshot.json is expired');
-    }
-
-    const snapshotMeta = this.timestamp.signed.snapshotMeta;
-
-    if (this.snapshot.signed.version !== snapshotMeta.version) {
-      throw new BadVersionError("Snapshot version doesn't match timestamp");
-    }
   }
 
   public updateDelegatedTargets(
@@ -227,7 +211,7 @@ export class TrustedMetadataStore {
     }
 
     // Targets cannot be loaded if final snapshot is expired or its version
-    // does not match meta version in timestamp
+    // does not match meta version in timestamp.
     this.checkFinalSnapsnot();
 
     const delegator = this.trustedSet[delegatorName];
@@ -236,12 +220,13 @@ export class TrustedMetadataStore {
       throw new RuntimeError(`No trusted ${delegatorName} metadata`);
     }
 
-    // Verify against the hashes in snapshot, if any
+    // Extract metadata for the delegated role from snapshot
     const meta = this.snapshot.signed.meta?.[`${roleName}.json`];
     if (!meta) {
       throw new RepositoryError(`Missing ${roleName}.json in snapshot`);
     }
 
+    // Client workflow 5.6.2: check against snapshot role's targets hash
     meta.verify(bytesBuffer);
 
     const data = JSON.parse(bytesBuffer.toString('utf8'));
@@ -253,8 +238,10 @@ export class TrustedMetadataStore {
       );
     }
 
+    // Client workflow 5.6.3: check for arbitrary software attack
     delegator.verifyDelegate(roleName, newDelegate);
 
+    // Client workflow 5.6.4: Check against snapshot role’s targets version
     const version = newDelegate.signed.version;
     if (version != meta.version) {
       throw new BadVersionError(
@@ -262,6 +249,7 @@ export class TrustedMetadataStore {
       );
     }
 
+    // Client workflow 5.6.5: check for a freeze attack
     if (newDelegate.signed.isExpired(this.referenceTime)) {
       throw new ExpiredMetadataError(`${roleName}.json is expired`);
     }
@@ -281,5 +269,38 @@ export class TrustedMetadataStore {
     root.verifyDelegate(MetadataKind.Root, root);
 
     this.trustedSet['root'] = root;
+  }
+
+  private checkFinalTimestamp() {
+    // Timestamp MUST be loaded
+    if (!this.timestamp) {
+      throw new ReferenceError('No trusted timestamp metadata');
+    }
+
+    // Client workflow 5.4.4: check for freeze attack
+    if (this.timestamp.signed.isExpired(this.referenceTime)) {
+      throw new ExpiredMetadataError('Final timestamp.json is expired');
+    }
+  }
+
+  private checkFinalSnapsnot() {
+    // Snapshot and timestamp MUST be loaded
+    if (!this.snapshot) {
+      throw new ReferenceError('No trusted snapshot metadata');
+    }
+    if (!this.timestamp) {
+      throw new ReferenceError('No trusted timestamp metadata');
+    }
+
+    // Client workflow 5.5.6: check for freeze attack
+    if (this.snapshot.signed.isExpired(this.referenceTime)) {
+      throw new ExpiredMetadataError('snapshot.json is expired');
+    }
+
+    // Client workflow 5.5.4: check against timestamp role’s snapshot version
+    const snapshotMeta = this.timestamp.signed.snapshotMeta;
+    if (this.snapshot.signed.version !== snapshotMeta.version) {
+      throw new BadVersionError("Snapshot version doesn't match timestamp");
+    }
   }
 }
