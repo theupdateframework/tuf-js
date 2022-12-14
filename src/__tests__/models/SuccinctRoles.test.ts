@@ -10,34 +10,32 @@ describe('SuccinctRoles', () => {
     unrecognizedFields: {},
   };
   describe('constructor', () => {
-    describe('when called with roles', () => {
-      describe('when bit length is not valid', () => {
-        it('constructs an object', () => {
-          expect(() => {
-            new SuccinctRoles({ ...opts, bitLength: -1 });
-          }).toThrow(ValueError);
-        });
-        it('constructs an object', () => {
-          expect(() => {
-            new SuccinctRoles({ ...opts, bitLength: 33 });
-          }).toThrow(ValueError);
-        });
+    describe('when bit length is not valid', () => {
+      it('constructs an object', () => {
+        expect(() => {
+          new SuccinctRoles({ ...opts, bitLength: -1 });
+        }).toThrow(ValueError);
       });
-      describe('when bit length is valid', () => {
-        it('constructs an object', () => {
-          const subject = new SuccinctRoles({ ...opts, bitLength: 1 });
-          expect(subject).toBeTruthy();
-          expect(subject.bitLength).toEqual(1);
-          expect(subject.namePrefix).toEqual(opts.namePrefix);
-          expect(subject.unrecognizedFields).toEqual(opts.unrecognizedFields);
-        });
-        it('constructs an object', () => {
-          const subject = new SuccinctRoles({ ...opts, bitLength: 32 });
-          expect(subject).toBeTruthy();
-          expect(subject.bitLength).toEqual(32);
-          expect(subject.namePrefix).toEqual(opts.namePrefix);
-          expect(subject.unrecognizedFields).toEqual(opts.unrecognizedFields);
-        });
+      it('constructs an object', () => {
+        expect(() => {
+          new SuccinctRoles({ ...opts, bitLength: 33 });
+        }).toThrow(ValueError);
+      });
+    });
+    describe('when bit length is valid', () => {
+      it('constructs an object', () => {
+        const subject = new SuccinctRoles({ ...opts, bitLength: 1 });
+        expect(subject).toBeTruthy();
+        expect(subject.bitLength).toEqual(1);
+        expect(subject.namePrefix).toEqual(opts.namePrefix);
+        expect(subject.unrecognizedFields).toEqual(opts.unrecognizedFields);
+      });
+      it('constructs an object', () => {
+        const subject = new SuccinctRoles({ ...opts, bitLength: 32 });
+        expect(subject).toBeTruthy();
+        expect(subject.bitLength).toEqual(32);
+        expect(subject.namePrefix).toEqual(opts.namePrefix);
+        expect(subject.unrecognizedFields).toEqual(opts.unrecognizedFields);
       });
     });
   });
