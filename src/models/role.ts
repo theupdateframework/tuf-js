@@ -299,11 +299,11 @@ export class SuccinctRoles extends Role {
     }
 
     try {
-      var num = parseInt(suffix, 16);
+      const num = parseInt(suffix, 16);
+      return 0 <= num && num < this.numberOfBins;
     } catch (e) {
       return false;
     }
-    return 0 <= num && num < this.numberOfBins;
   }
 
   public toJSON(): JSONObject {
