@@ -16,7 +16,7 @@ type KeyMap = Record<string, Key>;
 interface DelegationsOptions {
   keys: KeyMap;
   roles?: DelegatedRoleMap;
-  succinct_roles?: SuccinctRoles;
+  succinctRoles?: SuccinctRoles;
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
@@ -24,7 +24,7 @@ export class Delegations {
   readonly keys: KeyMap;
   readonly roles?: DelegatedRoleMap;
   readonly unrecognizedFields?: Record<string, JSONValue>;
-  readonly succinct_roles?: SuccinctRoles;
+  readonly succinctRoles?: SuccinctRoles;
 
   constructor(options: DelegationsOptions) {
     this.keys = options.keys;
@@ -42,7 +42,7 @@ export class Delegations {
       }
     }
 
-    this.succinct_roles = options.succinct_roles;
+    this.succinctRoles = options.succinctRoles;
 
     this.roles = options.roles;
   }
@@ -59,7 +59,7 @@ export class Delegations {
         this.unrecognizedFields,
         other.unrecognizedFields
       ) &&
-      util.isDeepStrictEqual(this.succinct_roles, other.succinct_roles)
+      util.isDeepStrictEqual(this.succinctRoles, other.succinctRoles)
     );
   }
 
@@ -72,9 +72,9 @@ export class Delegations {
           yield { role: role.name, terminating: role.terminating };
         }
       }
-    } else if (this.succinct_roles) {
+    } else if (this.succinctRoles) {
       yield {
-        role: this.succinct_roles.getRoleForTarget(targetPath),
+        role: this.succinctRoles.getRoleForTarget(targetPath),
         terminating: true,
       };
     }
@@ -88,8 +88,8 @@ export class Delegations {
 
     if (this.roles) {
       json.roles = rolesToJSON(this.roles);
-    } else if (this.succinct_roles) {
-      json.succinct_roles = this.succinct_roles.toJSON();
+    } else if (this.succinctRoles) {
+      json.succinct_roles = this.succinctRoles.toJSON();
     }
 
     return json;
@@ -102,7 +102,7 @@ export class Delegations {
       return new Delegations({
         keys: keysFromJSON(keys),
         roles: rolesFromJSON(roles),
-        succinct_roles: SuccinctRoles.fromJSON(succinct_roles),
+        succinctRoles: SuccinctRoles.fromJSON(succinct_roles),
         unrecognizedFields,
       });
     }
