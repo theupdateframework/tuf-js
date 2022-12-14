@@ -236,8 +236,7 @@ export class SuccinctRoles extends Role {
 
   constructor(opts: SuccinctRolesOption) {
     super(opts);
-    const { keyIDs, threshold, bitLength, namePrefix, unrecognizedFields } =
-      opts;
+    const { bitLength, namePrefix } = opts;
 
     if (bitLength <= 0 || bitLength > 32) {
       throw new ValueError('bitLength must be between 1 and 32');
@@ -246,7 +245,7 @@ export class SuccinctRoles extends Role {
     this.bitLength = bitLength;
     this.namePrefix = namePrefix;
     this.numberOfBins = Math.pow(2, bitLength);
-    this.suffixLen = this.numberOfBins.toString(16).length;
+    this.suffixLen = (this.numberOfBins - 1).toString(16).length;
   }
 
   public equals(other: SuccinctRoles): boolean {
@@ -269,7 +268,7 @@ export class SuccinctRoles extends Role {
 
     const shiftValue = 32 - this.bitLength;
 
-    const binNumber = parseInt(hashBytes.toString('hex'), 16) >> shiftValue;
+    const binNumber = parseInt(hashBytes.toString('hex'), 16) >>> shiftValue;
 
     const suffix = binNumber.toString(16).padStart(this.suffixLen, '0');
 
@@ -294,12 +293,16 @@ export class SuccinctRoles extends Role {
       return false;
     }
 
+    // make sure the suffix is a hex string
+    if (!suffix.match(/^[0-9a-fA-F]+$/)) {
+      return false;
+    }
+
     try {
       var num = parseInt(suffix, 16);
     } catch (e) {
       return false;
     }
-
     return 0 <= num && num < this.numberOfBins;
   }
 
