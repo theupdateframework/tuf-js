@@ -235,25 +235,8 @@ describe('SuccinctRoles', () => {
 
       it('returns the expected JSON', () => {
         expect(succinctRoles.toJSON()).toEqual({
-          bitLength: opts.bitLength,
-          namePrefix: opts.namePrefix,
-          numberOfBins: 2,
-          suffixLen: 1,
-          keyids: opts.keyIDs,
-          threshold: opts.threshold,
-          ...opts.unrecognizedFields,
-        });
-      });
-    });
-    describe('when bit length is 32', () => {
-      const succinctRoles = new SuccinctRoles({ ...opts, bitLength: 32 });
-
-      it('returns the expected JSON', () => {
-        expect(succinctRoles.toJSON()).toEqual({
-          bitLength: 32,
-          namePrefix: opts.namePrefix,
-          numberOfBins: 4294967296,
-          suffixLen: 8,
+          bit_length: opts.bitLength,
+          name_prefix: opts.namePrefix,
           keyids: opts.keyIDs,
           threshold: opts.threshold,
           ...opts.unrecognizedFields,

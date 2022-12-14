@@ -354,10 +354,8 @@ export class SuccinctRoles extends Role {
   public toJSON(): JSONObject {
     const json: JSONObject = {
       ...super.toJSON(),
-      bitLength: this.bitLength,
-      namePrefix: this.namePrefix,
-      numberOfBins: this.numberOfBins,
-      suffixLen: this.suffixLen,
+      bit_length: this.bitLength,
+      name_prefix: this.namePrefix,
     };
 
     return json;
