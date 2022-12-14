@@ -228,6 +228,23 @@ interface SuccinctRolesOption extends RoleOptions {
   namePrefix: string;
 }
 
+/**
+ * Succinctly defines a hash bin delegation graph.
+ *
+ * A ``SuccinctRoles`` object describes a delegation graph that covers all
+ * targets, distributing them uniformly over the delegated roles (i.e. bins)
+ * in the graph.
+ *
+ * The total number of bins is 2 to the power of the passed ``bit_length``.
+ *
+ * Bin names are the concatenation of the passed ``name_prefix`` and a
+ * zero-padded hex representation of the bin index separated by a hyphen.
+ *
+ * The passed ``keyids`` and ``threshold`` is used for each bin, and each bin
+ * is 'terminating'.
+ *
+ * For details: https://github.com/theupdateframework/taps/blob/master/tap15.md
+ */
 export class SuccinctRoles extends Role {
   readonly bitLength: number;
   readonly namePrefix: string;
@@ -244,7 +261,14 @@ export class SuccinctRoles extends Role {
 
     this.bitLength = bitLength;
     this.namePrefix = namePrefix;
+
+    // Calculate the suffix_len value based on the total number of bins in
+    // hex. If bit_length = 10 then number_of_bins = 1024 or bin names will
+    // have a suffix between "000" and "3ff" in hex and suffix_len will be 3
+    // meaning the third bin will have a suffix of "003".
     this.numberOfBins = Math.pow(2, bitLength);
+    // suffix_len is calculated based on "number_of_bins - 1" as the name
+    // of the last bin contains the number "number_of_bins -1" as a suffix.
     this.suffixLen = (this.numberOfBins - 1).toString(16).length;
   }
 
@@ -260,16 +284,30 @@ export class SuccinctRoles extends Role {
     );
   }
 
+  /***
+   * Calculates the name of the delegated role responsible for 'target_filepath'.
+   *
+   * The target at path ''target_filepath' is assigned to a bin by casting
+   * the left-most 'bit_length' of bits of the file path hash digest to
+   * int, using it as bin index between 0 and '2**bit_length - 1'.
+   *
+   * Args:
+   *  target_filepath: URL path to a target file, relative to a base
+   *  targets URL.
+   */
   public getRoleForTarget(targetFilepath: string): string {
     const hasher = crypto.createHash('sha256');
     const hasherBuffer = hasher.update(targetFilepath).digest();
 
+    // can't ever need more than 4 bytes (32 bits).
     const hashBytes = hasherBuffer.subarray(0, 4);
 
+    // Right shift hash bytes, so that we only have the leftmost
+    // bit_length bits that we care about.
     const shiftValue = 32 - this.bitLength;
-
     const binNumber = parseInt(hashBytes.toString('hex'), 16) >>> shiftValue;
 
+    // Add zero padding if necessary and cast to hex the suffix.
     const suffix = binNumber.toString(16).padStart(this.suffixLen, '0');
 
     return `${this.namePrefix}-${suffix}`;
@@ -282,6 +320,13 @@ export class SuccinctRoles extends Role {
     }
   }
 
+  /***
+   * Determines whether the given ``role_name`` is in one of
+   * the delegated roles that ``SuccinctRoles`` represents.
+   *
+   * Args:
+   *  role_name: The name of the role to check against.
+   */
   public isDelegatedRole(roleName: string): boolean {
     const desiredPrefix = this.namePrefix + '-';
 
