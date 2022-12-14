@@ -40,86 +40,6 @@ describe('SuccinctRoles', () => {
     });
   });
 
-  describe('#isDelegatedRole', () => {
-    const succinctRoles = new SuccinctRoles({
-      ...opts,
-      bitLength: 5,
-    });
-
-    const falseRoleNameExamples = [
-      'foo',
-      'bin-',
-      'bin-s',
-      'bin-0t',
-      'bin-20',
-      'bin-100',
-    ];
-
-    const trueNameExamples = ['bin-00', 'bin-0f', 'bin-1f'];
-
-    describe('when called with WRONG role names', () => {
-      it('returns false', () => {
-        falseRoleNameExamples.forEach((roleName) => {
-          expect(succinctRoles.isDelegatedRole(roleName)).toBeFalsy();
-        });
-      });
-    });
-    describe('when called with CORRECT role names', () => {
-      it('returns false', () => {
-        trueNameExamples.forEach((roleName) => {
-          expect(succinctRoles.isDelegatedRole(roleName)).toBeTruthy();
-        });
-      });
-    });
-  });
-
-  describe('#getRoleForTarget', () => {
-    const succinctRoles = new SuccinctRoles({ ...opts, bitLength: 8 });
-    const targetNameExamples = [
-      'target-0',
-      'target-1',
-      'target-2',
-      'target-3',
-      'target-4',
-      'target-5',
-    ];
-    const targetBinCorrectExamples = [
-      'bin-8b',
-      'bin-75',
-      'bin-b5',
-      'bin-a3',
-      'bin-8c',
-      'bin-14',
-    ];
-    const targetBinWrongExamples = [
-      'bin-00',
-      'bin-00',
-      'bin-00',
-      'bin-00',
-      'bin-00',
-      'bin-00',
-    ];
-
-    describe('when checked with CORRECT target bin examples', () => {
-      it('returns true', () => {
-        targetNameExamples.forEach((targetName, index) => {
-          expect(succinctRoles.getRoleForTarget(targetName)).toBe(
-            targetBinCorrectExamples[index]
-          );
-        });
-      });
-    });
-    describe('when checked with WRONG target bin examples', () => {
-      it('returns false', () => {
-        targetNameExamples.forEach((targetName, index) => {
-          expect(succinctRoles.getRoleForTarget(targetName)).not.toBe(
-            targetBinWrongExamples[index]
-          );
-        });
-      });
-    });
-  });
-
   describe('#equals', () => {
     const succinctRoles = new SuccinctRoles(opts);
 
@@ -184,6 +104,53 @@ describe('SuccinctRoles', () => {
     });
   });
 
+  describe('#getRoleForTarget', () => {
+    const succinctRoles = new SuccinctRoles({ ...opts, bitLength: 8 });
+    const targetNameExamples = [
+      'target-0',
+      'target-1',
+      'target-2',
+      'target-3',
+      'target-4',
+      'target-5',
+    ];
+    const targetBinCorrectExamples = [
+      'bin-8b',
+      'bin-75',
+      'bin-b5',
+      'bin-a3',
+      'bin-8c',
+      'bin-14',
+    ];
+    const targetBinWrongExamples = [
+      'bin-00',
+      'bin-00',
+      'bin-00',
+      'bin-00',
+      'bin-00',
+      'bin-00',
+    ];
+
+    describe('when checked with CORRECT target bin examples', () => {
+      it('returns true', () => {
+        targetNameExamples.forEach((targetName, index) => {
+          expect(succinctRoles.getRoleForTarget(targetName)).toBe(
+            targetBinCorrectExamples[index]
+          );
+        });
+      });
+    });
+    describe('when checked with WRONG target bin examples', () => {
+      it('returns false', () => {
+        targetNameExamples.forEach((targetName, index) => {
+          expect(succinctRoles.getRoleForTarget(targetName)).not.toBe(
+            targetBinWrongExamples[index]
+          );
+        });
+      });
+    });
+  });
+
   describe('#getRoles', () => {
     describe('when bit length is 1', () => {
       it('returns 2 bins', () => {
@@ -225,6 +192,39 @@ describe('SuccinctRoles', () => {
 
         result = gen.next();
         expect(result.done).toEqual(true);
+      });
+    });
+  });
+
+  describe('#isDelegatedRole', () => {
+    const succinctRoles = new SuccinctRoles({
+      ...opts,
+      bitLength: 5,
+    });
+
+    const falseRoleNameExamples = [
+      'foo',
+      'bin-',
+      'bin-s',
+      'bin-0t',
+      'bin-20',
+      'bin-100',
+    ];
+
+    const trueNameExamples = ['bin-00', 'bin-0f', 'bin-1f'];
+
+    describe('when called with WRONG role names', () => {
+      it('returns false', () => {
+        falseRoleNameExamples.forEach((roleName) => {
+          expect(succinctRoles.isDelegatedRole(roleName)).toBeFalsy();
+        });
+      });
+    });
+    describe('when called with CORRECT role names', () => {
+      it('returns false', () => {
+        trueNameExamples.forEach((roleName) => {
+          expect(succinctRoles.isDelegatedRole(roleName)).toBeTruthy();
+        });
       });
     });
   });
