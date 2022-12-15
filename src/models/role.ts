@@ -305,7 +305,7 @@ export class SuccinctRoles extends Role {
     // Right shift hash bytes, so that we only have the leftmost
     // bit_length bits that we care about.
     const shiftValue = 32 - this.bitLength;
-    const binNumber = parseInt(hashBytes.toString('hex'), 16) >>> shiftValue;
+    const binNumber = hashBytes.readUInt32BE() >>> shiftValue;
 
     // Add zero padding if necessary and cast to hex the suffix.
     const suffix = binNumber.toString(16).padStart(this.suffixLen, '0');
@@ -343,12 +343,8 @@ export class SuccinctRoles extends Role {
       return false;
     }
 
-    try {
-      const num = parseInt(suffix, 16);
-      return 0 <= num && num < this.numberOfBins;
-    } catch (e) {
-      return false;
-    }
+    const num = parseInt(suffix, 16);
+    return 0 <= num && num < this.numberOfBins;
   }
 
   public toJSON(): JSONObject {

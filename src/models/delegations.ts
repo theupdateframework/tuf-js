@@ -98,19 +98,16 @@ export class Delegations {
   public static fromJSON(data: JSONObject): Delegations {
     const { keys, roles, succinct_roles, ...unrecognizedFields } = data;
 
+    let succinctRoles;
     if (isObject(succinct_roles)) {
-      return new Delegations({
-        keys: keysFromJSON(keys),
-        roles: rolesFromJSON(roles),
-        succinctRoles: SuccinctRoles.fromJSON(succinct_roles),
-        unrecognizedFields,
-      });
+      succinctRoles = SuccinctRoles.fromJSON(succinct_roles);
     }
 
     return new Delegations({
       keys: keysFromJSON(keys),
       roles: rolesFromJSON(roles),
       unrecognizedFields,
+      succinctRoles,
     });
   }
 }
