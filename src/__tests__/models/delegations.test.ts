@@ -1,9 +1,16 @@
 import { ValueError } from '../../error';
 import { Delegations } from '../../models/delegations';
 import { Key } from '../../models/key';
-import { DelegatedRole } from '../../models/role';
+import { DelegatedRole, SuccinctRoles } from '../../models/role';
 
 describe('Delegations', () => {
+  const succinctRoleOpts = {
+    keyIDs: ['abc'],
+    threshold: 1,
+    bitLength: 1,
+    namePrefix: 'bin',
+  };
+
   describe('constructor', () => {
     const keyOpts = {
       keyID: 'abc',
@@ -44,6 +51,26 @@ describe('Delegations', () => {
           expect(subject.roles).toEqual({ foo: role });
           expect(subject.unrecognizedFields).toEqual(opts.unrecognizedFields);
         });
+      });
+    });
+
+    describe('when called with succinct roles', () => {
+      const role = new SuccinctRoles(succinctRoleOpts);
+      it('constructs an object', () => {
+        const subject = new Delegations({ ...opts, succinctRoles: role });
+
+        expect(subject).toBeTruthy();
+        expect(subject.keys).toEqual(opts.keys);
+        expect(subject.succinctRoles).toEqual({
+          bitLength: 1,
+          keyIDs: ['abc'],
+          namePrefix: 'bin',
+          numberOfBins: 2,
+          suffixLen: 1,
+          threshold: 1,
+          unrecognizedFields: {},
+        });
+        expect(subject.unrecognizedFields).toEqual(opts.unrecognizedFields);
       });
     });
   });
@@ -132,12 +159,19 @@ describe('Delegations', () => {
       paths: ['a', 'b'],
     });
 
+    const succinctRoles = new SuccinctRoles(succinctRoleOpts);
+
     const opts = {
       keys: {},
       roles: { foo: fooRole, bar: barRole },
     };
 
     const delegations = new Delegations(opts);
+
+    const succinctDelegations = new Delegations({
+      keys: {},
+      succinctRoles: succinctRoles,
+    });
 
     describe('when there is one matching role', () => {
       it('returns role that match the target', () => {
@@ -174,6 +208,19 @@ describe('Delegations', () => {
         const gen = delegations.rolesForTarget('d');
 
         const result = gen.next();
+        expect(result.done).toEqual(true);
+      });
+    });
+
+    describe('when there is succinct role', () => {
+      it('returns role that match the target', () => {
+        const gen = succinctDelegations.rolesForTarget('a');
+
+        let result = gen.next();
+        expect(result.done).toEqual(false);
+        expect(result.value).toEqual({ role: 'bin-1', terminating: true });
+
+        result = gen.next();
         expect(result.done).toEqual(true);
       });
     });
@@ -231,6 +278,22 @@ describe('Delegations', () => {
         });
       });
     });
+    describe('when there are succinct roles', () => {
+      const succinctRoles = new SuccinctRoles(succinctRoleOpts);
+
+      const delegations = new Delegations({
+        ...opts,
+        succinctRoles: succinctRoles,
+      });
+
+      it('returns the expected JSON', () => {
+        expect(delegations.toJSON()).toEqual({
+          keys: { abc: opts.keys['abc'].toJSON() },
+          foo: 'bar',
+          succinct_roles: succinctRoles.toJSON(),
+        });
+      });
+    });
   });
 
   describe('.fromJSON', () => {
@@ -252,6 +315,24 @@ describe('Delegations', () => {
           terminating: true,
         },
       ],
+      foo: 'bar',
+    };
+
+    const succinctJson = {
+      keys: {
+        abc: {
+          keyid_hash_algorithms: ['sha256', 'sha512'],
+          keytype: 'ed25519',
+          keyval: { public: 'abc' },
+          scheme: 'ed25519',
+        },
+      },
+      succinct_roles: {
+        bit_length: 1,
+        keyids: ['abc'],
+        name_prefix: 'bin',
+        threshold: 1,
+      },
       foo: 'bar',
     };
 
@@ -290,7 +371,7 @@ describe('Delegations', () => {
         });
       });
 
-      describe('when no roles are supplied', () => {
+      describe('when roles are supplied', () => {
         it('returns the expected Delegations object', () => {
           const delegations = Delegations.fromJSON(json);
 
@@ -311,6 +392,26 @@ describe('Delegations', () => {
           expect(role?.terminating).toEqual(true);
           expect(role?.paths).toEqual(['foo']);
 
+          expect(delegations.unrecognizedFields).toEqual({ foo: 'bar' });
+        });
+      });
+
+      describe('when succinct roles are supplied', () => {
+        it('returns the expected Delegations object', () => {
+          const delegations = Delegations.fromJSON(succinctJson);
+
+          expect(delegations.keys).toBeTruthy();
+          expect(delegations.keys).toHaveProperty('abc');
+
+          const key = delegations.keys['abc'];
+          expect(key).toBeInstanceOf(Key);
+
+          expect(delegations.succinctRoles).toBeTruthy();
+          expect(delegations.succinctRoles).toEqual(
+            new SuccinctRoles(succinctRoleOpts)
+          );
+
+          expect(delegations.roles).toBeUndefined();
           expect(delegations.unrecognizedFields).toEqual({ foo: 'bar' });
         });
       });
