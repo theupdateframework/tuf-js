@@ -10,6 +10,11 @@ export interface SnapshotOptions extends SignedOptions {
   meta?: MetaFileMap;
 }
 
+/**
+ * A container for the signed part of snapshot metadata.
+ *
+ * Snapshot contains information about all target Metadata files.
+ */
 export class Snapshot extends Signed {
   readonly type = MetadataKind.Snapshot;
   readonly meta: MetaFileMap;

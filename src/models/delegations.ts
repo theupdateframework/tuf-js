@@ -20,6 +20,7 @@ interface DelegationsOptions {
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
+// A container object storing information about all delegations.
 export class Delegations {
   readonly keys: KeyMap;
   readonly roles?: DelegatedRoleMap;

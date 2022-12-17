@@ -11,6 +11,7 @@ interface MetaFileOptions {
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
+// A container with information about a particular metadata file.
 export class MetaFile {
   readonly version: number;
   readonly length?: number;

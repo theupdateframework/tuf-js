@@ -5,6 +5,15 @@ export interface SignatureOptions {
   sig: string;
 }
 
+/**
+ * A container class containing information about a signature.
+ *
+ * Contains a signature and the keyid uniquely identifying the key used
+ * to generate the signature.
+ *
+ * Provides utility methods to easily create an object from a dictionary
+ * and return the dictionary representation of the object.
+ */
 export class Signature {
   readonly keyID: string;
   readonly sig: string;

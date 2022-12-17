@@ -18,6 +18,12 @@ export interface RoleOptions {
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
+/**
+ * Container that defines which keys are required to sign roles metadata.
+ *
+ * Role defines how many keys are required to successfully sign the roles
+ * metadata, and which keys are accepted.
+ */
 export class Role {
   readonly keyIDs: string[];
   readonly threshold: number;

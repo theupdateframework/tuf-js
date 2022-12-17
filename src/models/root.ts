@@ -15,6 +15,7 @@ export interface RootOptions extends SignedOptions {
   consistentSnapshot?: boolean;
 }
 
+// A container for the signed part of root metadata.
 export class Root extends Signed {
   readonly type = MetadataKind.Root;
   readonly keys: KeyMap;
