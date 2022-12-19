@@ -48,8 +48,10 @@ export abstract class BaseFetcher {
       url,
       maxLength,
       async (tmpFile, filePath) => {
-        const file2 = await fs.open(filePath, 'r');
-        return await file2.readFile();
+        const readFile = await fs.open(filePath, 'r');
+        const data = await readFile.readFile();
+        readFile.close();
+        return data;
       }
     );
   }
