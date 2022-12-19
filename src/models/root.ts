@@ -15,7 +15,12 @@ export interface RootOptions extends SignedOptions {
   consistentSnapshot?: boolean;
 }
 
-// A container for the signed part of root metadata.
+/**
+ * A container for the signed part of root metadata.
+ *
+ * The top-level role and metadata file signed by the root keys.
+ * This role specifies trusted keys for all other top-level roles, which may further delegate trust.
+ */
 export class Root extends Signed {
   readonly type = MetadataKind.Root;
   readonly keys: KeyMap;

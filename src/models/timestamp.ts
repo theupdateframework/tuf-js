@@ -9,6 +9,9 @@ interface TimestampOptions extends SignedOptions {
 
 /**
  * A container for the signed part of timestamp metadata.
+ *
+ * A top-level that specifies the latest version of the snapshot role metadata file,
+ * and hence the latest versions of all metadata and targets on the repository.
  */
 export class Timestamp extends Signed {
   readonly type = MetadataKind.Timestamp;
