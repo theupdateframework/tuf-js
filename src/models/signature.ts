@@ -11,8 +11,7 @@ export interface SignatureOptions {
  * Contains a signature and the keyid uniquely identifying the key used
  * to generate the signature.
  *
- * Provides utility methods to easily create an object from a dictionary
- * and return the dictionary representation of the object.
+ * Provide a `fromJSON` method to create a Signature from a JSON object.
  */
 export class Signature {
   readonly keyID: string;

@@ -9,9 +9,6 @@ interface TimestampOptions extends SignedOptions {
 
 /**
  * A container for the signed part of timestamp metadata.
- *
- * TUF file format uses a dictionary to contain the snapshot information:
- * this is not the case with ``Timestamp.snapshot_meta`` which is a ``MetaFile``.
  */
 export class Timestamp extends Signed {
   readonly type = MetadataKind.Timestamp;
