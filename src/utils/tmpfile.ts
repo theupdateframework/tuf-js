@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
 
-type TempFileHandler<T> = (file: fs.FileHandle) => Promise<T>;
+type TempFileHandler<T> = (file: fs.FileHandle, filePath: string) => Promise<T>;
 type TempDirHandler<T> = (dir: string) => Promise<T>;
 
 // Invokes the given handler with a handle to a temporary file. The file
@@ -11,9 +11,10 @@ export const withTempFile = async <T>(
   handler: TempFileHandler<T>
 ): Promise<T> =>
   withTempDir(async (dir) => {
-    const file = await fs.open(path.join(dir, 'tempfile'), 'w+');
+    const filePath = path.join(dir, 'tempfile');
+    const file = await fs.open(filePath, 'w+');
     try {
-      return await handler(file);
+      return await handler(file, filePath);
     } finally {
       file.close();
     }
@@ -24,7 +25,6 @@ export const withTempFile = async <T>(
 const withTempDir = async <T>(handler: TempDirHandler<T>) => {
   const tmpDir = await fs.realpath(os.tmpdir());
   const dir = await fs.mkdtemp(tmpDir + path.sep);
-
   try {
     return await handler(dir);
   } finally {

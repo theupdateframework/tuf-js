@@ -1,5 +1,13 @@
+import fs, { FileHandle } from 'fs/promises';
 import fetch from 'make-fetch-happen';
+
 import { DownloadHTTPError, DownloadLengthMismatchError } from './error';
+import { withTempFile } from './utils/tmpfile';
+
+type DownloadFileHandler = (
+  file: FileHandle,
+  filePath: string
+) => Promise<Buffer>;
 
 export abstract class BaseFetcher {
   protected timeout?: number;
@@ -10,25 +18,40 @@ export abstract class BaseFetcher {
 
   abstract fetch(url: string): Promise<NodeJS.ReadableStream>;
 
-  public async downloadBytes(url: string, maxLength: number): Promise<Buffer> {
-    const reader = await this.fetch(url);
+  // Download file from given ``url``.
+  public async downloadFile(
+    url: string,
+    maxLength: number,
+    handler: DownloadFileHandler
+  ): Promise<Buffer> {
+    return withTempFile(async (tmpFile, filePath) => {
+      const reader = await this.fetch(url);
 
-    let numberOfBytesReceived = 0;
-    const chunks: Buffer[] = [];
+      let numberOfBytesReceived = 0;
 
-    for await (const chunk of reader) {
-      const bufferChunk = Buffer.from(chunk);
-      numberOfBytesReceived += bufferChunk.length;
+      for await (const chunk of reader) {
+        const bufferChunk = Buffer.from(chunk);
+        numberOfBytesReceived += bufferChunk.length;
 
-      if (numberOfBytesReceived > maxLength) {
-        throw new DownloadLengthMismatchError('Max length reached');
+        if (numberOfBytesReceived > maxLength) {
+          throw new DownloadLengthMismatchError('Max length reached');
+        }
+        await tmpFile.write(bufferChunk);
       }
+      return await handler(tmpFile, filePath);
+    });
+  }
 
-      chunks.push(bufferChunk);
-    }
-
-    // concatenate chunks into a single buffer
-    return Buffer.concat(chunks);
+  // Download bytes from given ``url``.
+  public async downloadBytes(url: string, maxLength: number): Promise<Buffer> {
+    return await this.downloadFile(
+      url,
+      maxLength,
+      async (tmpFile, filePath) => {
+        const file2 = await fs.open(filePath, 'r');
+        return await file2.readFile();
+      }
+    );
   }
 }
 
