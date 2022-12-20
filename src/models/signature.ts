@@ -5,6 +5,14 @@ export interface SignatureOptions {
   sig: string;
 }
 
+/**
+ * A container class containing information about a signature.
+ *
+ * Contains a signature and the keyid uniquely identifying the key used
+ * to generate the signature.
+ *
+ * Provide a `fromJSON` method to create a Signature from a JSON object.
+ */
 export class Signature {
   readonly keyID: string;
   readonly sig: string;

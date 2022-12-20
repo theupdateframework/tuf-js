@@ -20,6 +20,12 @@ interface DelegationsOptions {
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
+/**
+ * A container object storing information about all delegations.
+ *
+ * Targets roles that are trusted to provide signed metadata files
+ * describing targets with designated pathnames and/or further delegations.
+ */
 export class Delegations {
   readonly keys: KeyMap;
   readonly roles?: DelegatedRoleMap;

@@ -18,6 +18,13 @@ export interface SignedOptions {
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
+/***
+ * A base class for the signed part of TUF metadata.
+ *
+ * Objects with base class Signed are usually included in a ``Metadata`` object
+ * on the signed attribute. This class provides attributes and methods that
+ * are common for all TUF metadata types (roles).
+ */
 export abstract class Signed {
   readonly specVersion: string;
   readonly expires: string;

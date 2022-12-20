@@ -10,6 +10,13 @@ export interface SnapshotOptions extends SignedOptions {
   meta?: MetaFileMap;
 }
 
+/**
+ * A container for the signed part of snapshot metadata.
+ *
+ * Snapshot contains information about all target Metadata files.
+ * A top-level role that specifies the latest versions of all targets metadata files,
+ * and hence the latest versions of all targets (including any dependencies between them) on the repository.
+ */
 export class Snapshot extends Signed {
   readonly type = MetadataKind.Snapshot;
   readonly meta: MetaFileMap;

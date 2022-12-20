@@ -14,6 +14,7 @@ export interface KeyOptions {
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
+// A container class representing the public portion of a Key.
 export class Key {
   readonly keyID: string;
   readonly keyType: string;
