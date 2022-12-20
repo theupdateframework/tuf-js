@@ -1,13 +1,10 @@
-import fs, { FileHandle } from 'fs/promises';
+import fs from 'fs/promises';
 import fetch from 'make-fetch-happen';
 
 import { DownloadHTTPError, DownloadLengthMismatchError } from './error';
 import { withTempFile } from './utils/tmpfile';
 
-type DownloadFileHandler = (
-  file: FileHandle,
-  filePath: string
-) => Promise<Buffer>;
+type DownloadFileHandler = (tmpFilePath: string) => Promise<Buffer>;
 
 export abstract class BaseFetcher {
   protected timeout?: number;
@@ -24,7 +21,7 @@ export abstract class BaseFetcher {
     maxLength: number,
     handler: DownloadFileHandler
   ): Promise<Buffer> {
-    return withTempFile(async (tmpFile, filePath) => {
+    return withTempFile(async (tmpFile, tmpFilePath) => {
       const reader = await this.fetch(url);
 
       let numberOfBytesReceived = 0;
@@ -38,22 +35,18 @@ export abstract class BaseFetcher {
         }
         await tmpFile.write(bufferChunk);
       }
-      return await handler(tmpFile, filePath);
+      return await handler(tmpFilePath);
     });
   }
 
   // Download bytes from given ``url``.
   public async downloadBytes(url: string, maxLength: number): Promise<Buffer> {
-    return await this.downloadFile(
-      url,
-      maxLength,
-      async (tmpFile, filePath) => {
-        const readFile = await fs.open(filePath, 'r');
-        const data = await readFile.readFile();
-        readFile.close();
-        return data;
-      }
-    );
+    return await this.downloadFile(url, maxLength, async (tmpFilePath) => {
+      const readFile = await fs.open(tmpFilePath, 'r');
+      const data = await readFile.readFile();
+      readFile.close();
+      return data;
+    });
   }
 }
 
