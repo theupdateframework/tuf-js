@@ -18,6 +18,12 @@ export interface RoleOptions {
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
+/**
+ * Container that defines which keys are required to sign roles metadata.
+ *
+ * Role defines how many keys are required to successfully sign the roles
+ * metadata, and which keys are accepted.
+ */
 export class Role {
   readonly keyIDs: string[];
   readonly threshold: number;
@@ -89,6 +95,17 @@ interface DelegatedRoleOptions extends RoleOptions {
   pathHashPrefixes?: string[];
 }
 
+/**
+ * A container with information about a delegated role.
+ *
+ * A delegation can happen in two ways:
+ *   - ``paths`` is set: delegates targets matching any path pattern in ``paths``
+ *   - ``pathHashPrefixes`` is set: delegates targets whose target path hash
+ *      starts with any of the prefixes in ``pathHashPrefixes``
+ *
+ *   ``paths`` and ``pathHashPrefixes`` are mutually exclusive: both cannot be
+ *   set, at least one of them must be set.
+ */
 export class DelegatedRole extends Role {
   readonly name: string;
   readonly terminating: boolean;

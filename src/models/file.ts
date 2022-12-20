@@ -11,6 +11,9 @@ interface MetaFileOptions {
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
+// A container with information about a particular metadata file.
+//
+// This class is used for Timestamp and Snapshot metadata.
 export class MetaFile {
   readonly version: number;
   readonly length?: number;
@@ -104,6 +107,8 @@ interface TargetFileOptions {
 }
 
 // Container for info about a particular target file.
+//
+// This class is used for Target metadata.
 export class TargetFile {
   readonly length: number;
   readonly path: string;
