@@ -147,4 +147,42 @@ describe('Updater', () => {
       });
     });
   });
+
+  describe('#findCachedTarget', () => {
+    let updater: Updater;
+
+    beforeEach(async () => {
+      updater = new Updater(options);
+      await updater.refresh();
+    });
+
+    describe('when the target exists', () => {
+      it('returns the path to the cached file', async () => {
+        const target = 'file1.txt';
+        const targetInfo = await updater.getTargetInfo(target);
+
+        if (!targetInfo) {
+          fail('targetInfo is undefined');
+        }
+        await updater.downloadTarget(targetInfo);
+
+        const file = await updater.findCachedTarget(targetInfo);
+        expect(file).toBeDefined();
+        expect(file).toEqual(path.join(targetDir, target));
+      });
+    });
+    describe('when the target does NOT exist', () => {
+      it('returns undefined', async () => {
+        const target = 'file1.txt';
+        const targetInfo = await updater.getTargetInfo(target);
+
+        if (!targetInfo) {
+          fail('targetInfo is undefined');
+        }
+
+        const file = await updater.findCachedTarget(targetInfo);
+        expect(file).toBeUndefined();
+      });
+    });
+  });
 });
