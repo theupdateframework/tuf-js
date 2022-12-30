@@ -84,9 +84,7 @@ export class Updater {
     filePath?: string,
     targetBaseUrl?: string
   ): Promise<string> {
-    if (!filePath) {
-      filePath = this.generateTargetPath(targetInfo);
-    }
+    const targetPath = filePath || this.generateTargetPath(targetInfo);
 
     if (!targetBaseUrl) {
       if (!this.targetBaseUrl) {
@@ -107,13 +105,19 @@ export class Updater {
     const url = path.join(targetBaseUrl, targetFilePath);
 
     // Client workflow 5.7.3: download target file
-    const targetFile = await this.fetcher.downloadBytes(url, targetInfo.length);
+    await this.fetcher.downloadFile(
+      url,
+      targetInfo.length,
+      async (fileName) => {
+        // Verify hashes and length of downloaded file
+        await targetInfo.verify(fs.createReadStream(fileName));
 
-    targetInfo.verify(targetFile);
+        // Copy file to target path
+        fs.copyFileSync(fileName, targetPath);
+      }
+    );
 
-    fs.writeFileSync(filePath, targetFile);
-
-    return filePath;
+    return targetPath;
   }
 
   public async findCachedTarget(
@@ -125,8 +129,7 @@ export class Updater {
     }
 
     try {
-      const targetFile = fs.readFileSync(filePath);
-      targetInfo.verify(targetFile);
+      targetInfo.verify(fs.createReadStream(filePath));
       return filePath;
     } catch (error) {
       return;
