@@ -15,7 +15,7 @@ describe('Fetcher Test', () => {
       const fetcher = new Fetcher();
       const fromFetcher = await fetcher.downloadBytes(baseURL, 10000000000);
 
-      expect(new TextDecoder().decode(fromFetcher)).toEqual(response);
+      expect(fromFetcher).toStrictEqual(Buffer.from(response));
     });
   });
 
