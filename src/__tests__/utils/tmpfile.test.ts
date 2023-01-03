@@ -1,13 +1,14 @@
+import fs from 'fs/promises';
 import { withTempFile } from '../../utils/tmpfile';
 
 describe('withTempFile', () => {
   it('creates a temporary file', async () => {
-    const file = await withTempFile(async (tmpFile) => {
-      expect(tmpFile).toBeTruthy();
-      return tmpFile;
+    const file = await withTempFile(async (tmpFileName) => {
+      expect(tmpFileName).toBeTruthy();
+      return tmpFileName;
     });
 
-    // Check to make sure the file is closed
-    await expect(file.readFile()).rejects.toThrow(/file closed/);
+    // Check to make sure the file has been deleted
+    await expect(fs.open(file)).rejects.toThrow(/no such file/);
   });
 });
