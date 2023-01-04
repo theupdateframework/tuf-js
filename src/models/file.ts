@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { Readable } from 'stream';
 import util from 'util';
 import { LengthOrHashMismatchError, ValueError } from '../error';
 import { isDefined, isStringRecord } from '../utils/guard';
@@ -49,12 +50,35 @@ export class MetaFile {
   }
 
   public verify(data: Buffer): void {
+    // Verifies that the given data matches the expected length.
     if (this.length !== undefined) {
-      verifyLength(data, this.length);
+      if (data.length !== this.length) {
+        throw new LengthOrHashMismatchError(
+          `Expected length ${this.length} but got ${data.length}`
+        );
+      }
     }
 
+    // Verifies that the given data matches the supplied hashes.
     if (this.hashes) {
-      verifyHashes(data, this.hashes);
+      Object.entries(this.hashes).forEach(([key, value]) => {
+        let hash: crypto.Hash;
+
+        try {
+          hash = crypto.createHash(key);
+        } catch (e) {
+          throw new LengthOrHashMismatchError(
+            `Hash algorithm ${key} not supported`
+          );
+        }
+        const observedHash = hash.update(data).digest('hex');
+
+        if (observedHash !== value) {
+          throw new LengthOrHashMismatchError(
+            `Expected hash ${value} but got ${observedHash}`
+          );
+        }
+      });
     }
   }
 
@@ -141,9 +165,50 @@ export class TargetFile {
     );
   }
 
-  public verify(data: Buffer): void {
-    verifyLength(data, this.length);
-    verifyHashes(data, this.hashes);
+  public async verify(stream: Readable): Promise<void> {
+    let observedLength = 0;
+
+    // Create a digest for each hash algorithm
+    const digests = Object.keys(this.hashes).reduce((acc, key) => {
+      try {
+        acc[key] = crypto.createHash(key);
+      } catch (e) {
+        throw new LengthOrHashMismatchError(
+          `Hash algorithm ${key} not supported`
+        );
+      }
+      return acc;
+    }, {} as Record<string, crypto.Hash>);
+
+    // Read stream chunk by chunk
+    for await (const chunk of stream) {
+      // Keep running tally of stream length
+      observedLength += chunk.length;
+
+      // Append chunk to each digest
+      Object.values(digests).forEach((digest) => {
+        digest.update(chunk);
+      });
+    }
+
+    // Verify length matches expected value
+    if (observedLength !== this.length) {
+      throw new LengthOrHashMismatchError(
+        `Expected length ${this.length} but got ${observedLength}`
+      );
+    }
+
+    // Verify each digest matches expected value
+    Object.entries(digests).forEach(([key, value]) => {
+      const expected = this.hashes[key];
+      const actual = value.digest('hex');
+
+      if (actual !== expected) {
+        throw new LengthOrHashMismatchError(
+          `Expected hash ${expected} but got ${actual}`
+        );
+      }
+    });
   }
 
   public toJSON(): JSONObject {
@@ -171,39 +236,6 @@ export class TargetFile {
       hashes,
       unrecognizedFields: rest,
     });
-  }
-}
-
-// Verifies that the given data matches the supplied hashes.
-function verifyHashes(data: Buffer, hashes: Record<string, string>): void {
-  Object.entries(hashes).forEach(([key, value]) => {
-    let hash: crypto.Hash;
-
-    try {
-      hash = crypto.createHash(key);
-    } catch (e) {
-      throw new LengthOrHashMismatchError(
-        `Hash algorithm ${key} not supported`
-      );
-    }
-    const observedHash = hash.update(data).digest('hex');
-
-    if (observedHash !== value) {
-      throw new LengthOrHashMismatchError(
-        `Expected hash ${value} but got ${observedHash}`
-      );
-    }
-  });
-}
-
-// Verifies that the given data matches the expected length.
-function verifyLength(data: Buffer, expectedLength: number): void {
-  const observedLength = data.length;
-
-  if (observedLength !== expectedLength) {
-    throw new LengthOrHashMismatchError(
-      `Expected length ${expectedLength} but got ${observedLength}`
-    );
   }
 }
 
