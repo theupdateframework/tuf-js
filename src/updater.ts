@@ -129,8 +129,10 @@ export class Updater {
     }
 
     try {
-      targetInfo.verify(fs.createReadStream(filePath));
-      return filePath;
+      if (fs.existsSync(filePath)) {
+        targetInfo.verify(fs.createReadStream(filePath));
+        return filePath;
+      }
     } catch (error) {
       return;
     }
