@@ -134,8 +134,9 @@ export class Updater {
         return filePath;
       }
     } catch (error) {
-      return;
+      return undefined; // File not found
     }
+    return undefined; // File not found
   }
 
   private loadLocalMetadata(fileName: string): Buffer {
@@ -372,6 +373,7 @@ export class Updater {
         delegationsToVisit.push(...childRolesToVisit);
       }
     }
+    return undefined; // no matching target found
   }
 
   private generateTargetPath(targetInfo: TargetFile): string {
