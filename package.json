@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/github/tuf-js#readme",
   "devDependencies": {
+    "@actions/core": "^1.10.0",
     "@tsconfig/node14": "^1.0.3",
     "@types/jest": "^28.1.8",
     "@types/lodash.isequal": "^4.5.6",
