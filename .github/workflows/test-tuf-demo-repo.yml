@@ -41,7 +41,7 @@ jobs:
           cache: npm
       - name: Run tests
         id: hello
-        uses: ejahnGithub/tuf-client-fetch-target@v1.1.5
+        uses: ejahnGithub/tuf-client-fetch-target@v1.1.6
         with:
           target-files: 'file1.txt'
           root-metadata-url: 'https://jku.github.io/tuf-demo/metadata/1.root.json'
