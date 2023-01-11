@@ -40,5 +40,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - name: Run tests
-        id: my_test
-        uses: ./.github/actions/test-sigstore-tuf-repo
+        id: hello
+        uses: ejahnGithub/tuf-client-fetch-target@v1.1
