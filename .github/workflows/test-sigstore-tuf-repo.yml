@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ['main']
   workflow_dispatch:
+    inputs:
+      targetFile: 'ctfe.pub'
+      metadataBaseUrl: 'https://sigstore-tuf-root.storage.googleapis.com'
+      targetBaseUrl: 'https://sigstore-tuf-root.storage.googleapis.com/targets'
 
 jobs:
   run-tests:
@@ -41,8 +45,4 @@ jobs:
           cache: npm
       - name: Run tests
         working-directory: ./script
-        inputs:
-          targetFile: 'ctfe.pub'
-          metadataBaseUrl: 'https://sigstore-tuf-root.storage.googleapis.com'
-          targetBaseUrl: 'https://sigstore-tuf-root.storage.googleapis.com/targets'
         run: npm run test:ci
