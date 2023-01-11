@@ -39,9 +39,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-      - name: Run tests
-        id: hello
-        uses: ejahnGithub/tuf-client-fetch-target@v1.1.6
+      - name: Run TUF client
+        uses: ejahnGithub/tuf-client-fetch-target-action@v1.1.8
         with:
           target-files: 'file1.txt'
           root-metadata-url: 'https://jku.github.io/tuf-demo/metadata/1.root.json'

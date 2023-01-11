@@ -39,9 +39,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-      - name: Run tests
-        id: hello
-        uses: ejahnGithub/tuf-client-fetch-target@v1.1.6
+      - name: Run TUF client
+        uses: ejahnGithub/tuf-client-fetch-target-action@v1.1.8
         with:
           target-files: 'artifact.pub,ctfe.pub,ctfe_2022.pub,fulcio.crt.pem,fulcio_intermediate_v1.crt.pem,fulcio_v1.crt.pem,rekor.pub'
           root-metadata-url: 'https://sigstore-tuf-root.storage.googleapis.com/1.root.json'
