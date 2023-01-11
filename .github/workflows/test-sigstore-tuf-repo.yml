@@ -41,4 +41,4 @@ jobs:
           cache: npm
       - name: Run tests
         id: my_test
-        uses: ./.github/actions/test-input
+        uses: ./.github/actions/test-sigstore-tuf-repo
