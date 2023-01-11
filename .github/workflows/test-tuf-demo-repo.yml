@@ -1,4 +1,4 @@
-name: test-sigstore-tuf-repo
+name: test-tuf-demo-repo
 
 on:
   push:
@@ -40,10 +40,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - name: Run tests
-        id: sigstore-tuf-repo
+        id: hello
         uses: ejahnGithub/tuf-client-fetch-target@v1.1.5
         with:
-          target-file: 'artifact.pub,ctfe.pub,ctfe_2022.pub,fulcio.crt.pem,fulcio_intermediate_v1.crt.pem,fulcio_v1.crt.pem,rekor.pub',
-          root-metadata-url: 'https://sigstore-tuf-root.storage.googleapis.com/1.root.json'
-          metadata-base-url: 'https://sigstore-tuf-root.storage.googleapis.com'
-          target-base-url: 'https://sigstore-tuf-root.storage.googleapis.com/targets'
+          target-file: 'file1.txt'
+          root-metadata-url: 'https://jku.github.io/tuf-demo/metadata/1.root.json'
+          metadata-base-url: 'https://jku.github.io/tuf-demo/metadata'
+          target-base-url: 'https://jku.github.io/tuf-demo/targets'
