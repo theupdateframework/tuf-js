@@ -43,7 +43,7 @@ jobs:
         id: hello
         uses: ejahnGithub/tuf-client-fetch-target@v1.1.5
         with:
-          target-file: 'file1.txt'
+          target-files: 'file1.txt'
           root-metadata-url: 'https://jku.github.io/tuf-demo/metadata/1.root.json'
           metadata-base-url: 'https://jku.github.io/tuf-demo/metadata'
           target-base-url: 'https://jku.github.io/tuf-demo/targets'
