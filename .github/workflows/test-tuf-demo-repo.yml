@@ -9,7 +9,7 @@ on:
 
 jobs:
   run-tests:
-    name: Test TUF client with sigstore TUF repo
+    name: Test TUF client with TUF demo repo
     strategy:
       fail-fast: false
       matrix:
