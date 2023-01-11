@@ -41,4 +41,4 @@ jobs:
           cache: npm
       - name: Run tests
         id: hello
-        uses: ejahnGithub/tuf-client-fetch-target@v1.1.1
+        uses: ejahnGithub/tuf-client-fetch-target@v1.1.2
