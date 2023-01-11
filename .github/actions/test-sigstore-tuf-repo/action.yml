@@ -1,0 +1,14 @@
+name: Test Input
+description: Test input
+inputs:
+  my_input:
+    description: My input
+    required: false
+    default: 'foobar'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run tests
+      working-directory: ./script
+      run: npx ts-node runTUFClient.ts

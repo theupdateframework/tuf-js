@@ -47,4 +47,4 @@ jobs:
           cache: npm
       - name: Run tests
         working-directory: ./script
-        run: npm run test:ci
+        run: npx ts-node runTUFClient.ts
