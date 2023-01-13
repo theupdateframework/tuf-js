@@ -14,7 +14,6 @@ async function initDir(
 
   if (!fs.existsSync(path.join(metadataDir, 'root.json'))) {
     // install 1.root.json
-
     const response = await fetch(rootMetadataUrl);
     const data = await response.json();
     fs.writeFileSync(path.join(metadataDir, 'root.json'), JSON.stringify(data));
@@ -80,20 +79,24 @@ async function run() {
   const targetDir = './targets';
 
   const targetFiles = rawTargetFiles.split(',');
+  try {
+    await initDir(rootMetadataUrl, metadataDir, targetDir);
 
-  await initDir(rootMetadataUrl, metadataDir, targetDir);
+    await downloadTarget(
+      targetFiles,
+      metadataBaseUrl,
+      targetBaseUrl,
+      metadataDir,
+      targetDir
+    );
 
-  await downloadTarget(
-    targetFiles,
-    metadataBaseUrl,
-    targetBaseUrl,
-    metadataDir,
-    targetDir
-  );
-
-  // clean up the data
-  await removeDirs(metadataDir, targetDir);
-  process.exit();
+    process.exit();
+  } catch (err) {
+    throw err;
+  } finally {
+    // clean up
+    await removeDirs(metadataDir, targetDir);
+  }
 }
 
 try {

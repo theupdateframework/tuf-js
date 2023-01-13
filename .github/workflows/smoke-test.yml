@@ -3,13 +3,10 @@ name: smoke-test
 on:
   push:
     branches: ['main']
-  pull_request:
-    branches: ['main']
-  workflow_dispatch:
 
 jobs:
   fetch-target:
-    name: Fetch Target
+    name: Fetch Target From TUF Repo
     strategy:
       fail-fast: false
       matrix:
@@ -41,6 +38,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Run TUF client
+      - name: Run TUF client with Sigstore TUF repo
         run: |
           npx ts-node ./scripts/tuf_client_fetch_target.ts ./scripts/sigstore-tuf-repo-config.json
