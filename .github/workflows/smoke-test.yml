@@ -40,4 +40,4 @@ jobs:
         run: npm ci
       - name: Run TUF client with Sigstore TUF repo
         run: |
-          npx ts-node ./scripts/tuf_client_fetch_target.ts ./scripts/sigstore-tuf-repo-config.json
+          npx ts-node ./scripts/tufClientFetchTarget.ts ./scripts/sigstore-tuf-repo-config.json
