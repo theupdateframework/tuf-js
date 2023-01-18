@@ -1,0 +1,6 @@
+{
+    "targetFiles": "file1.txt",
+    "metadataBaseUrl": "https://jku.github.io/tuf-demo/metadata",
+    "targetBaseUrl": "https://jku.github.io/tuf-demo/targets", 
+    "rootMetadataUrl": "https://jku.github.io/tuf-demo/metadata/1.root.json" 
+}
