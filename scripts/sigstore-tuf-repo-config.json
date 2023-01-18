@@ -1,0 +1,6 @@
+{
+    "targetFiles": "artifact.pub,ctfe.pub,ctfe_2022.pub,fulcio.crt.pem,fulcio_intermediate_v1.crt.pem,fulcio_v1.crt.pem,rekor.pub",
+    "metadataBaseUrl": "https://sigstore-tuf-root.storage.googleapis.com",
+    "targetBaseUrl": "https://sigstore-tuf-root.storage.googleapis.com/targets", 
+    "rootMetadataUrl": "https://sigstore-tuf-root.storage.googleapis.com/1.root.json" 
+}
