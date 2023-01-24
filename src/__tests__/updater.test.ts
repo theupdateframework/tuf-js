@@ -164,6 +164,7 @@ describe('Updater', () => {
         expect(targets).toBeDefined();
         expect(targets).toHaveLength(2);
         expect(targets?.[0]?.path).toBe('file1.txt');
+        expect(targets?.[1]?.path).toBe('file2.txt');
       });
     });
   });
