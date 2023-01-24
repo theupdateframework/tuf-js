@@ -2,10 +2,39 @@ import fs from 'fs';
 import nock from 'nock';
 import path from 'path';
 import { Updater, UpdaterOptions } from '../updater';
-import { rawRootJson } from './__fixtures__/roots';
-import { rawSnapshotJson } from './__fixtures__/snapshots';
-import { rawFile1Txt, rawTargetsJson } from './__fixtures__/targets';
-import { rawTimestampJson } from './__fixtures__/timestamps';
+
+const loadFile = (filename: string) => {
+  return fs.readFileSync(path.resolve(__dirname, filename), 'utf8');
+};
+
+const file1RootMetadataPath = '../../repository_data/metadata/root.json';
+
+const file1MetadataMap = {
+  '1.root.json': '../../repository_data/metadata/1.root.json',
+  'snapshot.json': '../../repository_data/metadata/snapshot.json',
+  'targets.json': '../../repository_data/metadata/targets.json',
+  'timestamp.json': '../../repository_data/metadata/timestamp.json',
+};
+
+const file1TargetsMap = {
+  'file1.txt': '../../repository_data/targets/file1.txt',
+};
+
+const emptyTargetRootMetadataPath =
+  '../../repository_data/empty_target_repo/metadata/1.root.json';
+
+const emptyTargetMetadataMap = {
+  '1.root.json': '../../repository_data/empty_target_repo/metadata/1.root.json',
+  '2.root.json': '../../repository_data/empty_target_repo/metadata/2.root.json',
+  'snapshot.json':
+    '../../repository_data/empty_target_repo/metadata/snapshot.json',
+  'targets.json':
+    '../../repository_data/empty_target_repo/metadata/targets.json',
+  'timestamp.json':
+    '../../repository_data/empty_target_repo/metadata/timestamp.json',
+};
+
+const emptyTargetTargetsMap = {};
 
 describe('Updater', () => {
   const baseURL = 'http://localhost:8080';
@@ -23,14 +52,14 @@ describe('Updater', () => {
   };
 
   // create the directory for metadata and targets and copy the root.json
-  beforeEach(() => {
+  const initDirectory = (rootJsonFile: string) => {
     if (!fs.existsSync(metadataDir)) {
       fs.mkdirSync(metadataDir);
     }
 
     if (!fs.existsSync(path.join(metadataDir, 'root.json'))) {
       fs.copyFileSync(
-        path.resolve(__dirname, '../../examples/client-example/1.root.json'),
+        path.resolve(__dirname, rootJsonFile),
         path.join(metadataDir, 'root.json')
       );
     }
@@ -38,15 +67,22 @@ describe('Updater', () => {
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir);
     }
-  });
+  };
 
-  beforeEach(() => {
-    nock(baseURL).get('/metadata/1.root.json').reply(200, rawRootJson);
-    nock(baseURL).get('/metadata/snapshot.json').reply(200, rawSnapshotJson);
-    nock(baseURL).get('/metadata/timestamp.json').reply(200, rawTimestampJson);
-    nock(baseURL).get('/metadata/targets.json').reply(200, rawTargetsJson);
-    nock(baseURL).get('/targets/file1.txt').reply(200, rawFile1Txt);
-  });
+  // create mock endpoints for metadata and targets
+  const initEndpoints = (
+    metadataMap: { [key: string]: string },
+    targetsMap: { [key: string]: string }
+  ) => {
+    nock.cleanAll();
+    for (const [key, value] of Object.entries(metadataMap)) {
+      nock(baseURL).get(`/metadata/${key}`).reply(200, loadFile(value));
+    }
+
+    for (const [key, value] of Object.entries(targetsMap)) {
+      nock(baseURL).get(`/targets/${key}`).reply(200, loadFile(value));
+    }
+  };
 
   // remove the directory for metadata and targets
   afterEach(() => {
@@ -55,6 +91,11 @@ describe('Updater', () => {
   });
 
   describe('constructor', () => {
+    beforeEach(() => {
+      initDirectory(file1RootMetadataPath);
+      initEndpoints(file1MetadataMap, file1TargetsMap);
+    });
+
     describe('when the trusted root does NOT exist', () => {
       it('throws an error', () => {
         expect(
@@ -71,6 +112,10 @@ describe('Updater', () => {
   });
 
   describe('#refresh', () => {
+    beforeEach(() => {
+      initDirectory(file1RootMetadataPath);
+      initEndpoints(file1MetadataMap, file1TargetsMap);
+    });
     describe('when the repo URL is invalid', () => {
       it('throws an error', async () => {
         const updater = new Updater({
@@ -90,21 +135,32 @@ describe('Updater', () => {
   });
 
   describe('#getTargets', () => {
-    describe('when the targets.json is valid', () => {
-      it('throws an error', async () => {
-        const updater = new Updater(options);
-
-        const targets = await updater.getTargets();
-        expect(targets).toBeDefined();
-        expect(targets).toHaveLength(0);
-        expect(targets).toBe([]);
+    describe('when no tagerts in targets.json', () => {
+      beforeEach(() => {
+        initDirectory(emptyTargetRootMetadataPath);
+        initEndpoints(emptyTargetMetadataMap, emptyTargetTargetsMap);
       });
-    });
 
-    describe('when the targets.json is valid', () => {
       it('resolves with no error', async () => {
         const updater = new Updater(options);
         const targets = await updater.getTargets();
+
+        expect(targets).toBeDefined();
+        expect(targets).toHaveLength(0);
+        expect(targets).toStrictEqual([]);
+      });
+    });
+
+    describe('when have 3 targets in targets.json', () => {
+      beforeEach(() => {
+        initDirectory(file1RootMetadataPath);
+        initEndpoints(file1MetadataMap, file1TargetsMap);
+      });
+
+      it('resolves with no error', async () => {
+        const updater = new Updater(options);
+        const targets = await updater.getTargets();
+
         expect(targets).toBeDefined();
         expect(targets).toHaveLength(2);
         expect(targets?.[0]?.path).toBe('file1.txt');
@@ -113,6 +169,10 @@ describe('Updater', () => {
   });
 
   describe('#getTargetInfo', () => {
+    beforeEach(() => {
+      initDirectory(file1RootMetadataPath);
+      initEndpoints(file1MetadataMap, file1TargetsMap);
+    });
     describe('when the target exists', () => {
       const target = 'file1.txt';
 
@@ -146,6 +206,8 @@ describe('Updater', () => {
     let updater: Updater;
 
     beforeEach(async () => {
+      initDirectory(file1RootMetadataPath);
+      initEndpoints(file1MetadataMap, file1TargetsMap);
       updater = new Updater(options);
       await updater.refresh();
     });
