@@ -66,6 +66,19 @@ export class Updater {
     await this.loadTargets(MetadataKind.Targets, MetadataKind.Root);
   }
 
+  // Returns the TargetFile info for all targets in the trusted set.
+  public async getTargets(): Promise<TargetFile[]> {
+    if (!this.trustedSet.targets) {
+      await this.refresh();
+    }
+
+    if (this.trustedSet.targets?.signed.targets) {
+      return Object.values(this.trustedSet.targets?.signed.targets);
+    }
+
+    return [];
+  }
+
   // Returns the TargetFile instance with information for the given target path.
   //
   // Implicitly calls refresh if it hasn't already been called.
@@ -73,7 +86,7 @@ export class Updater {
     targetPath: string
   ): Promise<TargetFile | undefined> {
     if (!this.trustedSet.targets) {
-      this.refresh();
+      await this.refresh();
     }
 
     return this.preorderDepthFirstWalk(targetPath);

@@ -89,6 +89,29 @@ describe('Updater', () => {
     });
   });
 
+  describe('#getTargets', () => {
+    describe('when the targets.json is valid', () => {
+      it('throws an error', async () => {
+        const updater = new Updater(options);
+
+        const targets = await updater.getTargets();
+        expect(targets).toBeDefined();
+        expect(targets).toHaveLength(0);
+        expect(targets).toBe([]);
+      });
+    });
+
+    describe('when the targets.json is valid', () => {
+      it('resolves with no error', async () => {
+        const updater = new Updater(options);
+        const targets = await updater.getTargets();
+        expect(targets).toBeDefined();
+        expect(targets).toHaveLength(2);
+        expect(targets?.[0]?.path).toBe('file1.txt');
+      });
+    });
+  });
+
   describe('#getTargetInfo', () => {
     describe('when the target exists', () => {
       const target = 'file1.txt';
