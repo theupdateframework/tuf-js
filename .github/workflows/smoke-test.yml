@@ -44,3 +44,6 @@ jobs:
       - name: Run TUF client with Sigstore TUF repo
         run: |
           npx ts-node ./scripts/tufClientFetchTarget.ts ./scripts/sigstore-tuf-repo-config.json
+      - name: Run TUF client with TUF Demo repo
+        run: |
+          npx ts-node ./scripts/tufClientFetchTarget.ts ./scripts/tuf-demo-tuf-repo-config.json
