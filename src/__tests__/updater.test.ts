@@ -135,7 +135,7 @@ describe('Updater', () => {
   });
 
   describe('#getTargets', () => {
-    describe('when no tagerts in targets.json', () => {
+    describe('when no targets in targets.json', () => {
       beforeEach(() => {
         initDirectory(emptyTargetRootMetadataPath);
         initEndpoints(emptyTargetMetadataMap, emptyTargetTargetsMap);
