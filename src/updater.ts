@@ -73,7 +73,7 @@ export class Updater {
     targetPath: string
   ): Promise<TargetFile | undefined> {
     if (!this.trustedSet.targets) {
-      this.refresh();
+      await this.refresh();
     }
 
     return this.preorderDepthFirstWalk(targetPath);
