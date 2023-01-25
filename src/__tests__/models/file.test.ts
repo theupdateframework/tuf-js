@@ -255,9 +255,23 @@ describe('TargetFile', () => {
         hashes: { sha256: 'a' },
       };
 
-      it('returns undefined', () => {
+      it('returns an empty object', () => {
         const file = new TargetFile(opts);
-        expect(file.custom).toBeUndefined();
+        expect(file.custom).toEqual({});
+      });
+    });
+
+    describe('when the custom fields are malformed (not an object)', () => {
+      const opts = {
+        length: 1,
+        path: 'foo',
+        hashes: { sha256: 'a' },
+        unrecognizedFields: { custom: 'foo' },
+      };
+
+      it('returns an empty object', () => {
+        const file = new TargetFile(opts);
+        expect(file.custom).toEqual({});
       });
     });
   });

@@ -148,8 +148,12 @@ export class TargetFile {
     this.unrecognizedFields = opts.unrecognizedFields || {};
   }
 
-  get custom(): JSONValue {
-    return this.unrecognizedFields['custom'];
+  get custom(): Record<string, unknown> {
+    const custom = this.unrecognizedFields['custom'];
+    if (!custom || Array.isArray(custom) || !(typeof custom === 'object')) {
+      return {};
+    }
+    return custom;
   }
 
   public equals(other: TargetFile): boolean {
