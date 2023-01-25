@@ -89,14 +89,13 @@ async function run() {
       metadataDir,
       targetDir
     );
-
-    process.exit();
   } catch (err) {
     throw err;
   } finally {
     // clean up
     await removeDirs(metadataDir, targetDir);
   }
+  process.exit();
 }
 
 try {
