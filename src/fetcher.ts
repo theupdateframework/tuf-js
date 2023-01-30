@@ -62,16 +62,26 @@ export abstract class BaseFetcher {
   }
 }
 
+interface FetcherOptions {
+  timeout?: number;
+  retries?: number;
+}
+
 export class Fetcher extends BaseFetcher {
   private timeout?: number;
+  private retries?: number;
 
-  constructor(timeout?: number) {
+  constructor(options: FetcherOptions = {}) {
     super();
-    this.timeout = timeout;
+    this.timeout = options.timeout;
+    this.retries = options.retries;
   }
 
   public override async fetch(url: string): Promise<NodeJS.ReadableStream> {
-    const response = await fetch(url, { timeout: this.timeout });
+    const response = await fetch(url, {
+      timeout: this.timeout,
+      retry: this.retries,
+    });
 
     if (!response.ok || !response?.body) {
       throw new DownloadHTTPError('Failed to download', response.status);
