@@ -20,6 +20,10 @@ describe('Updater', () => {
     targetDir: targetDir,
     metadataBaseUrl: metadataBaseUrl,
     targetBaseUrl: targetBaseUrl,
+    config: {
+      fetchRetries: 0,
+      fetchTimeout: 1000,
+    },
   };
 
   // create the directory for metadata and targets and copy the root.json

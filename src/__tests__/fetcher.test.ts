@@ -39,7 +39,7 @@ describe('Fetcher Test', () => {
     });
 
     it('Reach the timeout limit', async () => {
-      const fetcher = new Fetcher(1);
+      const fetcher = new Fetcher({ timeout: 1 });
       await expect(fetcher.downloadBytes(baseURL, 1)).rejects.toThrow(
         'network timeout at: http://localhost:8080/'
       );

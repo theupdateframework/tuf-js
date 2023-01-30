@@ -7,6 +7,7 @@ export const defaultConfig = {
   targetsMaxLength: 5000000, // bytes
   prefixTargetsWithHash: true,
   fetchTimeout: 100000, // milliseconds
+  fetchRetries: 2,
 };
 
 export type Config = typeof defaultConfig;

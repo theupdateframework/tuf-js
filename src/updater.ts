@@ -19,7 +19,7 @@ export interface UpdaterOptions {
   targetDir?: string;
   targetBaseUrl?: string;
   fetcher?: BaseFetcher;
-  config?: Config;
+  config?: Partial<Config>;
 }
 
 interface Delegation {
@@ -56,7 +56,12 @@ export class Updater {
 
     this.trustedSet = new TrustedMetadataStore(data);
     this.config = { ...defaultConfig, ...config };
-    this.fetcher = fetcher || new Fetcher(this.config.fetchTimeout);
+    this.fetcher =
+      fetcher ||
+      new Fetcher({
+        timeout: this.config.fetchTimeout,
+        retries: this.config.fetchRetries,
+      });
   }
 
   public async refresh() {
