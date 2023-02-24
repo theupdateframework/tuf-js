@@ -28,6 +28,10 @@ export class Targets extends Signed {
     this.delegations = options.delegations;
   }
 
+  public addTarget(target: TargetFile): void {
+    this.targets[target.path] = target;
+  }
+
   public equals(other: Targets): boolean {
     if (!(other instanceof Targets)) {
       return false;

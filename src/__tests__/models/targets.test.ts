@@ -57,6 +57,22 @@ describe('Targets', () => {
     });
   });
 
+  describe('#addTarget', () => {
+    const targetFile = new TargetFile({
+      path: 'a',
+      length: 1,
+      hashes: { sha256: 'abc' },
+    });
+
+    const targets = new Targets({});
+
+    it('adds a target', () => {
+      targets.addTarget(targetFile);
+      expect(targets.targets).toHaveProperty(targetFile.path);
+      expect(targets.targets[targetFile.path]).toEqual(targetFile);
+    });
+  });
+
   describe('#equals', () => {
     const targetFile = new TargetFile({
       path: 'a',
