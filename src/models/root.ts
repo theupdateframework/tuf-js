@@ -51,6 +51,18 @@ export class Root extends Signed {
     }
   }
 
+  public addKey(key: Key, role: string): void {
+    if (!this.roles[role]) {
+      throw new ValueError(`role ${role} does not exist`);
+    }
+
+    if (!this.roles[role].keyIDs.includes(key.keyID)) {
+      this.roles[role].keyIDs.push(key.keyID);
+    }
+
+    this.keys[key.keyID] = key;
+  }
+
   public equals(other: Root): boolean {
     if (!(other instanceof Root)) {
       return false;

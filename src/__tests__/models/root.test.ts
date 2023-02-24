@@ -86,6 +86,34 @@ describe('Root', () => {
     });
   });
 
+  describe('#addKey', () => {
+    const key = new Key({
+      keyID: 'foo',
+      keyType: 'ed25519',
+      keyVal: { public: '' },
+      scheme: 'ed25519',
+    });
+
+    const root = new Root({});
+
+    describe('when called with a valid role', () => {
+      it('adds the key', () => {
+        root.addKey(key, 'timestamp');
+
+        expect(root.keys).toHaveProperty(key.keyID);
+        expect(root.keys[key.keyID]).toEqual(key);
+
+        expect(root.roles.timestamp.keyIDs).toContain(key.keyID);
+      });
+    });
+
+    describe('when called with an invalid role', () => {
+      it('throws an error', () => {
+        expect(() => root.addKey(key, 'invalid')).toThrow(ValueError);
+      });
+    });
+  });
+
   describe('#equals', () => {
     const emptyRole = new Role({ keyIDs: [], threshold: 1 });
     const emptyKey = new Key({
