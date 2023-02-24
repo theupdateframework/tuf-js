@@ -1,12 +1,18 @@
 import {
+  Metadata,
+  MetadataKind,
+  Root,
+  Snapshot,
+  Targets,
+  Timestamp,
+} from '@tufjs/models';
+import {
   BadVersionError,
   EqualVersionError,
   ExpiredMetadataError,
   RepositoryError,
   RuntimeError,
 } from './error';
-import { Metadata, Root, Snapshot, Targets, Timestamp } from './models';
-import { MetadataKind } from './utils/types';
 
 type TrustedSet = {
   root?: Metadata<Root>;

@@ -1,10 +1,9 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
-  setupFilesAfterEnv: ['./jest.setup.js'],
-  testPathIgnorePatterns: [
-    '<rootDir>/node_modules/',
-    '<rootDir>/dist/',
-    '<rootDir>/src/__tests__/__fixtures__',
+  testPathIgnorePatterns: ['<rootDir>/node_modules/'],
+  projects: [
+    '<rootDir>',
+    '<rootDir>/packages/models',
+    '<rootDir>/packages/repo-mock',
   ],
 };

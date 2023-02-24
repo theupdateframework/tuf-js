@@ -1,10 +1,13 @@
 {
-  "extends": "@tsconfig/node14/tsconfig.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "noImplicitAny": true,
-    "outDir": "./dist"
+    "rootDir": "src",
+    "outDir": "dist"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/__tests__"]
+  "exclude": ["./dist", "**/__tests__"],
+  "references": [
+    { "path": "./packages/models" },
+    { "path": "./packages/repo-mock" }
+  ]
 }

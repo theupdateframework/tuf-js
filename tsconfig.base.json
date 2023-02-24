@@ -1,0 +1,10 @@
+{
+  "extends": "@tsconfig/node14/tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "noImplicitOverride": true,
+    "allowUnreachableCode": false,
+    "noImplicitReturns": true,
+    "noUnusedParameters": true
+  }
+}

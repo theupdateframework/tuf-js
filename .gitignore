@@ -6,3 +6,4 @@ examples/client-example/snapshot.json
 examples/client-example/targets.json
 examples/client-example/timestamp.json
 examples/client-example/*.pub
+tsconfig.tsbuildinfo
