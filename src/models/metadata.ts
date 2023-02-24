@@ -1,6 +1,7 @@
 import util from 'util';
 import { UnsignedMetadataError, ValueError } from '../error';
 import { isDefined, isObject, isObjectArray } from '../utils/guard';
+import { canonicalize } from '../utils/json';
 import { JSONObject, JSONValue, MetadataKind } from '../utils/types';
 import { Signable } from './base';
 import { Key } from './key';
@@ -50,6 +51,17 @@ export class Metadata<T extends MetadataType> implements Signable {
     this.signed = signed;
     this.signatures = signatures || {};
     this.unrecognizedFields = unrecognizedFields || {};
+  }
+
+  public sign(signer: (data: Buffer) => Signature, append = true): void {
+    const bytes = canonicalize(this.signed.toJSON());
+    const signature = signer(bytes);
+
+    if (!append) {
+      this.signatures = {};
+    }
+
+    this.signatures[signature.keyID] = signature;
   }
 
   public verifyDelegate(
