@@ -24,6 +24,13 @@ export class Signature {
     this.sig = sig;
   }
 
+  public toJSON(): JSONObject {
+    return {
+      keyid: this.keyID,
+      sig: this.sig,
+    };
+  }
+
   public static fromJSON(data: JSONObject): Signature {
     const { keyid, sig } = data;
 

@@ -66,6 +66,7 @@ export class Root extends Signed {
 
   public toJSON(): JSONObject {
     return {
+      _type: this.type,
       spec_version: this.specVersion,
       version: this.version,
       expires: this.expires,

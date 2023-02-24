@@ -36,6 +36,7 @@ export class Snapshot extends Signed {
 
   public toJSON(): JSONObject {
     return {
+      _type: this.type,
       meta: metaToJSON(this.meta),
       spec_version: this.specVersion,
       version: this.version,

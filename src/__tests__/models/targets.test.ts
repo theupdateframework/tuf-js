@@ -145,6 +145,7 @@ describe('Targets', () => {
 
       it('should return a JSON representation', () => {
         expect(targets.toJSON()).toEqual({
+          _type: 'targets',
           spec_version: opts.specVersion,
           version: opts.version,
           expires: opts.expires,
@@ -168,6 +169,7 @@ describe('Targets', () => {
 
       it('should return a JSON representation', () => {
         expect(targets.toJSON()).toEqual({
+          _type: 'targets',
           spec_version: opts.specVersion,
           version: opts.version,
           expires: opts.expires,

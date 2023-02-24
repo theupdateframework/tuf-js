@@ -190,6 +190,7 @@ describe('Root', () => {
 
     it('returns a JSON representation', () => {
       expect(root.toJSON()).toEqual({
+        _type: 'root',
         version: 1,
         spec_version: '1.0.0',
         expires: '2020-01-01T00:00:00.000Z',

@@ -42,6 +42,7 @@ export class Targets extends Signed {
 
   public toJSON(): JSONObject {
     const json: JSONObject = {
+      _type: this.type,
       spec_version: this.specVersion,
       version: this.version,
       expires: this.expires,

@@ -122,6 +122,18 @@ export class Metadata<T extends MetadataType> implements Signable {
     );
   }
 
+  public toJSON(): JSONObject {
+    const signatures = Object.values(this.signatures).map((signature) => {
+      return signature.toJSON();
+    });
+
+    return {
+      signatures,
+      signed: this.signed.toJSON(),
+      ...this.unrecognizedFields,
+    };
+  }
+
   public static fromJSON(
     type: MetadataKind.Root,
     data: JSONObject

@@ -123,6 +123,7 @@ describe('Timestamp', () => {
 
     it('returns the expected JSON', () => {
       expect(timestamp.toJSON()).toEqual({
+        _type: 'timestamp',
         version: 1,
         spec_version: '1.0.0',
         expires: '1970-01-01T00:00:01.000Z',
