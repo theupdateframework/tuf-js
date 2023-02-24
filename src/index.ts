@@ -1,3 +1,3 @@
 export { BaseFetcher } from './fetcher';
-export { TargetFile } from './models/file';
+export * from './models';
 export { Updater } from './updater';
