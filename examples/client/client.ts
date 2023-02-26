@@ -4,33 +4,37 @@ import { Updater } from '../../src';
 
 const target = 'file1.txt';
 
-const metadataBaseUrl = 'http://127.0.0.1:8080/metadata';
+const baseURL = 'http://127.0.0.1:8080';
 const metadataDir = './metadata';
 const targetDir = './targets';
-const targetBaseUrl = 'http://127.0.0.1:8080/targets';
 
 function initDir() {
+  // Create cache directory if it doesn't already exist
   if (!fs.existsSync(metadataDir)) {
     fs.mkdirSync(metadataDir);
   }
 
-  if (!fs.existsSync(path.join(metadataDir, 'root.json'))) {
-    fs.copyFileSync('./1.root.json', path.join(metadataDir, 'root.json'));
-  }
-
+  // Create the target download dir if it doesn't already exist
   if (!fs.existsSync(targetDir)) {
     fs.mkdirSync(targetDir);
+  }
+
+  // Ensure initial root.json is present in the cache
+  const rootFilePath = path.join(metadataDir, 'root.json');
+  if (!fs.existsSync(rootFilePath)) {
+    fs.copyFileSync('./1.root.json', rootFilePath);
   }
 }
 
 async function downloadTarget() {
   const updater = new Updater({
-    metadataBaseUrl,
+    metadataBaseUrl: `${baseURL}/metadata`,
+    targetBaseUrl: `${baseURL}/targets`,
     metadataDir,
     targetDir,
-    targetBaseUrl,
   });
   await updater.refresh();
+
   const targetInfo = await updater.getTargetInfo(target);
 
   if (!targetInfo) {
