@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Updater } from '../../src';
+import { Updater } from '../../packages/client/src';
 
 const target = 'file1.txt';
 

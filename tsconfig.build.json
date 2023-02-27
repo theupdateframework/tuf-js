@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/client" },
+    { "path": "packages/models" },
+    { "path": "packages/repo-mock" }
+  ]
+}

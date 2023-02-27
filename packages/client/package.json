@@ -1,21 +1,21 @@
 {
-  "name": "@tufjs/repo-mock",
-  "version": "1.0.0-alpha.1",
-  "description": "HTTP mocking for TUF repository requests",
+  "name": "tuf-js",
+  "version": "1.0.0",
+  "description": "JavaScript implementation of The Update Framework (TUF)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsc --build",
-    "clean": "rm -rf dist && rm tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist",
     "test": "jest"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/theupdateframework/tuf-js.git"
   },
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "tuf",
     "security",
@@ -26,14 +26,19 @@
   "bugs": {
     "url": "https://github.com/theupdateframework/tuf-js/issues"
   },
-  "homepage": "https://github.com/theupdateframework/tuf-js/packages/repo-mock#readme",
+  "homepage": "https://github.com/theupdateframework/tuf-js/packages/client#readme",
   "devDependencies": {
+    "@tufjs/repo-mock": "1.0.0-alpha.1",
+    "@types/make-fetch-happen": "^10.0.1",
+    "@types/minimatch": "^5.1.2",
     "@types/node": "^18.14.1",
+    "nock": "^13.2.9",
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@tufjs/models": "^1.0.0-alpha.1",
-    "nock": "^13.3.0"
+    "make-fetch-happen": "^11.0.1",
+    "minimatch": "^6.1.0",
+    "@tufjs/models": "^1.0.0-alpha.1"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0 || >=18.0.0"

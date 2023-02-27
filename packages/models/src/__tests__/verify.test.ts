@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { Metadata, MetadataKind, ValueError } from '../index';
 
 const rootJSON = require('./__fixtures__/root.json');
