@@ -1,8 +1,7 @@
 dist
 node_modules
 coverage
-examples/client-example/root.json
-examples/client-example/snapshot.json
-examples/client-example/targets.json
-examples/client-example/timestamp.json
-examples/client-example/*.pub
+examples/client/targets
+examples/client/metadata
+tsconfig.tsbuildinfo
+*.code-workspace

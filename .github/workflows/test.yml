@@ -20,7 +20,7 @@ jobs:
           node-version: 16
           cache: npm
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Run linter
         run: npm run lint:check
 
@@ -55,7 +55,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+      - name: Update npm
+        run: npm install -g npm@8
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+      - name: Build
+        run: npm run build
       - name: Run tests
         run: npm run test:ci
