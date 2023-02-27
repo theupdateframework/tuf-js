@@ -1,5 +1,7 @@
+import { Metadata, MetadataKind, TargetFile, Targets } from '@tufjs/models';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Config, defaultConfig } from './config';
 import {
   EqualVersionError,
   PersistError,
@@ -7,11 +9,7 @@ import {
   ValueError,
 } from './error';
 import { BaseFetcher, Fetcher } from './fetcher';
-import { Metadata, Targets } from './models';
-import { TargetFile } from './models/file';
 import { TrustedMetadataStore } from './store';
-import { Config, defaultConfig } from './utils/config';
-import { MetadataKind } from './utils/types';
 
 export interface UpdaterOptions {
   metadataDir: string;

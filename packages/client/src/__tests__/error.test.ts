@@ -19,14 +19,6 @@ describe('Error Test', () => {
     });
   });
 
-  describe('Unsigned Metadata Error', () => {
-    it('Check the parent class', () => {
-      expect(error.UnsignedMetadataError.prototype).toBeInstanceOf(
-        error.RepositoryError
-      );
-    });
-  });
-
   describe('Bad Version Error', () => {
     it('Check the parent class', () => {
       expect(error.BadVersionError.prototype).toBeInstanceOf(
@@ -47,28 +39,6 @@ describe('Error Test', () => {
     it('Check the parent class', () => {
       expect(error.ExpiredMetadataError.prototype).toBeInstanceOf(
         error.RepositoryError
-      );
-    });
-  });
-
-  describe('Length Or Hash Mismatch Error', () => {
-    it('Check the parent class', () => {
-      expect(error.LengthOrHashMismatchError.prototype).toBeInstanceOf(
-        error.RepositoryError
-      );
-    });
-  });
-
-  describe('Crypto Error', () => {
-    it('Check the parent class', () => {
-      expect(error.CryptoError.prototype).toBeInstanceOf(Error);
-    });
-  });
-
-  describe('Unsupported Algorithm Error', () => {
-    it('Check the parent class', () => {
-      expect(error.UnsupportedAlgorithmError.prototype).toBeInstanceOf(
-        error.CryptoError
       );
     });
   });
