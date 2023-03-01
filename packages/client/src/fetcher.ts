@@ -7,7 +7,16 @@ import { withTempFile } from './utils/tmpfile';
 
 type DownloadFileHandler<T> = (file: string) => Promise<T>;
 
-export abstract class BaseFetcher {
+export interface Fetcher {
+  downloadFile<T>(
+    url: string,
+    maxLength: number,
+    handler: DownloadFileHandler<T>
+  ): Promise<T>;
+  downloadBytes(url: string, maxLength: number): Promise<Buffer>;
+}
+
+export abstract class BaseFetcher implements Fetcher {
   abstract fetch(url: string): Promise<NodeJS.ReadableStream>;
 
   // Download file from given URL. The file is downloaded to a temporary
@@ -67,7 +76,7 @@ interface FetcherOptions {
   retries?: number;
 }
 
-export class Fetcher extends BaseFetcher {
+export class DefaultFetcher extends BaseFetcher {
   private timeout?: number;
   private retries?: number;
 

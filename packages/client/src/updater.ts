@@ -8,7 +8,7 @@ import {
   RuntimeError,
   ValueError,
 } from './error';
-import { BaseFetcher, Fetcher } from './fetcher';
+import { DefaultFetcher, Fetcher } from './fetcher';
 import { TrustedMetadataStore } from './store';
 
 export interface UpdaterOptions {
@@ -16,7 +16,7 @@ export interface UpdaterOptions {
   metadataBaseUrl: string;
   targetDir?: string;
   targetBaseUrl?: string;
-  fetcher?: BaseFetcher;
+  fetcher?: Fetcher;
   config?: Partial<Config>;
 }
 
@@ -32,7 +32,7 @@ export class Updater {
   private targetBaseUrl?: string;
   private trustedSet: TrustedMetadataStore;
   private config: Config;
-  private fetcher: BaseFetcher;
+  private fetcher: Fetcher;
 
   constructor(options: UpdaterOptions) {
     const {
@@ -56,7 +56,7 @@ export class Updater {
     this.config = { ...defaultConfig, ...config };
     this.fetcher =
       fetcher ||
-      new Fetcher({
+      new DefaultFetcher({
         timeout: this.config.fetchTimeout,
         retries: this.config.fetchRetries,
       });
