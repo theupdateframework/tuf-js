@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import { withTempFile } from '../../utils/tmpfile';
 
 describe('withTempFile', () => {
@@ -9,6 +9,6 @@ describe('withTempFile', () => {
     });
 
     // Check to make sure the file has been deleted
-    await expect(fs.open(file)).rejects.toThrow(/no such file/);
+    expect(() => fs.openSync(file, 'r')).toThrow(/no such file/);
   });
 });

@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
@@ -14,12 +14,12 @@ export const withTempFile = async <T>(
 // Invokes the given handler with a temporary directory. The directory is
 // deleted after the handler returns.
 const withTempDir = async <T>(handler: TempFileHandler<T>) => {
-  const tmpDir = await fs.realpath(os.tmpdir());
-  const dir = await fs.mkdtemp(tmpDir + path.sep);
+  const tmpDir = fs.realpathSync(os.tmpdir());
+  const dir = fs.mkdtempSync(tmpDir + path.sep);
 
   try {
     return await handler(dir);
   } finally {
-    await fs.rm(dir, { force: true, recursive: true, maxRetries: 3 });
+    fs.rmdirSync(dir, { recursive: true, maxRetries: 3 });
   }
 };
