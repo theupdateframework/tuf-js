@@ -1,7 +1,7 @@
 import fs from 'fs';
 import fetch from 'make-fetch-happen';
 import path from 'path';
-import { Updater } from '../src';
+import { Updater } from '../packages/client/src';
 
 async function initDir(
   rootMetadataUrl: string,

@@ -33,7 +33,7 @@ Please see [TUF's website](https://theupdateframework.com/) for more information
 - [The TUF Specification](https://theupdateframework.github.io/specification/latest/)
 - [Developer documentation](https://theupdateframework.readthedocs.io/), including
   [API reference](https://theupdateframework.readthedocs.io/en/latest/api/api-reference.html)
-- [Usage examples](https://github.com/github/tuf-js/tree/main/examples/client-example)
+- [Usage examples](./examples/client)
 
 ## Requirements
 
