@@ -1,5 +1,11 @@
 # tuf-js
 
+## 1.1.1
+
+### Patch Changes
+
+- 80e8e0f: Re-add missing TargetFile export
+
 ## 1.1.0
 
 ### Minor Changes
