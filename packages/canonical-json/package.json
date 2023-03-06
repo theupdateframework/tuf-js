@@ -1,6 +1,6 @@
 {
   "name": "@tufjs/canonical-json",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "OLPC JSON canonicalization",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
