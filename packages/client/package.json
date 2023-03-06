@@ -26,7 +26,7 @@
   "bugs": {
     "url": "https://github.com/theupdateframework/tuf-js/issues"
   },
-  "homepage": "https://github.com/theupdateframework/tuf-js/packages/client#readme",
+  "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/client#readme",
   "devDependencies": {
     "@tufjs/repo-mock": "1.0.0",
     "@types/make-fetch-happen": "^10.0.1",

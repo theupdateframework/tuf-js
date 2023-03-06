@@ -19,7 +19,7 @@
     "type": "git",
     "url": "git+https://github.com/theupdateframework/tuf-js.git"
   },
-  "homepage": "https://github.com/theupdateframework/tuf-js/packages/canonical-json#readme",
+  "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/canonical-json#readme",
   "bugs": {
     "url": "https://github.com/theupdateframework/tuf-js/issues"
   },
