@@ -1,5 +1,7 @@
 # <img src="https://cdn.rawgit.com/theupdateframework/artwork/3a649fa6/tuf-logo.svg" height="100" valign="middle" alt="TUF"/> A Framework for Securing Software Update Systems
 
+[![npm version](https://img.shields.io/npm/v/tuf-js.svg?style=flat)](https://www.npmjs.com/package/tuf-js) [![CI Status](https://github.com/theupdateframework/tuf-js/workflows/CI/badge.svg)](https://github.com/theupdateframework/tuf-js/actions/workflows/ci.yml) [![Smoke Test Status](https://github.com/theupdateframework/tuf-js/workflows/smoke-test/badge.svg)](https://github.com/theupdateframework/tuf-js/actions/workflows/smoke-test.yml)
+
 ---
 
 [The Update Framework (TUF)](https://theupdateframework.io/) is a framework for
