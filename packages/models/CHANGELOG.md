@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- 6537a5b: Update to minimatch@7.4.2
+- 8d71675: Update to minimatch@7.4.2
 
 ## 1.0.0
 

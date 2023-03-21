@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- Updated dependencies [6537a5b]
+- Updated dependencies [8d71675]
   - @tufjs/models@1.0.1
 
 ## 1.1.1
