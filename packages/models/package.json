@@ -26,7 +26,7 @@
   "bugs": {
     "url": "https://github.com/theupdateframework/tuf-js/issues"
   },
-  "homepage": "https://github.com/theupdateframework/tuf-js/packages/models#readme",
+  "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/models#readme",
   "devDependencies": {
     "@types/minimatch": "^5.1.2",
     "@types/node": "^18.15.3",
