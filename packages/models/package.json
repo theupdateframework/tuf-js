@@ -33,7 +33,7 @@
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "minimatch": "^7.4.2"
+    "minimatch": "^7.4.3"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
