@@ -30,7 +30,7 @@
   "devDependencies": {
     "@tufjs/repo-mock": "1.0.1",
     "@types/make-fetch-happen": "^10.0.1",
-    "@types/node": "^18.15.10",
+    "@types/node": "^18.15.11",
     "nock": "^13.2.9",
     "typescript": "^5.0.2"
   },
