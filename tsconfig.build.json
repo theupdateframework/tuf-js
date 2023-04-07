@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/client" },
     { "path": "packages/models" },
-    { "path": "packages/repo-mock" }
+    { "path": "packages/repo-mock" },
+    { "path": "packages/canonical-json" }
   ]
 }

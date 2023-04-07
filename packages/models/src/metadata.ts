@@ -1,3 +1,4 @@
+import { canonicalize } from '@tufjs/canonical-json';
 import util from 'util';
 import { MetadataKind, Signable } from './base';
 import { UnsignedMetadataError, ValueError } from './error';
@@ -9,7 +10,6 @@ import { Snapshot } from './snapshot';
 import { Targets } from './targets';
 import { Timestamp } from './timestamp';
 import { guard, JSONObject, JSONValue } from './utils';
-import { canonicalize } from './utils/json';
 
 type MetadataType = Root | Timestamp | Snapshot | Targets;
 

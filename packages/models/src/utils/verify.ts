@@ -1,6 +1,6 @@
+import { canonicalize } from '@tufjs/canonical-json';
 import crypto from 'crypto';
 import { JSONObject } from '../utils/types';
-import { canonicalize } from './json';
 
 export const verifySignature = (
   metaDataSignedData: JSONObject,
