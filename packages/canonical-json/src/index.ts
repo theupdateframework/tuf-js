@@ -10,7 +10,7 @@ const RIGHT_CURLY_BRACKET = '}';
 // dialect of JSON in which keys are lexically sorted, floats are not allowed,
 // and only double quotes and backslashes are escaped.
 // trunk-ignore(eslint/@typescript-eslint/no-explicit-any)
-function canonicalize(object: any): Buffer {
+function canonicalize(object: any): string {
   const buffer = [];
   if (typeof object === 'string') {
     buffer.push(canonicalizeString(object));
@@ -50,7 +50,7 @@ function canonicalize(object: any): Buffer {
     throw new TypeError('cannot encode ' + object.toString());
   }
 
-  return Buffer.from(buffer.join(''));
+  return buffer.join('');
 }
 
 // String canonicalization consists of escaping backslash (\) and double

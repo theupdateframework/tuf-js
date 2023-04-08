@@ -53,7 +53,7 @@ export class Metadata<T extends MetadataType> implements Signable {
   }
 
   public sign(signer: (data: Buffer) => Signature, append = true): void {
-    const bytes = canonicalize(this.signed.toJSON());
+    const bytes = Buffer.from(canonicalize(this.signed.toJSON()));
     const signature = signer(bytes);
 
     if (!append) {

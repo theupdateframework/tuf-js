@@ -1,53 +1,47 @@
-// describe('canonicalize', () => {
-//   describe('when the input is valid for canonicalization', () => {
-//     it('returns the encoded value', () => {
-//       const encode = json.canonicalize;
-//       expect(encode('')).toBe('""');
-//       assert.strictEqual(encode([1, 2, 3]), '[1,2,3]');
-//       assert.strictEqual(encode([]), '[]');
-//       assert.strictEqual(encode({}), '{}');
-//       assert.strictEqual(encode({ A: [99] }), '{"A":[99]}');
-//       assert.strictEqual(encode({ A: true }), '{"A":true}');
-//       assert.strictEqual(encode({ B: false }), '{"B":false}');
-//       assert.strictEqual(encode({ y: 2, x: 3 }), '{"x":3,"y":2}');
-//       assert.strictEqual(encode({ x: 3, y: null }), '{"x":3,"y":null}');
+import { canonicalize } from '../index';
 
-//       // Test escaping " and \
-//       assert.strictEqual(encode('"'), '"\\""');
-//       assert.strictEqual(encode('\\'), '"\\\\"');
-//       assert.strictEqual(encode('\\"'), '"\\\\\\""');
+describe('canonicalize', () => {
+  describe('when the input is valid for canonicalization', () => {
+    it('returns the encoded value', () => {
+      expect(canonicalize('')).toBe('""');
 
-//       // Newline handling
-//       assert.strictEqual(encode('foo\nbar'), '"foo\nbar"');
-
-//       // Combined
-//       const obj = {
-//         truthy: true,
-//         falsy: false,
-//         nullish: null,
-//         number: 42,
-//         string: 'foo',
-//         escape: '"foo"\\bar\nbaz',
-//         array: [1, 2, 3],
-//         object: { baz: 'qux', foo: 'bar' },
-//       };
-
-//       const expected =
-//         '{"array":[1,2,3],"escape":"\\"foo\\"\\\\bar\nbaz","falsy":false,"nullish":null,"number":42,"object":{"baz":"qux","foo":"bar"},"string":"foo","truthy":true}';
-
-//       assert.strictEqual(encode(obj), expected);
-//     });
-//   });
-
-//   describe('when the input is NOT valid for canonicalization', () => {
-//     it('throws an error', () => {
-//       const encode = json.canonicalize;
-
-//       assert.throws(() => encode(undefined), TypeError);
-//       assert.throws(() => encode(Symbol('foo')), TypeError);
-//       assert.throws(() => encode(3.14), TypeError);
-//       assert.throws(() => encode(BigInt(0)), TypeError);
-//       assert.throws(() => encode({ a: undefined }), TypeError);
-//     });
-//   });
-// });
+      expect(canonicalize([1, 2, 3])).toBe('[1,2,3]');
+      expect(canonicalize([])).toBe('[]');
+      expect(canonicalize({})).toBe('{}');
+      expect(canonicalize({ A: [99] })).toBe('{"A":[99]}');
+      expect(canonicalize({ A: true })).toBe('{"A":true}');
+      expect(canonicalize({ B: false })).toBe('{"B":false}');
+      expect(canonicalize({ y: 2, x: 3 })).toBe('{"x":3,"y":2}');
+      expect(canonicalize({ x: 3, y: null })).toBe('{"x":3,"y":null}');
+      // Test escaping " and \
+      expect(canonicalize('"')).toBe('"\\""');
+      expect(canonicalize('\\')).toBe('"\\\\"');
+      expect(canonicalize('\\"')).toBe('"\\\\\\""');
+      // Newline handling
+      expect(canonicalize('foo\nbar')).toBe('"foo\nbar"');
+      // Combined
+      const obj = {
+        truthy: true,
+        falsy: false,
+        nullish: null,
+        number: 42,
+        string: 'foo',
+        escape: '"foo"\\bar\nbaz',
+        array: [1, 2, 3],
+        object: { baz: 'qux', foo: 'bar' },
+      };
+      const expected =
+        '{"array":[1,2,3],"escape":"\\"foo\\"\\\\bar\nbaz","falsy":false,"nullish":null,"number":42,"object":{"baz":"qux","foo":"bar"},"string":"foo","truthy":true}';
+      expect(canonicalize(obj)).toBe(expected);
+    });
+  });
+  describe('when the input is NOT valid for canonicalization', () => {
+    it('throws an error', () => {
+      expect(() => canonicalize(undefined)).toThrow(TypeError);
+      expect(() => canonicalize(Symbol('foo'))).toThrow(TypeError);
+      expect(() => canonicalize(3.14)).toThrow(TypeError);
+      expect(() => canonicalize(BigInt(0))).toThrow(TypeError);
+      expect(() => canonicalize({ a: undefined })).toThrow(TypeError);
+    });
+  });
+});
