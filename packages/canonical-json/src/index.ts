@@ -9,7 +9,7 @@ const RIGHT_CURLY_BRACKET = '}';
 // as specified at http://wiki.laptop.org/go/Canonical_JSON. It's a restricted
 // dialect of JSON in which keys are lexically sorted, floats are not allowed,
 // and only double quotes and backslashes are escaped.
-// trunk-ignore(eslint/@typescript-eslint/no-explicit-any)
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 function canonicalize(object: any): string {
   const buffer = [];
   if (typeof object === 'string') {
