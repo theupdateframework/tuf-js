@@ -9,7 +9,8 @@ const RIGHT_CURLY_BRACKET = '}';
 // as specified at http://wiki.laptop.org/go/Canonical_JSON. It's a restricted
 // dialect of JSON in which keys are lexically sorted, floats are not allowed,
 // and only double quotes and backslashes are escaped.
-function canonicalize(object) {
+// trunk-ignore(eslint/@typescript-eslint/no-explicit-any)
+function canonicalize(object: any): Buffer {
   const buffer = [];
   if (typeof object === 'string') {
     buffer.push(canonicalizeString(object));
@@ -49,16 +50,14 @@ function canonicalize(object) {
     throw new TypeError('cannot encode ' + object.toString());
   }
 
-  return buffer.join('');
+  return Buffer.from(buffer.join(''));
 }
 
 // String canonicalization consists of escaping backslash (\) and double
 // quote (") characters and wrapping the resulting string in double quotes.
-function canonicalizeString(string) {
+function canonicalizeString(string: string): string {
   const escapedString = string.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   return '"' + escapedString + '"';
 }
 
-module.exports = {
-  canonicalize,
-};
+export { canonicalize };

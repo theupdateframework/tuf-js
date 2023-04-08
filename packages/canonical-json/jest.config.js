@@ -1,3 +1,6 @@
+const base = require('../../jest.config.base');
+
 module.exports = {
-  displayName: 'CANONICAL_JSON'
-}
+  ...base,
+  displayName: 'CANONICAL_JSON',
+};

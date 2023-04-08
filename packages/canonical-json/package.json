@@ -2,8 +2,8 @@
   "name": "@tufjs/canonical-json",
   "version": "1.0.0",
   "description": "OLPC JSON canonicalization",
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "keywords": [
     "json",
@@ -24,9 +24,11 @@
     "url": "https://github.com/theupdateframework/tuf-js/issues"
   },
   "files": [
-    "lib/"
+    "dist"
   ],
   "scripts": {
+    "build": "tsc --build",
+    "clean": "rm -rf dist && rm tsconfig.tsbuildinfo",
     "test": "jest"
   },
   "devDependencies": {
