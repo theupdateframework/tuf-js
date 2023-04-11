@@ -1,5 +1,13 @@
 # tuf-js
 
+## 1.1.3
+
+### Patch Changes
+
+- f53a392: Fix error downloading delegated targets
+- Updated dependencies [4e4f6e9]
+  - @tufjs/models@1.0.2
+
 ## 1.1.2
 
 ### Patch Changes

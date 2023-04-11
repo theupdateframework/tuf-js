@@ -1,5 +1,12 @@
 # @tufjs/models
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [4e4f6e9]
+  - @tufjs/canonical-json@1.0.0
+
 ## 1.0.1
 
 ### Patch Changes
