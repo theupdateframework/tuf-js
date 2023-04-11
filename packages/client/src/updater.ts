@@ -10,6 +10,7 @@ import {
 } from './error';
 import { DefaultFetcher, Fetcher } from './fetcher';
 import { TrustedMetadataStore } from './store';
+import * as url from './utils/url';
 
 export interface UpdaterOptions {
   metadataDir: string;
@@ -101,15 +102,16 @@ export class Updater {
 
     if (consistentSnapshot && this.config.prefixTargetsWithHash) {
       const hashes = Object.values(targetInfo.hashes);
-      const basename = path.basename(targetFilePath);
-      targetFilePath = `${hashes[0]}.${basename}`;
+      const { dir, base } = path.parse(targetFilePath);
+      const filename = `${hashes[0]}.${base}`;
+      targetFilePath = dir ? `${dir}/${filename}` : filename;
     }
 
-    const url = path.join(targetBaseUrl, targetFilePath);
+    const targetUrl = url.join(targetBaseUrl, targetFilePath);
 
     // Client workflow 5.7.3: download target file
     await this.fetcher.downloadFile(
-      url,
+      targetUrl,
       targetInfo.length,
       async (fileName) => {
         // Verify hashes and length of downloaded file
@@ -158,11 +160,11 @@ export class Updater {
     const upperBound = lowerBound + this.config.maxRootRotations;
 
     for (let version = lowerBound; version <= upperBound; version++) {
-      const url = path.join(this.metadataBaseUrl, `${version}.root.json`);
+      const rootUrl = url.join(this.metadataBaseUrl, `${version}.root.json`);
       try {
         // Client workflow 5.3.3: download new root metadata file
         const bytesData = await this.fetcher.downloadBytes(
-          url,
+          rootUrl,
           this.config.rootMaxLength
         );
 
@@ -189,11 +191,11 @@ export class Updater {
     }
 
     //Load from remote (whether local load succeeded or not)
-    const url = path.join(this.metadataBaseUrl, `timestamp.json`);
+    const timestampUrl = url.join(this.metadataBaseUrl, 'timestamp.json');
 
     // Client workflow 5.4.1: download timestamp metadata file
     const bytesData = await this.fetcher.downloadBytes(
-      url,
+      timestampUrl,
       this.config.timestampMaxLength
     );
 
@@ -234,14 +236,17 @@ export class Updater {
         ? snapshotMeta.version
         : undefined;
 
-      const url = path.join(
+      const snapshotUrl = url.join(
         this.metadataBaseUrl,
-        version ? `${version}.snapshot.json` : `snapshot.json`
+        version ? `${version}.snapshot.json` : 'snapshot.json'
       );
 
       try {
         // Client workflow 5.5.1: download snapshot metadata file
-        const bytesData = await this.fetcher.downloadBytes(url, maxLength);
+        const bytesData = await this.fetcher.downloadBytes(
+          snapshotUrl,
+          maxLength
+        );
 
         // Client workflow 5.5.2 - 5.5.6
         this.trustedSet.updateSnapshot(bytesData);
@@ -284,14 +289,17 @@ export class Updater {
         ? metaInfo.version
         : undefined;
 
-      const url = path.join(
+      const metadataUrl = url.join(
         this.metadataBaseUrl,
         version ? `${version}.${role}.json` : `${role}.json`
       );
 
       try {
         // Client workflow 5.6.1: download targets metadata file
-        const bytesData = await this.fetcher.downloadBytes(url, maxLength);
+        const bytesData = await this.fetcher.downloadBytes(
+          metadataUrl,
+          maxLength
+        );
 
         // Client workflow 5.6.2 - 5.6.6
         this.trustedSet.updateDelegatedTargets(bytesData, role, parentRole);
@@ -383,7 +391,10 @@ export class Updater {
     if (!this.targetDir) {
       throw new ValueError('Target directory not set');
     }
-    return path.join(this.targetDir, targetInfo.path);
+
+    // URL encode target path
+    const filePath = encodeURIComponent(targetInfo.path);
+    return path.join(this.targetDir, filePath);
   }
 
   private async persistMetadata(metaDataName: string, bytesData: Buffer) {
