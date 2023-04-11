@@ -1,6 +1,6 @@
 {
   "name": "@tufjs/repo-mock",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "HTTP mocking for TUF repository requests",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -32,7 +32,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@tufjs/models": "1.0.1",
+    "@tufjs/models": "1.0.2",
     "nock": "^13.3.0"
   },
   "engines": {
