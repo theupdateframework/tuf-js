@@ -1,3 +1,4 @@
+import { canonicalize } from '@tufjs/canonical-json';
 import util from 'util';
 import { MetadataKind, Signable } from './base';
 import { UnsignedMetadataError, ValueError } from './error';
@@ -8,8 +9,7 @@ import { Signature } from './signature';
 import { Snapshot } from './snapshot';
 import { Targets } from './targets';
 import { Timestamp } from './timestamp';
-import { guard, JSONObject, JSONValue } from './utils';
-import { canonicalize } from './utils/json';
+import { JSONObject, JSONValue, guard } from './utils';
 
 type MetadataType = Root | Timestamp | Snapshot | Targets;
 
@@ -53,7 +53,7 @@ export class Metadata<T extends MetadataType> implements Signable {
   }
 
   public sign(signer: (data: Buffer) => Signature, append = true): void {
-    const bytes = canonicalize(this.signed.toJSON());
+    const bytes = Buffer.from(canonicalize(this.signed.toJSON()));
     const signature = signer(bytes);
 
     if (!append) {

@@ -33,7 +33,8 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "minimatch": "^8.0.3"
+    "minimatch": "^8.0.3",
+    "@tufjs/canonical-json": "1.0.0"
   },
   "engines": {
     "node": "^14.17.0 || ^16.13.0 || >=18.0.0"
