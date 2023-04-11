@@ -4,7 +4,8 @@
 
 ### Patch Changes
 
-- 4e4f6e9: Integrate @tufjs/canonical-json library
+- Updated dependencies [4e4f6e9]
+  - @tufjs/canonical-json@1.0.0
 
 ## 1.0.1
 
