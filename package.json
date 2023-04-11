@@ -27,7 +27,7 @@
     "nock": "^13.2.9",
     "prettier": "^2.8.7",
     "ts-jest": "^29.1.0",
-    "typescript": "^5.0.3"
+    "typescript": "^5.0.4"
   },
   "workspaces": ["./packages/*"],
   "engines": {
