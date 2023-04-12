@@ -1,6 +1,7 @@
 import { Metadata, MetadataKind } from '@tufjs/models';
+import fs from 'fs';
 import http from 'http';
-import { clearMock, mockRepo } from '../index';
+import tufmock, { clearMock, mockRepo } from '../index';
 
 describe('mockRepo', () => {
   const baseURL = 'http://localhost:8000';
@@ -70,6 +71,31 @@ describe('mockRepo', () => {
 
     // Non-existent target
     await expect(fetch(`${baseURL}/targets/bar.txt`)).rejects.toThrow(/404/);
+  });
+});
+
+describe('default', () => {
+  const subject = tufmock([]);
+
+  it('creates a cache directory', () => {
+    expect(subject.cachePath).toBeTruthy();
+
+    const stat = fs.statSync(subject.cachePath);
+    expect(stat.isDirectory()).toBeTruthy();
+  });
+
+  it('inits the cache directory with the root metadata', () => {
+    const rootPath = `${subject.cachePath}/root.json`;
+    const stat = fs.statSync(rootPath);
+    expect(stat.isFile()).toBeTruthy();
+  });
+
+  describe('teardown', () => {
+    it('removes the cache directory', () => {
+      subject.teardown();
+
+      expect(() => fs.statSync(subject.cachePath)).toThrow();
+    });
   });
 });
 
