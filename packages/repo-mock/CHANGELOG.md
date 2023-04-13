@@ -1,5 +1,11 @@
 # @tufjs/repo-mock
 
+## 1.1.0
+
+### Minor Changes
+
+- c13096d: New function to set-up repo mock and initialize local cache
+
 ## 1.0.2
 
 ### Patch Changes
