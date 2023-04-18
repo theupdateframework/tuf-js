@@ -1,5 +1,11 @@
 # @tufjs/models
 
+## 1.0.3
+
+### Patch Changes
+
+- 028df77: Revert to `minimatch@7.4.6`
+
 ## 1.0.2
 
 ### Patch Changes
