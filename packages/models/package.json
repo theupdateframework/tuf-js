@@ -1,6 +1,6 @@
 {
   "name": "@tufjs/models",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TUF metadata models",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,7 +33,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "minimatch": "^8.0.3",
+    "minimatch": "^7.4.6",
     "@tufjs/canonical-json": "1.0.0"
   },
   "engines": {
