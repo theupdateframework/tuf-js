@@ -30,7 +30,7 @@
     "test": "jest"
   },
   "devDependencies": {
-    "@types/node": "^18.15.11",
+    "@types/node": "^18.15.12",
     "typescript": "^5.0.4"
   },
   "engines": {
