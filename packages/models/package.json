@@ -29,7 +29,7 @@
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/models#readme",
   "devDependencies": {
     "@types/minimatch": "^5.1.2",
-    "@types/node": "^18.15.13",
+    "@types/node": "^18.16.1",
     "typescript": "^5.0.4"
   },
   "dependencies": {
