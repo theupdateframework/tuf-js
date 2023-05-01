@@ -31,7 +31,7 @@
     "@tufjs/repo-mock": "1.1.1",
     "@types/make-fetch-happen": "^10.0.1",
     "@types/node": "^18.16.3",
-    "nock": "^13.2.9",
+    "nock": "^13.3.1",
     "typescript": "^5.0.4"
   },
   "dependencies": {
