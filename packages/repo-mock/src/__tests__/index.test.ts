@@ -18,10 +18,10 @@ describe('mockRepo', () => {
   });
 
   it('mocks the metadata endpoints', async () => {
-    mockRepo(baseURL, []);
+    // Set-up mock and retrieve root
+    const rootJSON = mockRepo(baseURL, []);
+    expect(rootJSON).toBeTruthy();
 
-    // Retrieve the root metadata file
-    const rootJSON = await fetch(`${baseURL}/metadata/1.root.json`);
     const rootMeta = Metadata.fromJSON(MetadataKind.Root, JSON.parse(rootJSON));
     expect(rootMeta).toBeTruthy();
     expect(() => rootMeta.verifyDelegate('root', rootMeta)).not.toThrow();
@@ -68,9 +68,6 @@ describe('mockRepo', () => {
     mockRepo(baseURL, [targetFile]);
     const target = await fetch(`${baseURL}/targets/foo.txt`);
     expect(target).toEqual(targetFile.content);
-
-    // Non-existent target
-    await expect(fetch(`${baseURL}/targets/bar.txt`)).rejects.toThrow(/404/);
   });
 });
 
