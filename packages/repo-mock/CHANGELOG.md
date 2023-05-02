@@ -1,5 +1,11 @@
 # @tufjs/repo-mock
 
+## 1.2.0
+
+### Minor Changes
+
+- 2bd9d55: Support configurable `cachePath` when bootstrapping mocked TUF repository
+
 ## 1.1.1
 
 ### Patch Changes
