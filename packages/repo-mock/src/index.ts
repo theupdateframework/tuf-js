@@ -17,12 +17,13 @@ interface MockRepoOptions {
   baseURL?: string;
   metadataPathPrefix?: string;
   targetPathPrefix?: string;
+  cachePath?: string;
 }
 
 export function mockRepo(
   baseURL: string,
   targets: Target[],
-  options: Omit<MockRepoOptions, 'baseURL'> = {}
+  options: Omit<MockRepoOptions, 'baseURL' | 'cachePath'> = {}
 ): string {
   const metadataPrefix = options.metadataPathPrefix ?? '/metadata';
   const targetPrefix = options.targetPathPrefix ?? '/targets';
@@ -79,19 +80,31 @@ class Scope {
     this.baseURL =
       options.baseURL ??
       `http://${Math.random().toString(36).substring(2)}.com`;
-    this.cachePath = fs.mkdtempSync(path.join(os.tmpdir(), 'tuf-cache-test-'));
-    this.reset();
+
+    if (options.cachePath) {
+      fs.mkdirSync(options.cachePath, { recursive: true });
+      this.cachePath = options.cachePath;
+    } else {
+      this.cachePath = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'tuf-cache-test-')
+      );
+    }
+    this.setup();
   }
 
   public reset() {
-    clearMock();
-    const rootJSON = mockRepo(this.baseURL, this.targets, this.options);
-    fs.writeFileSync(path.join(this.cachePath, 'root.json'), rootJSON);
+    this.teardown();
+    this.setup();
   }
 
   public teardown() {
     clearMock();
     fs.rmSync(this.cachePath, { recursive: true });
+  }
+
+  private setup() {
+    const rootJSON = mockRepo(this.baseURL, this.targets, this.options);
+    fs.writeFileSync(path.join(this.cachePath, 'root.json'), rootJSON);
   }
 }
 
