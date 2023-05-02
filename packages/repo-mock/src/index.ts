@@ -18,6 +18,7 @@ interface MockRepoOptions {
   metadataPathPrefix?: string;
   targetPathPrefix?: string;
   cachePath?: string;
+  responseCount?: number;
 }
 
 export function mockRepo(
@@ -27,6 +28,7 @@ export function mockRepo(
 ): string {
   const metadataPrefix = options.metadataPathPrefix ?? '/metadata';
   const targetPrefix = options.targetPathPrefix ?? '/targets';
+  const count = options.responseCount ?? 1;
   const keyPair = new KeyPair();
 
   // Translate the input targets into TUF TargetFile objects
@@ -39,16 +41,18 @@ export function mockRepo(
   const rootMeta = createRootMeta(keyPair);
 
   // Calculate paths for all of the metadata files
-  const rootPath = `${metadataPrefix}/1.root.json`;
+  const rootPath = `${metadataPrefix}/2.root.json`;
   const timestampPath = `${metadataPrefix}/timestamp.json`;
   const snapshotPath = `${metadataPrefix}/snapshot.json`;
   const targetsPath = `${metadataPrefix}/targets.json`;
 
   // Mock the metadata endpoints
-  nock(baseURL).get(rootPath).reply(200, rootMeta);
-  nock(baseURL).get(timestampPath).reply(200, timestampMeta);
-  nock(baseURL).get(snapshotPath).reply(200, snapshotMeta);
-  nock(baseURL).get(targetsPath).reply(200, targetsMeta);
+  // Note: the root metadata file request always returns a 404 to indicate that
+  // the client should use the initial root metadata file from the cache
+  nock(baseURL).get(rootPath).times(count).reply(404);
+  nock(baseURL).get(timestampPath).times(count).reply(200, timestampMeta);
+  nock(baseURL).get(snapshotPath).times(count).reply(200, snapshotMeta);
+  nock(baseURL).get(targetsPath).times(count).reply(200, targetsMeta);
 
   // Mock the target endpoints
   targets.forEach((target) => {
@@ -56,9 +60,6 @@ export function mockRepo(
       .get(`${targetPrefix}/${target.name}`)
       .reply(200, target.content);
   });
-
-  // Mock a 404 response for non-existent metadata/target files
-  nock(baseURL).get(/.*/).reply(404);
 
   return JSON.stringify(rootMeta);
 }
