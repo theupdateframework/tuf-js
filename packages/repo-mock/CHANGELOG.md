@@ -1,5 +1,11 @@
 # @tufjs/repo-mock
 
+## 1.3.0
+
+### Minor Changes
+
+- 05aab79: Support configurable `responseCount` for mocked TUF metadata endpoints
+
 ## 1.2.0
 
 ### Minor Changes
