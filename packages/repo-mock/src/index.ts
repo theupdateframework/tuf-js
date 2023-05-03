@@ -1,4 +1,7 @@
+import fs from 'fs';
 import nock from 'nock';
+import os from 'os';
+import path from 'path';
 import { KeyPair } from './key';
 import {
   createRootMeta,
@@ -6,11 +9,26 @@ import {
   createTargetsMeta,
   createTimestampMeta,
 } from './metadata';
-import { collectTargets, Target } from './target';
+import { Target, collectTargets } from './target';
 
 export type { Target } from './target';
 
-export function mockRepo(baseURL: string, targets: Target[]): string {
+interface MockRepoOptions {
+  baseURL?: string;
+  metadataPathPrefix?: string;
+  targetPathPrefix?: string;
+  cachePath?: string;
+  responseCount?: number;
+}
+
+export function mockRepo(
+  baseURL: string,
+  targets: Target[],
+  options: Omit<MockRepoOptions, 'baseURL' | 'cachePath'> = {}
+): string {
+  const metadataPrefix = options.metadataPathPrefix ?? '/metadata';
+  const targetPrefix = options.targetPathPrefix ?? '/targets';
+  const count = options.responseCount ?? 1;
   const keyPair = new KeyPair();
 
   // Translate the input targets into TUF TargetFile objects
@@ -22,19 +40,26 @@ export function mockRepo(baseURL: string, targets: Target[]): string {
   const timestampMeta = createTimestampMeta(snapshotMeta, keyPair);
   const rootMeta = createRootMeta(keyPair);
 
+  // Calculate paths for all of the metadata files
+  const rootPath = `${metadataPrefix}/2.root.json`;
+  const timestampPath = `${metadataPrefix}/timestamp.json`;
+  const snapshotPath = `${metadataPrefix}/snapshot.json`;
+  const targetsPath = `${metadataPrefix}/targets.json`;
+
   // Mock the metadata endpoints
-  nock(baseURL).get('/metadata/1.root.json').reply(200, rootMeta);
-  nock(baseURL).get('/metadata/timestamp.json').reply(200, timestampMeta);
-  nock(baseURL).get('/metadata/snapshot.json').reply(200, snapshotMeta);
-  nock(baseURL).get('/metadata/targets.json').reply(200, targetsMeta);
+  // Note: the root metadata file request always returns a 404 to indicate that
+  // the client should use the initial root metadata file from the cache
+  nock(baseURL).get(rootPath).times(count).reply(404);
+  nock(baseURL).get(timestampPath).times(count).reply(200, timestampMeta);
+  nock(baseURL).get(snapshotPath).times(count).reply(200, snapshotMeta);
+  nock(baseURL).get(targetsPath).times(count).reply(200, targetsMeta);
 
   // Mock the target endpoints
   targets.forEach((target) => {
-    nock(baseURL).get(`/targets/${target.name}`).reply(200, target.content);
+    nock(baseURL)
+      .get(`${targetPrefix}/${target.name}`)
+      .reply(200, target.content);
   });
-
-  // Mock a 404 response for non-existent metadata/target files
-  nock(baseURL).get(/.*/).reply(404);
 
   return JSON.stringify(rootMeta);
 }
@@ -42,3 +67,51 @@ export function mockRepo(baseURL: string, targets: Target[]): string {
 export function clearMock() {
   nock.cleanAll();
 }
+
+class Scope {
+  private readonly targets: Target[];
+  private readonly options: MockRepoOptions;
+  public readonly baseURL: string;
+  public readonly cachePath: string;
+
+  constructor(targets: Target[], options: MockRepoOptions = {}) {
+    this.targets = targets;
+    this.options = options;
+
+    this.baseURL =
+      options.baseURL ??
+      `http://${Math.random().toString(36).substring(2)}.com`;
+
+    if (options.cachePath) {
+      fs.mkdirSync(options.cachePath, { recursive: true });
+      this.cachePath = options.cachePath;
+    } else {
+      this.cachePath = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'tuf-cache-test-')
+      );
+    }
+    this.setup();
+  }
+
+  public reset() {
+    this.teardown();
+    this.setup();
+  }
+
+  public teardown() {
+    clearMock();
+    fs.rmSync(this.cachePath, { recursive: true });
+  }
+
+  private setup() {
+    const rootJSON = mockRepo(this.baseURL, this.targets, this.options);
+    fs.writeFileSync(path.join(this.cachePath, 'root.json'), rootJSON);
+  }
+}
+
+export default (targets: Target | Target[], options: MockRepoOptions = {}) => {
+  if (!Array.isArray(targets)) {
+    targets = [targets];
+  }
+  return new Scope(targets, options);
+};

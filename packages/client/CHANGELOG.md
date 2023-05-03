@@ -1,5 +1,19 @@
 # tuf-js
 
+## 1.1.5
+
+### Patch Changes
+
+- Updated dependencies [a668944]
+  - @tufjs/models@1.0.4
+
+## 1.1.4
+
+### Patch Changes
+
+- Updated dependencies [028df77]
+  - @tufjs/models@1.0.3
+
 ## 1.1.3
 
 ### Patch Changes
