@@ -1,6 +1,6 @@
 {
   "name": "@tufjs/models",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "TUF metadata models",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
