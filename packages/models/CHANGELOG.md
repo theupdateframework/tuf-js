@@ -1,5 +1,11 @@
 # @tufjs/models
 
+## 1.0.4
+
+### Patch Changes
+
+- a668944: Update to `minimatch@9.0.0`
+
 ## 1.0.3
 
 ### Patch Changes
