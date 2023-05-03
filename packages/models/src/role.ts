@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 import util from 'util';
 import { ValueError } from './error';
 import { guard, JSONObject, JSONValue } from './utils';
