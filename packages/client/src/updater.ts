@@ -1,4 +1,5 @@
 import { Metadata, MetadataKind, TargetFile, Targets } from '@tufjs/models';
+import debug from 'debug';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Config, defaultConfig } from './config';
@@ -20,6 +21,8 @@ export interface UpdaterOptions {
   fetcher?: Fetcher;
   config?: Partial<Config>;
 }
+
+const log = debug('tuf:cache');
 
 interface Delegation {
   roleName: string;
@@ -118,6 +121,7 @@ export class Updater {
         await targetInfo.verify(fs.createReadStream(fileName));
 
         // Copy file to target path
+        log('WRITE %s', targetPath);
         fs.copyFileSync(fileName, targetPath);
       }
     );
@@ -146,6 +150,7 @@ export class Updater {
 
   private loadLocalMetadata(fileName: string): Buffer {
     const filePath = path.join(this.dir, `${fileName}.json`);
+    log('READ %s', filePath);
     return fs.readFileSync(filePath);
   }
 
@@ -400,6 +405,7 @@ export class Updater {
   private async persistMetadata(metaDataName: string, bytesData: Buffer) {
     try {
       const filePath = path.join(this.dir, `${metaDataName}.json`);
+      log('WRITE %s', filePath);
       fs.writeFileSync(filePath, bytesData.toString('utf8'));
     } catch (error) {
       throw new PersistError(

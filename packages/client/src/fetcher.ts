@@ -1,9 +1,12 @@
+import debug from 'debug';
 import fs from 'fs';
 import fetch from 'make-fetch-happen';
 import util from 'util';
 
 import { DownloadHTTPError, DownloadLengthMismatchError } from './error';
 import { withTempFile } from './utils/tmpfile';
+
+const log = debug('tuf:fetch');
 
 type DownloadFileHandler<T> = (file: string) => Promise<T>;
 
@@ -87,6 +90,7 @@ export class DefaultFetcher extends BaseFetcher {
   }
 
   public override async fetch(url: string): Promise<NodeJS.ReadableStream> {
+    log('GET %s', url);
     const response = await fetch(url, {
       timeout: this.timeout,
       retry: this.retries,
