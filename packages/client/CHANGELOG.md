@@ -1,5 +1,11 @@
 # tuf-js
 
+## 1.1.6
+
+### Patch Changes
+
+- 670d771: Integrate `debug` logging library
+
 ## 1.1.5
 
 ### Patch Changes
