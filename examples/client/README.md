@@ -17,3 +17,11 @@ npx ts-node client.ts
 After running the client you should find that the TUF metadata files
 from the sample repository have been cached in the "./metadata" directory
 and the target file has been downloaded to "./targets/file1.txt"
+
+-----------
+
+Here is another example for async downloading multiple targets with TUF client
+
+```console
+npx ts-node client_async_download_multiple_targets
+```
