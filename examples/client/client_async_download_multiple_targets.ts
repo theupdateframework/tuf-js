@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Updater } from '../../packages/client/src';
 
-const target = 'file1.txt';
+const listOfTargets = ['file1.txt', 'file2.txt'];
 
 const baseURL = 'http://127.0.0.1:8080';
 const metadataDir = './metadata';
@@ -33,25 +33,29 @@ async function downloadTarget() {
     metadataDir,
     targetDir,
   });
-  
+
   // ensure to refresh the metadata before downloading the target
   // refresh should be called once after the client is initialized
   await updater.refresh();
 
-  const targetInfo = await updater.getTargetInfo(target);
+  // download all targets async
+  const listOfTargetInfosPromise = listOfTargets.map(
+    async (target) => await updater.getTargetInfo(target)
+  );
 
-  if (!targetInfo) {
-    console.log(`Target ${target} doesn't exist`);
-    return;
-  }
-  const targetPath = await updater.findCachedTarget(targetInfo);
-  if (targetPath) {
-    console.log(`Target ${target} is cached at ${targetPath}`);
-    return;
-  }
+  const listOfTargetsInfo = await Promise.all(listOfTargetInfosPromise);
 
-  const targetFile = await updater.downloadTarget(targetInfo);
-  console.log(`Target ${target} downloaded to ${targetFile}`);
+  // download all targets async
+  listOfTargetsInfo.map(async (targetInfo) => {
+    if (!targetInfo) {
+      console.log(`Target doesn't exist`);
+      return;
+    }
+
+    const targetFile = await updater.downloadTarget(targetInfo);
+    console.log(`Downloaded to ${targetFile}`);
+  });
+  await Promise.all(listOfTargetsInfo);
 }
 
 initDir();

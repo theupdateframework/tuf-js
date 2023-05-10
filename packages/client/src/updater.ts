@@ -66,6 +66,8 @@ export class Updater {
       });
   }
 
+  // refresh and load the metadata before downloading the target
+  // refresh should be called once after the client is initialized
   public async refresh() {
     await this.loadRoot();
     await this.loadTimestamp();
