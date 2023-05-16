@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/repo-mock#readme",
   "devDependencies": {
-    "@types/node": "^20.1.4",
+    "@types/node": "^20.1.5",
     "typescript": "^5.0.4"
   },
   "dependencies": {
