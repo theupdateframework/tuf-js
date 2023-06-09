@@ -1,10 +1,7 @@
 import { TargetFile } from '@tufjs/models';
 import { digestSHA256 } from './crypto';
 
-export interface Target {
-  name: string;
-  content: string | Buffer;
-}
+import type { Target } from './shared.types';
 
 export function collectTargets(targets: Target[]): TargetFile[] {
   return targets.map((target) => {
