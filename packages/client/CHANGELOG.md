@@ -1,5 +1,11 @@
 # tuf-js
 
+## 1.1.7
+
+### Patch Changes
+
+- d286cba: Fixes bug in `findCachedTarget` which skips verification of cached targets
+
 ## 1.1.6
 
 ### Patch Changes
