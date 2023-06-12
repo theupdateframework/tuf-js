@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { clearMock, mockRepo } from '@tufjs/repo-mock';
 import assert from 'assert';
 import fs from 'fs';
@@ -100,6 +101,47 @@ describe('Updater', () => {
       it('returns undefined', async () => {
         const targetInfo = await subject.getTargetInfo('invalid-target.txt');
         expect(targetInfo).toBeUndefined();
+      });
+    });
+  });
+
+  describe('#getTargetPath', () => {
+    let subject: Updater;
+
+    beforeEach(async () => {
+      subject = new Updater(options);
+      await subject.refresh();
+    });
+
+    describe('when the target exists in the cache', () => {
+      beforeEach(() => {
+        fs.writeFileSync(path.join(tufCacheDir, target.name), target.content);
+      });
+
+      it('returns the path', async () => {
+        const targetInfo = await subject.getTargetInfo(target.name);
+        const targetPath = await subject.findCachedTarget(targetInfo!);
+        expect(targetPath).toEqual(path.join(tufCacheDir, target.name));
+      });
+    });
+
+    describe('when the target does not exist in the cache', () => {
+      it('returns undefined', async () => {
+        const targetInfo = await subject.getTargetInfo(target.name);
+        const targetPath = await subject.findCachedTarget(targetInfo!);
+        expect(targetPath).toBeUndefined();
+      });
+    });
+
+    describe('when the target exists in the cache but is out of date', () => {
+      beforeEach(() => {
+        fs.writeFileSync(path.join(tufCacheDir, target.name), 'bad content');
+      });
+
+      it('returns undefined', async () => {
+        const targetInfo = await subject.getTargetInfo(target.name);
+        const targetPath = await subject.findCachedTarget(targetInfo!);
+        expect(targetPath).toBeUndefined();
       });
     });
   });
