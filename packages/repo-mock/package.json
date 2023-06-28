@@ -29,7 +29,7 @@
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/repo-mock#readme",
   "devDependencies": {
     "@types/node": "^20.3.2",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.5"
   },
   "dependencies": {
     "@tufjs/models": "1.0.4",
