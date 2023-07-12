@@ -404,8 +404,7 @@ export class Updater {
     return path.join(this.targetDir, filePath);
   }
 
-  /* eslint-disable @typescript-eslint/require-await */
-  private async persistMetadata(metaDataName: string, bytesData: Buffer) {
+  private persistMetadata(metaDataName: string, bytesData: Buffer) {
     try {
       const filePath = path.join(this.dir, `${metaDataName}.json`);
       log('WRITE %s', filePath);
@@ -416,5 +415,4 @@ export class Updater {
       );
     }
   }
-  /* eslint-enable @typescript-eslint/require-await */
 }
