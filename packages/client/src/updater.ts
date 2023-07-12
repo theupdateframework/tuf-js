@@ -404,7 +404,7 @@ export class Updater {
     return path.join(this.targetDir, filePath);
   }
 
-  private async persistMetadata(metaDataName: string, bytesData: Buffer) {
+  private persistMetadata(metaDataName: string, bytesData: Buffer) {
     try {
       const filePath = path.join(this.dir, `${metaDataName}.json`);
       log('WRITE %s', filePath);

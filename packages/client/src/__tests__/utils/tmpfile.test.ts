@@ -3,9 +3,9 @@ import { withTempFile } from '../../utils/tmpfile';
 
 describe('withTempFile', () => {
   it('creates a temporary file', async () => {
-    const file = await withTempFile(async (tmpFileName) => {
+    const file = await withTempFile((tmpFileName) => {
       expect(tmpFileName).toBeTruthy();
-      return tmpFileName;
+      return Promise.resolve(tmpFileName);
     });
 
     // Check to make sure the file has been deleted
