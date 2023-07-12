@@ -204,8 +204,11 @@ function signaturesFromJSON(data: JSONValue): Record<string, Signature> {
     throw new TypeError('signatures is not an array');
   }
 
-  return data.reduce((acc, sigData) => {
-    const signature = Signature.fromJSON(sigData);
-    return { ...acc, [signature.keyID]: signature };
-  }, {} as Record<string, Signature>);
+  return data.reduce(
+    (acc, sigData) => {
+      const signature = Signature.fromJSON(sigData);
+      return { ...acc, [signature.keyID]: signature };
+    },
+    {} as Record<string, Signature>
+  );
 }
