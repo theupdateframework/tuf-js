@@ -27,10 +27,6 @@
     "url": "https://github.com/theupdateframework/tuf-js/issues"
   },
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/repo-mock#readme",
-  "devDependencies": {
-    "@types/node": "^20.3.3",
-    "typescript": "^5.1.6"
-  },
   "dependencies": {
     "@tufjs/models": "1.0.4",
     "nock": "^13.3.1"

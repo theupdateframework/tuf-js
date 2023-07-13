@@ -172,16 +172,19 @@ export class TargetFile {
     let observedLength = 0;
 
     // Create a digest for each hash algorithm
-    const digests = Object.keys(this.hashes).reduce((acc, key) => {
-      try {
-        acc[key] = crypto.createHash(key);
-      } catch (e) {
-        throw new LengthOrHashMismatchError(
-          `Hash algorithm ${key} not supported`
-        );
-      }
-      return acc;
-    }, {} as Record<string, crypto.Hash>);
+    const digests = Object.keys(this.hashes).reduce(
+      (acc, key) => {
+        try {
+          acc[key] = crypto.createHash(key);
+        } catch (e) {
+          throw new LengthOrHashMismatchError(
+            `Hash algorithm ${key} not supported`
+          );
+        }
+        return acc;
+      },
+      {} as Record<string, crypto.Hash>
+    );
 
     // Read stream chunk by chunk
     for await (const chunk of stream) {
