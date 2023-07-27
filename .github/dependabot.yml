@@ -10,7 +10,7 @@ updates:
     dev-dependencies:
       patterns:
         - "@types/*"
-        - "typescript-eslint/*"
+        - "@typescript-eslint/*"
         - "eslint*"
         - "prettier"
 - package-ecosystem: "github-actions"
