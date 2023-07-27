@@ -62,6 +62,12 @@ describe('mockRepo', () => {
     await expect(fetch(`${baseURL}/metadata/2.root.json`)).rejects.toThrow(
       /404/
     );
+
+    // No mock should be set-up for the 1.root.json file as this should never be
+    // fetched in a normal TUF flow.
+    await expect(fetch(`${baseURL}/metadata/1.root.json`)).rejects.toThrow(
+      /No match for request/
+    );
   });
 
   it('mocks the targets endpoints', async () => {

@@ -2,66 +2,39 @@ import fs from 'fs';
 import nock from 'nock';
 import os from 'os';
 import path from 'path';
-import { KeyPair } from './key';
-import {
-  createRootMeta,
-  createSnapshotMeta,
-  createTargetsMeta,
-  createTimestampMeta,
-} from './metadata';
-import { Target, collectTargets } from './target';
+import { TUFHandlerOptions, tufHandlers } from './handler';
+import { mock } from './mock';
+import { initializeTUFRepo } from './repo';
+import { Target } from './shared.types';
 
-export type { Target } from './target';
+export { TUFHandlerOptions, tufHandlers } from './handler';
+export { TUFRepo, initializeTUFRepo } from './repo';
+export type { Target } from './shared.types';
 
-interface MockRepoOptions {
+type MockRepoOptions = {
   baseURL?: string;
-  metadataPathPrefix?: string;
-  targetPathPrefix?: string;
   cachePath?: string;
-  responseCount?: number;
-}
+} & TUFHandlerOptions;
 
 export function mockRepo(
   baseURL: string,
   targets: Target[],
-  options: Omit<MockRepoOptions, 'baseURL' | 'cachePath'> = {}
+  options: TUFHandlerOptions = {}
 ): string {
-  const metadataPrefix = options.metadataPathPrefix ?? '/metadata';
-  const targetPrefix = options.targetPathPrefix ?? '/targets';
-  const count = options.responseCount ?? 1;
-  const keyPair = new KeyPair();
+  const tufRepo = initializeTUFRepo(targets);
+  const handlers = tufHandlers(tufRepo, options);
 
-  // Translate the input targets into TUF TargetFile objects
-  const targetFiles = collectTargets(targets);
+  handlers.forEach((handler) => {
+    // Don't set-up a mock for the 1.root.json file as this should never be
+    // fetched in a normal TUF flow.
+    if (handler.path.endsWith('1.root.json')) {
+      return;
+    }
 
-  // Generate all of the TUF metadata objects
-  const targetsMeta = createTargetsMeta(targetFiles, keyPair);
-  const snapshotMeta = createSnapshotMeta(targetsMeta, keyPair);
-  const timestampMeta = createTimestampMeta(snapshotMeta, keyPair);
-  const rootMeta = createRootMeta(keyPair);
-
-  // Calculate paths for all of the metadata files
-  const rootPath = `${metadataPrefix}/2.root.json`;
-  const timestampPath = `${metadataPrefix}/timestamp.json`;
-  const snapshotPath = `${metadataPrefix}/snapshot.json`;
-  const targetsPath = `${metadataPrefix}/targets.json`;
-
-  // Mock the metadata endpoints
-  // Note: the root metadata file request always returns a 404 to indicate that
-  // the client should use the initial root metadata file from the cache
-  nock(baseURL).get(rootPath).times(count).reply(404);
-  nock(baseURL).get(timestampPath).times(count).reply(200, timestampMeta);
-  nock(baseURL).get(snapshotPath).times(count).reply(200, snapshotMeta);
-  nock(baseURL).get(targetsPath).times(count).reply(200, targetsMeta);
-
-  // Mock the target endpoints
-  targets.forEach((target) => {
-    nock(baseURL)
-      .get(`${targetPrefix}/${target.name}`)
-      .reply(200, target.content);
+    mock(baseURL, handler);
   });
 
-  return JSON.stringify(rootMeta);
+  return JSON.stringify(tufRepo.rootMeta.toJSON());
 }
 
 export function clearMock() {
