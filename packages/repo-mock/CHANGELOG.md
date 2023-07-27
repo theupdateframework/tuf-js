@@ -1,5 +1,11 @@
 # @tufjs/repo-mock
 
+## 1.4.0
+
+### Minor Changes
+
+- 2ec31bc: Export new helpers: `initializeTUFRepo` and `tufHandlers`
+
 ## 1.3.1
 
 ### Patch Changes
