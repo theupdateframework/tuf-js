@@ -21,7 +21,7 @@ describe('Updater', () => {
     metadataBaseUrl: `${baseURL}/metadata`,
     targetBaseUrl: `${baseURL}/targets`,
     config: {
-      fetchRetries: 0,
+      fetchRetry: 0,
       fetchTimeout: 1000,
     },
   };

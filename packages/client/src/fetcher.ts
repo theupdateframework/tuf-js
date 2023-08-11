@@ -6,6 +6,8 @@ import util from 'util';
 import { DownloadHTTPError, DownloadLengthMismatchError } from './error';
 import { withTempFile } from './utils/tmpfile';
 
+import type { MakeFetchHappenOptions } from 'make-fetch-happen';
+
 const log = debug('tuf:fetch');
 
 type DownloadFileHandler<T> = (file: string) => Promise<T>;
@@ -74,26 +76,28 @@ export abstract class BaseFetcher implements Fetcher {
   }
 }
 
+type Retry = MakeFetchHappenOptions['retry'];
+
 interface FetcherOptions {
   timeout?: number;
-  retries?: number;
+  retry?: Retry;
 }
 
 export class DefaultFetcher extends BaseFetcher {
   private timeout?: number;
-  private retries?: number;
+  private retry?: Retry;
 
   constructor(options: FetcherOptions = {}) {
     super();
     this.timeout = options.timeout;
-    this.retries = options.retries;
+    this.retry = options.retry;
   }
 
   public override async fetch(url: string): Promise<NodeJS.ReadableStream> {
     log('GET %s', url);
     const response = await fetch(url, {
       timeout: this.timeout,
-      retry: this.retries,
+      retry: this.retry,
     });
 
     if (!response.ok || !response?.body) {
