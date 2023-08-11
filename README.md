@@ -39,7 +39,7 @@ Please see [TUF's website](https://theupdateframework.com/) for more information
 
 ## Requirements
 
-* node: ^14.17.0 || ^16.13.0 || >=18.0.0
+* node: ^16.13.0 || >=18.0.0
 
 ## License
 
