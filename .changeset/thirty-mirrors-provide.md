@@ -2,4 +2,4 @@
 'tuf-js': major
 ---
 
-Bump `make-fetch-happen` from 11.0.0 to 12.0.0
+Bump `make-fetch-happen` from 11.0.0 to 13.0.0
