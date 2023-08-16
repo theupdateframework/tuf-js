@@ -1,4 +1,20 @@
-export const defaultConfig = {
+import type { MakeFetchHappenOptions } from 'make-fetch-happen';
+
+export type Config = {
+  maxRootRotations: number;
+  maxDelegations: number;
+  rootMaxLength: number;
+  timestampMaxLength: number;
+  snapshotMaxLength: number;
+  targetsMaxLength: number;
+  prefixTargetsWithHash: boolean;
+  fetchTimeout: number;
+  // deprecated use fetchRetry instead
+  fetchRetries: number | undefined;
+  fetchRetry: MakeFetchHappenOptions['retry'];
+};
+
+export const defaultConfig: Config = {
   maxRootRotations: 32,
   maxDelegations: 32,
   rootMaxLength: 512000, //bytes
@@ -7,7 +23,6 @@ export const defaultConfig = {
   targetsMaxLength: 5000000, // bytes
   prefixTargetsWithHash: true,
   fetchTimeout: 100000, // milliseconds
-  fetchRetries: 2,
+  fetchRetries: undefined,
+  fetchRetry: 2,
 };
-
-export type Config = typeof defaultConfig;

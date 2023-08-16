@@ -62,7 +62,7 @@ export class Updater {
       fetcher ||
       new DefaultFetcher({
         timeout: this.config.fetchTimeout,
-        retries: this.config.fetchRetries,
+        retry: this.config.fetchRetries ?? this.config.fetchRetry,
       });
   }
 
