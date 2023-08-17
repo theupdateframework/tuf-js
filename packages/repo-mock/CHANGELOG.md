@@ -1,5 +1,16 @@
 # @tufjs/repo-mock
 
+## 2.0.0
+
+### Major Changes
+
+- e95e18e: Drop node 14 support
+
+### Patch Changes
+
+- Updated dependencies [e95e18e]
+  - @tufjs/models@2.0.0
+
 ## 1.4.0
 
 ### Minor Changes

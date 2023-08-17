@@ -1,6 +1,6 @@
 {
   "name": "tuf-js",
-  "version": "1.1.7",
+  "version": "2.0.0",
   "description": "JavaScript implementation of The Update Framework (TUF)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,12 +28,12 @@
   },
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/client#readme",
   "devDependencies": {
-    "@tufjs/repo-mock": "1.4.0",
+    "@tufjs/repo-mock": "2.0.0",
     "@types/debug": "^4.1.8",
     "@types/make-fetch-happen": "^10.0.1"
   },
   "dependencies": {
-    "@tufjs/models": "1.0.4",
+    "@tufjs/models": "2.0.0",
     "debug": "^4.3.4",
     "make-fetch-happen": "^13.0.0"
   },
