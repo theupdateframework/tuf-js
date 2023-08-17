@@ -1,5 +1,21 @@
 # tuf-js
 
+## 2.0.0
+
+### Major Changes
+
+- bae838e: Drop node 14 support
+- bae838e: Bump `make-fetch-happen` from 11.0.0 to 13.0.0
+
+### Minor Changes
+
+- d3b9587: Deprecates in `fetchRetries` config option in the `UpdaterOptions` interface in favor of the new `fetchRetry` option.
+
+### Patch Changes
+
+- Updated dependencies [e95e18e]
+  - @tufjs/models@2.0.0
+
 ## 1.1.7
 
 ### Patch Changes

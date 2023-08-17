@@ -1,6 +1,6 @@
 {
   "name": "@tufjs/models",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "TUF metadata models",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/models#readme",
   "dependencies": {
-    "@tufjs/canonical-json": "1.0.0",
+    "@tufjs/canonical-json": "2.0.0",
     "minimatch": "^9.0.3"
   },
   "engines": {
