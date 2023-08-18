@@ -1,5 +1,11 @@
 # tuf-js
 
+## 2.1.0
+
+### Minor Changes
+
+- 00bdeea: Export `UpdaterOptions` and `Config` types
+
 ## 2.0.0
 
 ### Major Changes
