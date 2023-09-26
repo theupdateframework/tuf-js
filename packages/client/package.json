@@ -29,7 +29,7 @@
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/client#readme",
   "devDependencies": {
     "@tufjs/repo-mock": "2.0.0",
-    "@types/debug": "^4.1.8",
+    "@types/debug": "^4.1.9",
     "@types/make-fetch-happen": "^10.0.1"
   },
   "dependencies": {
