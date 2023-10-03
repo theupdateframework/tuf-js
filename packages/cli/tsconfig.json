@@ -2,12 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist",
-    "composite": true
+    "outDir": "dist"
   },
   "exclude": ["./dist", "**/__tests__"],
   "references": [
-    { "path": "../models" },
-    { "path": "../repo-mock" }
+    { "path": "../client" }
   ]
 }

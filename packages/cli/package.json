@@ -1,0 +1,67 @@
+{
+  "name": "@tufjs/cli",
+  "version": "0.0.0",
+  "description": "CLI for interacting with TUF repositories",
+  "author": "bdehamer@github.com",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "tuf": "./bin/run"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "/oclif.manifest.json"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "clean": "shx rm -rf dist",
+    "prebuild": "npm run clean",
+    "build": "tsc --build",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "prepack": "npm run build && oclif manifest && npm run readme",
+    "readme": "oclif readme --no-aliases && shx sed -i \"s/^_See code:.*$//g\" README.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theupdateframework/tuf-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/theupdateframework/tuf-js/issues"
+  },
+  "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/cli#readme",
+  "keywords": [
+    "tuf",
+    "security",
+    "cli"
+  ],
+  "dependencies": {
+    "@oclif/color": "^1.0.12",
+    "@oclif/core": "^2",
+    "@oclif/plugin-help": "^5",
+    "make-fetch-happen": "^13.0.0",
+    "tuf-js": "2.1.0"
+  },
+  "devDependencies": {
+    "@types/make-fetch-happen": "^10.0.2",
+    "oclif": "^3",
+    "shx": "^0.3.4",
+    "tslib": "^2.6.1"
+  },
+  "oclif": {
+    "bin": "tuf",
+    "dirname": "tuf",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help"
+    ],
+    "topicSeparator": " "
+  },
+  "engines": {
+    "node": "^16.14.0 || >=18.0.0"
+  }
+}
