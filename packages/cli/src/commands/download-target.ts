@@ -35,7 +35,6 @@ export default class DownloadTarget extends Command {
     'unsafe-root-download': Flags.boolean({
       description:
         'allow downloading the trusted root from the TUF metadata repository (THIS IS NOT SAFE)',
-      default: false,
       allowNo: false,
       exactlyOne: ['root'],
     }),
