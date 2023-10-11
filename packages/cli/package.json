@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@types/make-fetch-happen": "^10.0.2",
-    "oclif": "^3",
+    "oclif": "^4",
     "shx": "^0.3.4",
     "tslib": "^2.6.1"
   },
