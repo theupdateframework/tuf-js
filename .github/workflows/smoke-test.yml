@@ -37,9 +37,10 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-      - name: Run TUF client with Sigstore TUF repo
+      - name: Download target from Sigstore TUF repo
         run: |
-          npx ts-node ./scripts/tufClientFetchTarget.ts ./scripts/sigstore-tuf-repo-config.json
-      - name: Run TUF client with TUF Demo repo
+          npx tuf download-target --metadata-base-url https://sigstore-tuf-root.storage.googleapis.com --unsafe-root-download --target-name trusted_root.json
+          npx tuf download-target --metadata-base-url https://sigstore-tuf-root.storage.googleapis.com --unsafe-root-download --target-name registry.npmjs.org/keys.json
+      - name: Download target from TUF Demo repo
         run: |
-          npx ts-node ./scripts/tufClientFetchTarget.ts ./scripts/tuf-demo-tuf-repo-config.json
+          npx tuf download-target --metadata-base-url https://jku.github.io/tuf-demo/metadata --target-base-url https://jku.github.io/tuf-demo/targets --unsafe-root-download --target-name rdimitrov/artifact-example.md

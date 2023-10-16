@@ -1,6 +1,0 @@
-{
-    "targetFiles": "target.txt",
-    "metadataBaseUrl": "http://localhost:3000/metadata/",
-    "targetBaseUrl": "http://localhost:3000/targets", 
-    "rootMetadataUrl": "http://localhost:3000/metadata/1.root.json" 
-}
