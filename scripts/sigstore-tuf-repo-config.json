@@ -1,6 +1,0 @@
-{
-    "targetFiles": "trusted_root.json,registry.npmjs.org/keys.json",
-    "metadataBaseUrl": "https://sigstore-tuf-root.storage.googleapis.com",
-    "targetBaseUrl": "https://sigstore-tuf-root.storage.googleapis.com/targets", 
-    "rootMetadataUrl": "https://sigstore-tuf-root.storage.googleapis.com/1.root.json" 
-}
