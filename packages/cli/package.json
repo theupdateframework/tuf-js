@@ -42,7 +42,7 @@
   "dependencies": {
     "@oclif/color": "^1.0.12",
     "@oclif/core": "^2",
-    "@oclif/plugin-help": "^5",
+    "@oclif/plugin-help": "^6",
     "make-fetch-happen": "^13.0.0",
     "tuf-js": "2.1.0"
   },
