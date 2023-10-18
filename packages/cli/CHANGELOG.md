@@ -1,5 +1,11 @@
 # @tufjs/cli
 
+## 0.2.0
+
+### Minor Changes
+
+- ef444b5: Drop node 16 support
+
 ## 0.1.1
 
 ### Patch Changes
