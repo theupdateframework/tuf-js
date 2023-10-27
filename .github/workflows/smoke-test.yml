@@ -44,3 +44,6 @@ jobs:
       - name: Download target from TUF Demo repo
         run: |
           npx tuf download-target --metadata-base-url https://jku.github.io/tuf-demo/metadata --target-base-url https://jku.github.io/tuf-demo/targets --unsafe-root-download --target-name rdimitrov/artifact-example.md
+      - name: Download target from GitHub TUF repo
+        run: |
+          npx tuf download-target --metadata-base-url https://tuf-repo.github.com --unsafe-root-download --target-name trusted_root.json
