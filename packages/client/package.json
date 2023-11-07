@@ -29,8 +29,8 @@
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/client#readme",
   "devDependencies": {
     "@tufjs/repo-mock": "2.0.0",
-    "@types/debug": "^4.1.10",
-    "@types/make-fetch-happen": "^10.0.3"
+    "@types/debug": "^4.1.11",
+    "@types/make-fetch-happen": "^10.0.4"
   },
   "dependencies": {
     "@tufjs/models": "2.0.0",
