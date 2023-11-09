@@ -47,7 +47,7 @@
     "tuf-js": "2.1.0"
   },
   "devDependencies": {
-    "@types/make-fetch-happen": "^10.0.3",
+    "@types/make-fetch-happen": "^10.0.4",
     "oclif": "^4",
     "shx": "^0.3.4",
     "tslib": "^2.6.1"
