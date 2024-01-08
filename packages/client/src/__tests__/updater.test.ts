@@ -103,6 +103,20 @@ describe('Updater', () => {
         expect(targetInfo).toBeUndefined();
       });
     });
+
+    describe('when the forceCache option is true', () => {
+      it('returns the target info', async () => {
+        // Clear the repo mock so we can't possibly get the target from the remote
+        clearMock();
+
+        const offlineUpdater = new Updater({ ...options, forceCache: true });
+        const targetInfo = await offlineUpdater.getTargetInfo(target.name);
+
+        expect(targetInfo).toBeDefined();
+        expect(targetInfo?.path).toEqual(target.name);
+        expect(targetInfo?.length).toBe(target.content.length);
+      });
+    });
   });
 
   describe('#getTargetPath', () => {

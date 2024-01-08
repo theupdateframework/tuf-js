@@ -19,6 +19,7 @@ export interface UpdaterOptions {
   targetDir?: string;
   targetBaseUrl?: string;
   fetcher?: Fetcher;
+  forceCache?: boolean;
   config?: Partial<Config>;
 }
 
@@ -34,6 +35,7 @@ export class Updater {
   private metadataBaseUrl: string;
   private targetDir?: string;
   private targetBaseUrl?: string;
+  private forceCache: boolean;
   private trustedSet: TrustedMetadataStore;
   private config: Config;
   private fetcher: Fetcher;
@@ -53,6 +55,7 @@ export class Updater {
 
     this.targetDir = targetDir;
     this.targetBaseUrl = targetBaseUrl;
+    this.forceCache = options.forceCache ?? false;
 
     const data = this.loadLocalMetadata(MetadataKind.Root);
 
@@ -69,8 +72,24 @@ export class Updater {
   // refresh and load the metadata before downloading the target
   // refresh should be called once after the client is initialized
   public async refresh() {
-    await this.loadRoot();
-    await this.loadTimestamp();
+    // If forceCache is true, try to load the timestamp from local storage
+    // without fetching it from the remote. Otherwise, load the root and
+    // timestamp from the remote per the TUF spec.
+    if (this.forceCache) {
+      // If anything fails, load the root and timestamp from the remote. This
+      // should cover any situation where the local metadata is corrupted or
+      // expired.
+      try {
+        await this.loadTimestamp({ checkRemote: false });
+      } catch (error) {
+        await this.loadRoot();
+        await this.loadTimestamp();
+      }
+    } else {
+      await this.loadRoot();
+      await this.loadTimestamp();
+    }
+
     await this.loadSnapshot();
     await this.loadTargets(MetadataKind.Targets, MetadataKind.Root);
   }
@@ -188,11 +207,19 @@ export class Updater {
 
   // Load local and remote timestamp metadata.
   // Client workflow 5.4: update timestamp role
-  private async loadTimestamp() {
+  private async loadTimestamp(
+    { checkRemote }: { checkRemote: boolean } = { checkRemote: true }
+  ) {
     // Load local and remote timestamp metadata
     try {
       const data = this.loadLocalMetadata(MetadataKind.Timestamp);
       this.trustedSet.updateTimestamp(data);
+
+      // If checkRemote is disabled, return here to avoid fetching the remote
+      // timestamp metadata.
+      if (!checkRemote) {
+        return;
+      }
     } catch (error) {
       // continue
     }
