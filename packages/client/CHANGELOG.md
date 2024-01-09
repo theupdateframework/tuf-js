@@ -1,5 +1,11 @@
 # tuf-js
 
+## 2.2.0
+
+### Minor Changes
+
+- d7c2600: Adds a new `forceCache` option to the `Updater`
+
 ## 2.1.0
 
 ### Minor Changes
