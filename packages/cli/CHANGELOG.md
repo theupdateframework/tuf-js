@@ -1,5 +1,12 @@
 # @tufjs/cli
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [d7c2600]
+  - tuf-js@2.2.0
+
 ## 0.2.0
 
 ### Minor Changes
