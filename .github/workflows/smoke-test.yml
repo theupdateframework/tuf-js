@@ -42,6 +42,7 @@ jobs:
           npx tuf download-target --metadata-base-url https://sigstore-tuf-root.storage.googleapis.com --unsafe-root-download --target-name trusted_root.json
           npx tuf download-target --metadata-base-url https://sigstore-tuf-root.storage.googleapis.com --unsafe-root-download --target-name registry.npmjs.org/keys.json
       - name: Download target from TUF Demo repo
+        if: false # Skipping until repo is functional again
         run: |
           npx tuf download-target --metadata-base-url https://jku.github.io/tuf-demo/metadata --target-base-url https://jku.github.io/tuf-demo/targets --unsafe-root-download --target-name rdimitrov/artifact-example.md
       - name: Download target from GitHub TUF repo
