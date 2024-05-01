@@ -43,7 +43,7 @@
     "@oclif/color": "^1.0.13",
     "@oclif/core": "^3",
     "@oclif/plugin-help": "^6",
-    "make-fetch-happen": "^13.0.0",
+    "make-fetch-happen": "^13.0.1",
     "tuf-js": "2.2.0"
   },
   "devDependencies": {
