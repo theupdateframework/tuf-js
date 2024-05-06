@@ -1,5 +1,16 @@
 # @tufjs/repo-mock
 
+## 2.0.1
+
+### Patch Changes
+
+- 86d7dfa: Bump nock from 13.5.3 to 13.5.4
+- ec53d69: Bump nock from 13.5.1 to 13.5.3
+- 5369508: Bump nock from 13.4.0 to 13.5.0
+- 0d3c8ec: Bump nock from 13.5.0 to 13.5.1
+- Updated dependencies [a108f83]
+  - @tufjs/models@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

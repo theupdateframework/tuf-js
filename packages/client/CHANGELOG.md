@@ -1,5 +1,13 @@
 # tuf-js
 
+## 2.2.1
+
+### Patch Changes
+
+- e70004a: Bump make-fetch-happen from 13.0.0 to 13.0.1
+- Updated dependencies [a108f83]
+  - @tufjs/models@2.0.1
+
 ## 2.2.0
 
 ### Minor Changes

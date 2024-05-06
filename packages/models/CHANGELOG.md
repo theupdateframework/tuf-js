@@ -1,5 +1,11 @@
 # @tufjs/models
 
+## 2.0.1
+
+### Patch Changes
+
+- a108f83: Bump minimatch from 9.0.3 to 9.0.4
+
 ## 2.0.0
 
 ### Major Changes
