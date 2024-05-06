@@ -1,5 +1,13 @@
 # @tufjs/cli
 
+## 0.2.2
+
+### Patch Changes
+
+- e70004a: Bump make-fetch-happen from 13.0.0 to 13.0.1
+- Updated dependencies [e70004a]
+  - tuf-js@2.2.1
+
 ## 0.2.1
 
 ### Patch Changes
