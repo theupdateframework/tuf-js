@@ -1,5 +1,11 @@
 # @tufjs/cli
 
+## 0.2.3
+
+### Patch Changes
+
+- d58ba66: Bump `@oclif/core` from 3.26.6 to 4.0.6
+
 ## 0.2.2
 
 ### Patch Changes
