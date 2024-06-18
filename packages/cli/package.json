@@ -41,7 +41,7 @@
   ],
   "dependencies": {
     "@oclif/color": "^1.0.13",
-    "@oclif/core": "^3",
+    "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
     "make-fetch-happen": "^13.0.1",
     "tuf-js": "2.2.1"
