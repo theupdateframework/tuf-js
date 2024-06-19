@@ -1,6 +1,6 @@
 {
   "name": "@tufjs/cli",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "CLI for interacting with TUF repositories",
   "author": "bdehamer@github.com",
   "license": "MIT",
