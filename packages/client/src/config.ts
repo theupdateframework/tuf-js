@@ -15,7 +15,7 @@ export type Config = {
 };
 
 export const defaultConfig: Config = {
-  maxRootRotations: 32,
+  maxRootRotations: 256,
   maxDelegations: 32,
   rootMaxLength: 512000, //bytes
   timestampMaxLength: 16384, // bytes

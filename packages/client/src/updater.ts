@@ -185,7 +185,7 @@ export class Updater {
     const lowerBound = rootVersion + 1;
     const upperBound = lowerBound + this.config.maxRootRotations;
 
-    for (let version = lowerBound; version <= upperBound; version++) {
+    for (let version = lowerBound; version < upperBound; version++) {
       const rootUrl = url.join(this.metadataBaseUrl, `${version}.root.json`);
       try {
         // Client workflow 5.3.3: download new root metadata file
