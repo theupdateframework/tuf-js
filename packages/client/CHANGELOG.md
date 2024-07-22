@@ -1,5 +1,16 @@
 # tuf-js
 
+## 2.3.0
+
+### Minor Changes
+
+- 9c8f0e8: Change maxRootRotations from 32 to 256
+
+### Patch Changes
+
+- Updated dependencies [ff91b23]
+  - @tufjs/models@2.0.2
+
 ## 2.2.1
 
 ### Patch Changes

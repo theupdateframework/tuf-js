@@ -1,5 +1,12 @@
 # @tufjs/cli
 
+## 0.2.4
+
+### Patch Changes
+
+- Updated dependencies [9c8f0e8]
+  - tuf-js@2.3.0
+
 ## 0.2.3
 
 ### Patch Changes
