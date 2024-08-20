@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 import { Metadata, MetadataKind, ValueError } from '../index';
 
+/* eslint-disable @typescript-eslint/no-require-imports */
 const rootJSON = require('./__fixtures__/root.json');
 const timestampJSON = require('./__fixtures__/timestamp.json');
 const snapshotJSON = require('./__fixtures__/snapshot.json');
 const targetsJSON = require('./__fixtures__/targets.json');
 const role1JSON = require('./__fixtures__/role1.json');
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 describe('Verify TUF local sample', () => {
   const root = Metadata.fromJSON(MetadataKind.Root, rootJSON);

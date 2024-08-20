@@ -371,7 +371,6 @@ export class Updater {
       delegationsToVisit.length > 0
     ) {
       //  Pop the role name from the top of the stack.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const { roleName, parentRoleName } = delegationsToVisit.pop()!;
 
       // Skip any visited current role to prevent cycles.
