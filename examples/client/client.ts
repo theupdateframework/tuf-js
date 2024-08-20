@@ -33,7 +33,6 @@ async function downloadTarget() {
     metadataDir,
     targetDir,
   });
-  
   // ensure to refresh the metadata before downloading the target
   // refresh should be called once after the client is initialized
   await updater.refresh();

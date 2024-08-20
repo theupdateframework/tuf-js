@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { clearMock, mockRepo } from '@tufjs/repo-mock';
 import assert from 'assert';
 import fs from 'fs';
