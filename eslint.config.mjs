@@ -1,5 +1,4 @@
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import prettier from "eslint-plugin-prettier";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,13 +19,11 @@ export default [{
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "prettier",
 ), {
     files: ["**/*.ts", "**/*.tsx"],
 
     plugins: {
         "@typescript-eslint": typescriptEslint,
-        prettier,
     },
 
     languageOptions: {
@@ -39,7 +36,6 @@ export default [{
     },
 
     rules: {
-        "prettier/prettier": ["error"],
         "@typescript-eslint/require-await": "error",
         "@typescript-eslint/no-unused-vars": ["error", { "caughtErrors": "none" }]
     },
