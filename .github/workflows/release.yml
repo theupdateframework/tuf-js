@@ -23,7 +23,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v3
         with:
-          node-version: 18.17.0
+          node-version: 18.18.0
           registry-url: 'https://registry.npmjs.org'
           cache: npm
 
