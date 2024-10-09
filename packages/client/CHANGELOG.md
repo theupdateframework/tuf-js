@@ -1,5 +1,22 @@
 # tuf-js
 
+## 3.0.0
+
+### Major Changes
+
+- a5cd1ec: Bump make-fetch-happen from 13.0.1 to 14.0.1
+- a5cd1ec: Drop support for node 16
+
+### Minor Changes
+
+- 9c8f0e8: Change maxRootRotations from 32 to 256
+
+### Patch Changes
+
+- Updated dependencies [a5cd1ec]
+- Updated dependencies [ff91b23]
+  - @tufjs/models@3.0.0
+
 ## 2.2.1
 
 ### Patch Changes
