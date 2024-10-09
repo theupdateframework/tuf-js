@@ -1,5 +1,15 @@
 # @tufjs/models
 
+## 3.0.0
+
+### Major Changes
+
+- a5cd1ec: Drop support for node 16
+
+### Patch Changes
+
+- ff91b23: Bump minimatch from 9.0.4 to 9.0.5
+
 ## 2.0.1
 
 ### Patch Changes
