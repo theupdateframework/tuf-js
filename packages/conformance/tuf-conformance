@@ -1,0 +1,95 @@
+#!/usr/bin/env node
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
+const fs = require('fs')
+const path = require('path')
+const { Updater } = require('tuf-js')
+
+yargs(hideBin(process.argv))
+  .version(false)
+  .command('init [trusted-root]', 'initialize the local metadata cache', (yargs) => {
+    return yargs
+      .option('metadata-dir', {
+        type: 'string',
+        description: 'path to directory for metadata storage',
+        demandOption: true,
+      })
+      .positional('trusted-root', {
+        describe: 'initial trusted root metadata'
+      })
+  }, (argv) => {
+    console.log(JSON.stringify(argv))
+
+    if (!fs.existsSync(argv.metadataDir)) {
+      fs.mkdirSync(argv.metadataDir, { recursive: true });
+    }
+
+    fs.copyFileSync(argv.trustedRoot, path.join(argv.metadataDir, 'root.json'));
+  })
+  .command('refresh', 'update local metadata from the repository', (yargs) => {
+    return yargs
+      .option('metadata-dir', {
+        type: 'string',
+        description: 'path to directory for metadata storage',
+        demandOption: true,
+      })
+      .options('metadata-url', {
+        type: 'string',
+        description: 'URL for the repository metadata store',
+        demandOption: true,
+      })
+  }, async (argv) => {
+    await (new Updater({
+      metadataBaseUrl: argv.metadataUrl,
+      metadataDir: argv.metadataDir,
+      targetBaseUrl: '',
+      targetDir: ''
+    })).refresh()
+  })
+  .command('download', 'update local metadata from the repository', (yargs) => {
+    return yargs
+      .option('metadata-dir', {
+        type: 'string',
+        description: 'path to directory for metadata storage',
+        demandOption: true,
+      })
+      .options('metadata-url', {
+        type: 'string',
+        description: 'URL for the repository metadata store',
+        demandOption: true,
+      })
+      .options('target-path', {
+        type: 'string',
+        description: 'path to the target to be downloaded',
+        demandOption: true,
+      })
+      .options('target-url', {
+        type: 'string',
+        description: 'URL for the repository target store',
+        demandOption: true,
+      })
+      .options('target-dir', {
+        type: 'string',
+        description: 'path to directory for target storage',
+        demandOption: true,
+      })
+  }, async (argv) => {
+    if (!fs.existsSync(argv.targetDir)) {
+      fs.mkdirSync(argv.targetDir, { recursive: true });
+    }
+
+    const updater = new Updater({
+      metadataBaseUrl: argv.metadataUrl,
+      metadataDir: argv.metadataDir,
+      targetBaseUrl: argv.targetUrl,
+      targetDir: argv.targetDir
+    })
+
+    const targetInfo = await updater.getTargetInfo(argv.targetPath)
+    if (!targetInfo) {
+      throw new Error(`Target ${argv.targetPath} not found`);
+    }
+
+    await updater.downloadTarget(targetInfo)
+  })
+  .parse()
