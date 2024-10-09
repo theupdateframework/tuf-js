@@ -1,0 +1,38 @@
+{
+  "name": "@tufjs/conformance",
+  "version": "0.0.1",
+  "private": "true",
+  "description": "Conformance testing CLI",
+  "author": "bdehamer@github.com",
+  "license": "MIT",
+  "bin": {
+    "tuf": "index.js"
+  },
+  "scripts": {
+    "clean": "shx rm -rf dist",
+    "prebuild": "npm run clean",
+    "build": "tsc --build",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "prepack": "npm run build && oclif manifest && npm run readme",
+    "readme": "oclif readme --no-aliases && shx sed -i \"s/^_See code:.*$//g\" README.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theupdateframework/tuf-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/theupdateframework/tuf-js/issues"
+  },
+  "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/cli#readme",
+  "keywords": [
+    "tuf",
+    "security",
+    "cli"
+  ],
+  "dependencies": {
+    "yargs": "^17.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
