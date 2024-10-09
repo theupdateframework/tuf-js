@@ -1,5 +1,11 @@
 # @tufjs/repo-mock
 
+## 3.0.0
+
+### Major Changes
+
+- a996ab0: Drop support for node 16
+
 ## 2.0.2
 
 ### Patch Changes
