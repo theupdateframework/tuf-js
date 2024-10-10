@@ -12,7 +12,7 @@ describe('Signed', () => {
   describe('constructor', () => {
     describe('when called with no arguments', () => {
       it('constructs an object', () => {
-        const subject = new DummySigned({});
+        const subject = new DummySigned({} as SignedOptions);
         expect(subject).toBeTruthy();
       });
     });
@@ -20,7 +20,7 @@ describe('Signed', () => {
     describe('when spec version is too short', () => {
       it('constructs an object', () => {
         expect(() => {
-          new DummySigned({ specVersion: '1' });
+          new DummySigned({ specVersion: '1' } as SignedOptions);
         }).toThrow(ValueError);
       });
     });
@@ -28,7 +28,7 @@ describe('Signed', () => {
     describe('when spec version is too long', () => {
       it('constructs an object', () => {
         expect(() => {
-          new DummySigned({ specVersion: '1.0.0.0' });
+          new DummySigned({ specVersion: '1.0.0.0' } as SignedOptions);
         }).toThrow(ValueError);
       });
     });
@@ -36,7 +36,7 @@ describe('Signed', () => {
     describe('when spec version includes non number', () => {
       it('constructs an object', () => {
         expect(() => {
-          new DummySigned({ specVersion: '1.b.c' });
+          new DummySigned({ specVersion: '1.b.c' } as SignedOptions);
         }).toThrow(ValueError);
       });
     });
@@ -44,7 +44,7 @@ describe('Signed', () => {
     describe('when spec version is unsupported', () => {
       it('constructs an object', () => {
         expect(() => {
-          new DummySigned({ specVersion: '2.0.0' });
+          new DummySigned({ specVersion: '2.0.0' } as SignedOptions);
         }).toThrow(ValueError);
       });
     });
@@ -53,7 +53,7 @@ describe('Signed', () => {
   describe('isExpired', () => {
     const subject = new DummySigned({
       expires: '2021-12-18T13:28:12.99008-06:00',
-    });
+    } as SignedOptions);
 
     describe('when reference time is not provided', () => {
       it('returns true', () => {
@@ -106,7 +106,9 @@ describe('Signed', () => {
   });
 
   describe('isExpired', () => {
-    const subject = new DummySigned({ expires: '1970-01-01T00:00:01.000Z' });
+    const subject = new DummySigned({
+      expires: '1970-01-01T00:00:01.000Z',
+    } as SignedOptions);
 
     describe('when reference time is not provided', () => {
       it('returns true', () => {
@@ -143,6 +145,17 @@ describe('Signed', () => {
       });
     });
 
+    describe('when the version is not included', () => {
+      it('throws an error', () => {
+        expect(() => {
+          DummySigned.commonFieldsFromJSON({
+            ...json,
+            version: undefined,
+          } as any); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+        }).toThrow(ValueError);
+      });
+    });
+
     describe('when there is a type error with spec_version', () => {
       it('throws an error', () => {
         expect(() => {
@@ -151,11 +164,33 @@ describe('Signed', () => {
       });
     });
 
+    describe('when the spec_version is not included', () => {
+      it('throws an error', () => {
+        expect(() => {
+          DummySigned.commonFieldsFromJSON({
+            ...json,
+            spec_version: undefined,
+          } as any); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+        }).toThrow(ValueError);
+      });
+    });
+
     describe('when there is a type error with expires', () => {
       it('throws an error', () => {
         expect(() => {
           DummySigned.commonFieldsFromJSON({ ...json, expires: 1 });
         }).toThrow(TypeError);
+      });
+    });
+
+    describe('when the expires is not included', () => {
+      it('throws an error', () => {
+        expect(() => {
+          DummySigned.commonFieldsFromJSON({
+            ...json,
+            expires: undefined,
+          } as any); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+        }).toThrow(ValueError);
       });
     });
 

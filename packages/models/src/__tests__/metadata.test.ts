@@ -12,7 +12,10 @@ describe('Metadata', () => {
       sig: 'BEEF',
     });
 
-    const subject = new Metadata(new Root({}), { [sig1.keyID]: sig1 });
+    const subject = new Metadata(
+      new Root({ version: 1, specVersion: '1.0.0', expires: '' }),
+      { [sig1.keyID]: sig1 }
+    );
 
     describe('when appending a signature', () => {
       const append = true;

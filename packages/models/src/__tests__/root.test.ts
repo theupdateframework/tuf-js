@@ -94,7 +94,7 @@ describe('Root', () => {
       scheme: 'ed25519',
     });
 
-    const root = new Root({});
+    const root = new Root({ version: 1, specVersion: '1.0.0', expires: '' });
 
     describe('when called with a valid role', () => {
       it('adds the key', () => {

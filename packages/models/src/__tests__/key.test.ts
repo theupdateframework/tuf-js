@@ -1,4 +1,4 @@
-import { Signed } from '../base';
+import { Signed, SignedOptions } from '../base';
 import { UnsignedMetadataError } from '../error';
 import { Key } from '../key';
 import { Signature } from '../signature';
@@ -42,7 +42,7 @@ describe('Key', () => {
       }
     }
     const metadata = {
-      signed: new DummySigned({}),
+      signed: new DummySigned({} as SignedOptions),
       signatures: { [keyID]: signature },
     };
 
@@ -63,7 +63,7 @@ describe('Key', () => {
 
     describe('when no signature does NOT match', () => {
       const badMetadata = {
-        signed: new DummySigned({}),
+        signed: new DummySigned({} as SignedOptions),
         signatures: { [keyID]: new Signature({ keyID: keyID, sig: 'bad' }) },
       };
 

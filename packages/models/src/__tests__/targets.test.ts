@@ -64,7 +64,11 @@ describe('Targets', () => {
       hashes: { sha256: 'abc' },
     });
 
-    const targets = new Targets({});
+    const targets = new Targets({
+      version: 1,
+      specVersion: '1.0.0',
+      expires: '',
+    });
 
     it('adds a target', () => {
       targets.addTarget(targetFile);

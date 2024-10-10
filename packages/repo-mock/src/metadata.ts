@@ -16,6 +16,8 @@ export function createTargetsMeta(
 ): Metadata<Targets> {
   const targets = new Metadata(
     new Targets({
+      version: 1,
+      specVersion: '1.0.0',
       expires: getExpires(),
     })
   );
@@ -33,6 +35,8 @@ export function createSnapshotMeta(
 ): Metadata<Snapshot> {
   const snapshot = new Metadata(
     new Snapshot({
+      version: 1,
+      specVersion: '1.0.0',
       expires: getExpires(),
       meta: { 'targets.json': toMetaFile(targets) },
     })
@@ -48,6 +52,8 @@ export function createTimestampMeta(
 ): Metadata<Timestamp> {
   const timestamp = new Metadata(
     new Timestamp({
+      version: 1,
+      specVersion: '1.0.0',
       expires: getExpires(),
       snapshotMeta: toMetaFile(snapshot),
     })
@@ -61,6 +67,8 @@ export function createTimestampMeta(
 export function createRootMeta(keyPair: KeyPair): Metadata<Root> {
   const root = new Metadata(
     new Root({
+      version: 1,
+      specVersion: '1.0.0',
       expires: getExpires(),
       consistentSnapshot: false,
     })
