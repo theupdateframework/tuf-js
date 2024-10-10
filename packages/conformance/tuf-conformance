@@ -8,6 +8,7 @@ const { Updater } = require('tuf-js')
 yargs(hideBin(process.argv))
   .version(false)
   .command('init [trusted-root]', 'initialize the local metadata cache', (yargs) => {
+
     return yargs
       .option('metadata-dir', {
         type: 'string',
@@ -18,8 +19,6 @@ yargs(hideBin(process.argv))
         describe: 'initial trusted root metadata'
       })
   }, (argv) => {
-    console.log(JSON.stringify(argv))
-
     if (!fs.existsSync(argv.metadataDir)) {
       fs.mkdirSync(argv.metadataDir, { recursive: true });
     }
@@ -58,15 +57,15 @@ yargs(hideBin(process.argv))
         description: 'URL for the repository metadata store',
         demandOption: true,
       })
-      .options('target-path', {
+      .options('target-name', {
         type: 'string',
         description: 'path to the target to be downloaded',
-        demandOption: true,
+        demandOption: false,
       })
-      .options('target-url', {
+      .options('target-base-url', {
         type: 'string',
         description: 'URL for the repository target store',
-        demandOption: true,
+        demandOption: false,
       })
       .options('target-dir', {
         type: 'string',
@@ -81,11 +80,11 @@ yargs(hideBin(process.argv))
     const updater = new Updater({
       metadataBaseUrl: argv.metadataUrl,
       metadataDir: argv.metadataDir,
-      targetBaseUrl: argv.targetUrl,
+      targetBaseUrl: argv.targetBaseUrl,
       targetDir: argv.targetDir
     })
 
-    const targetInfo = await updater.getTargetInfo(argv.targetPath)
+    const targetInfo = await updater.getTargetInfo(argv.targetName)
     if (!targetInfo) {
       throw new Error(`Target ${argv.targetPath} not found`);
     }
