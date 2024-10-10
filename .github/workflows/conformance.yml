@@ -28,6 +28,6 @@ jobs:
         run: npm run build
 
       - name: Run conformance suite
-        uses: theupdateframework/tuf-conformance@v2
+        uses: theupdateframework/tuf-conformance@main
         with:
           entrypoint: "packages/conformance/tuf-conformance"
