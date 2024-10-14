@@ -1,5 +1,15 @@
 # tuf-js
 
+## 3.0.1
+
+### Patch Changes
+
+- cb54532: Ensure errors are thrown when root metadata is invalid
+- 6915c1f: Ensure that role names are properly encoded when used in URLs or file names
+- Updated dependencies [47b931f]
+- Updated dependencies [777b805]
+  - @tufjs/models@3.0.1
+
 ## 3.0.0
 
 ### Major Changes

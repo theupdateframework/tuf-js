@@ -1,5 +1,12 @@
 # @tufjs/models
 
+## 3.0.1
+
+### Patch Changes
+
+- 47b931f: Raise an error if duplicate key IDs found in metadata signature list
+- 777b805: Raise error when metadata version is missing
+
 ## 3.0.0
 
 ### Major Changes
