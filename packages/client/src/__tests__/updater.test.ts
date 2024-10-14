@@ -1,6 +1,7 @@
 import { clearMock, mockRepo } from '@tufjs/repo-mock';
 import assert from 'assert';
 import fs from 'fs';
+import nock from 'nock';
 import os from 'os';
 import path from 'path';
 import { Updater, UpdaterOptions } from '../updater';
@@ -74,6 +75,26 @@ describe('Updater', () => {
       it('resolves with no error', async () => {
         const updater = new Updater(options);
         await expect(updater.refresh()).resolves.toBe(undefined);
+      });
+    });
+
+    describe('when repo serves invalid root metadata', () => {
+      beforeEach(() => {
+        // Remove 404 response for 2.root.json
+        const repoURL = new URL(baseURL);
+        nock.removeInterceptor({
+          hostname: repoURL.hostname,
+          port: repoURL.port,
+          path: '/metadata/2.root.json',
+        });
+
+        // Serve 2.root.json w/ invalid data
+        nock(baseURL).get('/metadata/2.root.json').reply(200, {});
+      });
+
+      it('resolves with no error', async () => {
+        const updater = new Updater(options);
+        await expect(updater.refresh()).rejects.toThrow(TypeError);
       });
     });
   });

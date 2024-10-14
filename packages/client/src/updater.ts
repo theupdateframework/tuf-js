@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Config, defaultConfig } from './config';
 import {
+  DownloadHTTPError,
   EqualVersionError,
   PersistError,
   RuntimeError,
@@ -200,7 +201,14 @@ export class Updater {
         // Client workflow 5.3.8: persist root metadata file
         this.persistMetadata(MetadataKind.Root, bytesData);
       } catch (error) {
-        break;
+        if (error instanceof DownloadHTTPError) {
+          //  404/403 means current root is newest available
+          if ([403, 404].includes(error.statusCode)) {
+            break;
+          }
+        }
+
+        throw error;
       }
     }
   }
