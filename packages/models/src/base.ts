@@ -11,9 +11,9 @@ export interface Signable {
 }
 
 export interface SignedOptions {
-  version?: number;
-  specVersion?: string;
-  expires?: string;
+  version: number;
+  specVersion: string;
+  expires: string;
   unrecognizedFields?: Record<string, JSONValue>;
 }
 
@@ -60,8 +60,8 @@ export abstract class Signed {
       throw new ValueError('Unsupported specVersion');
     }
 
-    this.expires = options.expires || new Date().toISOString();
-    this.version = options.version || 1;
+    this.expires = options.expires;
+    this.version = options.version;
     this.unrecognizedFields = options.unrecognizedFields || {};
   }
 
@@ -88,15 +88,21 @@ export abstract class Signed {
   public static commonFieldsFromJSON(data: JSONObject): SignedOptions {
     const { spec_version, expires, version, ...rest } = data;
 
-    if (guard.isDefined(spec_version) && !(typeof spec_version === 'string')) {
+    if (!guard.isDefined(spec_version)) {
+      throw new ValueError('spec_version is not defined');
+    } else if (typeof spec_version !== 'string') {
       throw new TypeError('spec_version must be a string');
     }
 
-    if (guard.isDefined(expires) && !(typeof expires === 'string')) {
+    if (!guard.isDefined(expires)) {
+      throw new ValueError('expires is not defined');
+    } else if (!(typeof expires === 'string')) {
       throw new TypeError('expires must be a string');
     }
 
-    if (guard.isDefined(version) && !(typeof version === 'number')) {
+    if (!guard.isDefined(version)) {
+      throw new ValueError('version is not defined');
+    } else if (!(typeof version === 'number')) {
       throw new TypeError('version must be a number');
     }
 
