@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Config, defaultConfig } from './config';
 import {
+  DownloadHTTPError,
   EqualVersionError,
   PersistError,
   RuntimeError,
@@ -200,7 +201,14 @@ export class Updater {
         // Client workflow 5.3.8: persist root metadata file
         this.persistMetadata(MetadataKind.Root, bytesData);
       } catch (error) {
-        break;
+        if (error instanceof DownloadHTTPError) {
+          //  404/403 means current root is newest available
+          if ([403, 404].includes(error.statusCode)) {
+            break;
+          }
+        }
+
+        throw error;
       }
     }
   }
@@ -323,9 +331,10 @@ export class Updater {
         ? metaInfo.version
         : undefined;
 
+      const encodedRole = encodeURIComponent(role);
       const metadataUrl = url.join(
         this.metadataBaseUrl,
-        version ? `${version}.${role}.json` : `${role}.json`
+        version ? `${version}.${encodedRole}.json` : `${encodedRole}.json`
       );
 
       try {
@@ -431,13 +440,14 @@ export class Updater {
   }
 
   private persistMetadata(metaDataName: string, bytesData: Buffer) {
+    const encodedName = encodeURIComponent(metaDataName);
     try {
-      const filePath = path.join(this.dir, `${metaDataName}.json`);
+      const filePath = path.join(this.dir, `${encodedName}.json`);
       log('WRITE %s', filePath);
       fs.writeFileSync(filePath, bytesData.toString('utf8'));
     } catch (error) {
       throw new PersistError(
-        `Failed to persist metadata ${metaDataName} error: ${error}`
+        `Failed to persist metadata ${encodedName} error: ${error}`
       );
     }
   }
