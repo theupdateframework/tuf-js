@@ -1,0 +1,37 @@
+---
+name: Conformance
+
+"on":
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tuf-conformance:
+    name: TUF Conformance Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+
+      - name: Setup node
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build
+        run: npm run build
+
+      - name: Run conformance suite
+        uses: theupdateframework/tuf-conformance@3a8726362e0440ddcf5156ab06aa385f3728558c # TODO: Pin to a released version
+        with:
+          entrypoint: ".github/scripts/tuf-conformance"
