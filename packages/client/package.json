@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --build",
-    "clean": "rm -rf dist && rm tsconfig.tsbuildinfo",
+    "build": "tsc --build tsconfig.build.json",
+    "clean": "rm -rf dist && rm tsconfig.build.tsbuildinfo",
     "test": "jest"
   },
   "repository": {

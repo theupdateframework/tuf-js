@@ -1,9 +1,9 @@
 {
-  "extends": "@tsconfig/node16/tsconfig.json",
+  "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
+    "allowUnreachableCode": false,
     "declaration": true,
     "noImplicitOverride": true,
-    "allowUnreachableCode": false,
     "noImplicitReturns": true,
     "noUnusedParameters": true
   }

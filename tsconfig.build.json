@@ -1,9 +1,9 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/cli" },
-    { "path": "packages/client" },
-    { "path": "packages/models" },
-    { "path": "packages/repo-mock" }
+    { "path": "packages/cli/tsconfig.build.json" },
+    { "path": "packages/client/tsconfig.build.json" },
+    { "path": "packages/models/tsconfig.build.json" },
+    { "path": "packages/repo-mock/tsconfig.build.json" }
   ]
 }
