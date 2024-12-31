@@ -1,11 +1,3 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist"
-  },
-  "exclude": ["./dist", "**/__tests__"],
-  "references": [
-    { "path": "../client" }
-  ]
+  "extends": "./tsconfig.json"
 }

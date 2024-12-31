@@ -3,5 +3,5 @@ node_modules
 coverage
 examples/client/targets
 examples/client/metadata
-tsconfig.tsbuildinfo
+tsconfig.build.tsbuildinfo
 *.code-workspace
