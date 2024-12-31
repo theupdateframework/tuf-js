@@ -1,8 +1,8 @@
 import { Command, Flags } from '@oclif/core';
-import fs from 'fs';
+import * as fs from 'fs';
 import fetch from 'make-fetch-happen';
-import os from 'os';
-import path from 'path';
+import * as os from 'os';
+import * as path from 'path';
 import { Updater } from 'tuf-js';
 
 export default class DownloadTarget extends Command {
@@ -69,7 +69,9 @@ export default class DownloadTarget extends Command {
 
     if (flags['unsafe-root-download']) {
       const rootUrl = flags['metadata-base-url'] + '/1.root.json';
-      const rootJSON = await fetch(rootUrl).then((res) => res.json());
+      const rootJSON = (await fetch(rootUrl).then((res) =>
+        res.json()
+      )) as object;
       fs.writeFileSync(
         path.join(metadataPath, 'root.json'),
         JSON.stringify(rootJSON, null, 2)

@@ -22,6 +22,7 @@ describe('mockRepo', () => {
     const rootJSON = mockRepo(baseURL, []);
     expect(rootJSON).toBeTruthy();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const rootMeta = Metadata.fromJSON(MetadataKind.Root, JSON.parse(rootJSON));
     expect(rootMeta).toBeTruthy();
     expect(() => rootMeta.verifyDelegate('root', rootMeta)).not.toThrow();
@@ -30,6 +31,7 @@ describe('mockRepo', () => {
     const timestampJSON = await fetch(`${baseURL}/metadata/timestamp.json`);
     const timestampMeta = Metadata.fromJSON(
       MetadataKind.Timestamp,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       JSON.parse(timestampJSON)
     );
     expect(timestampMeta).toBeTruthy();
@@ -41,6 +43,7 @@ describe('mockRepo', () => {
     const snapshotJSON = await fetch(`${baseURL}/metadata/snapshot.json`);
     const snapshotMeta = Metadata.fromJSON(
       MetadataKind.Snapshot,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       JSON.parse(snapshotJSON)
     );
     expect(snapshotMeta).toBeTruthy();
@@ -52,6 +55,7 @@ describe('mockRepo', () => {
     const targetsJSON = await fetch(`${baseURL}/metadata/targets.json`);
     const targetsMeta = Metadata.fromJSON(
       MetadataKind.Targets,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       JSON.parse(targetsJSON)
     );
     expect(targetsMeta).toBeTruthy();

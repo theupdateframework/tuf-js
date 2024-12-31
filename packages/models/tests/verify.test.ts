@@ -1,11 +1,12 @@
 import { Metadata, MetadataKind, ValueError } from '../src/index';
+import { JSONObject } from '../src/utils';
 
 /* eslint-disable @typescript-eslint/no-require-imports */
-const rootJSON = require('./__fixtures__/root.json');
-const timestampJSON = require('./__fixtures__/timestamp.json');
-const snapshotJSON = require('./__fixtures__/snapshot.json');
-const targetsJSON = require('./__fixtures__/targets.json');
-const role1JSON = require('./__fixtures__/role1.json');
+const rootJSON = require('./__fixtures__/root.json') as JSONObject;
+const timestampJSON = require('./__fixtures__/timestamp.json') as JSONObject;
+const snapshotJSON = require('./__fixtures__/snapshot.json') as JSONObject;
+const targetsJSON = require('./__fixtures__/targets.json') as JSONObject;
+const role1JSON = require('./__fixtures__/role1.json') as JSONObject;
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 describe('Verify TUF local sample', () => {

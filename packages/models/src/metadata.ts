@@ -127,6 +127,7 @@ export class Metadata<T extends MetadataType> implements Signable {
       return false;
     }
     return (
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       this.signed.equals(other.signed) &&
       util.isDeepStrictEqual(this.signatures, other.signatures) &&
       util.isDeepStrictEqual(this.unrecognizedFields, other.unrecognizedFields)
