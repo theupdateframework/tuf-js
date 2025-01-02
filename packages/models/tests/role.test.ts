@@ -64,7 +64,7 @@ describe('Role', () => {
 
     describe('when called with a non-Role object', () => {
       it('returns false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
         expect(role.equals({} as any)).toBeFalsy();
       });
     });
@@ -147,7 +147,7 @@ describe('DelegatedRole', () => {
           new DelegatedRole({
             ...opts,
             paths,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
             pathHashPrefixes: pathHashPrefixes as any,
           });
         }).toThrowError(ValueError);
@@ -167,7 +167,7 @@ describe('DelegatedRole', () => {
 
     describe('when called with a non-DelegatedRole object', () => {
       it('returns false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
         expect(role.equals({} as any)).toBeFalsy();
       });
     });

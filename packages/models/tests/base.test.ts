@@ -148,10 +148,11 @@ describe('Signed', () => {
     describe('when the version is not included', () => {
       it('throws an error', () => {
         expect(() => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           DummySigned.commonFieldsFromJSON({
             ...json,
             version: undefined,
-          } as any); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+          } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
         }).toThrow(ValueError);
       });
     });
@@ -167,10 +168,11 @@ describe('Signed', () => {
     describe('when the spec_version is not included', () => {
       it('throws an error', () => {
         expect(() => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           DummySigned.commonFieldsFromJSON({
             ...json,
             spec_version: undefined,
-          } as any); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+          } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
         }).toThrow(ValueError);
       });
     });
@@ -186,10 +188,11 @@ describe('Signed', () => {
     describe('when the expires is not included', () => {
       it('throws an error', () => {
         expect(() => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           DummySigned.commonFieldsFromJSON({
             ...json,
             expires: undefined,
-          } as any); /* eslint-disable-line @typescript-eslint/no-explicit-any */
+          } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
         }).toThrow(ValueError);
       });
     });

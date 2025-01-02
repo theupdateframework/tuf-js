@@ -187,7 +187,7 @@ export class TargetFile {
     );
 
     // Read stream chunk by chunk
-    for await (const chunk of stream) {
+    for await (const chunk of stream as AsyncIterable<Buffer>) {
       // Keep running tally of stream length
       observedLength += chunk.length;
 

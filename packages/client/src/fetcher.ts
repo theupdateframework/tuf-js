@@ -54,6 +54,7 @@ export abstract class BaseFetcher implements Fetcher {
         }
       } finally {
         // Make sure we always close the stream
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         await util.promisify(fileStream.close).bind(fileStream)();
       }
 
@@ -67,7 +68,7 @@ export abstract class BaseFetcher implements Fetcher {
       const stream = fs.createReadStream(file);
       const chunks: Buffer[] = [];
 
-      for await (const chunk of stream) {
+      for await (const chunk of stream as AsyncIterable<Buffer>) {
         chunks.push(chunk);
       }
 

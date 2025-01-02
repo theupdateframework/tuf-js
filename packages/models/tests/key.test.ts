@@ -125,7 +125,7 @@ describe('Key', () => {
 
     describe('when called with a non-Key object', () => {
       it('returns false', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
         expect(key.equals({} as any)).toBeFalsy();
       });
     });

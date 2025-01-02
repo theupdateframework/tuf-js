@@ -57,7 +57,9 @@ export class TrustedMetadataStore {
   }
 
   public updateRoot(bytesBuffer: Buffer): Metadata<Root> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = JSON.parse(bytesBuffer.toString('utf8'));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const newRoot = Metadata.fromJSON(MetadataKind.Root, data);
     if (newRoot.signed.type != MetadataKind.Root) {
       throw new RepositoryError(`Expected 'root', got ${newRoot.signed.type}`);
@@ -92,7 +94,9 @@ export class TrustedMetadataStore {
       throw new ExpiredMetadataError('Final root.json is expired');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = JSON.parse(bytesBuffer.toString('utf8'));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const newTimestamp = Metadata.fromJSON(MetadataKind.Timestamp, data);
 
     if (newTimestamp.signed.type != MetadataKind.Timestamp) {
@@ -164,7 +168,9 @@ export class TrustedMetadataStore {
       snapshotMeta.verify(bytesBuffer);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = JSON.parse(bytesBuffer.toString('utf8'));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const newSnapshot = Metadata.fromJSON(MetadataKind.Snapshot, data);
 
     if (newSnapshot.signed.type != MetadataKind.Snapshot) {
@@ -235,7 +241,9 @@ export class TrustedMetadataStore {
     // Client workflow 5.6.2: check against snapshot role's targets hash
     meta.verify(bytesBuffer);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = JSON.parse(bytesBuffer.toString('utf8'));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const newDelegate = Metadata.fromJSON(MetadataKind.Targets, data);
 
     if (newDelegate.signed.type != MetadataKind.Targets) {
@@ -266,7 +274,9 @@ export class TrustedMetadataStore {
   // Verifies and loads data as trusted root metadata.
   // Note that an expired initial root is still considered valid.
   private loadTrustedRoot(bytesBuffer: Buffer) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = JSON.parse(bytesBuffer.toString('utf8'));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const root = Metadata.fromJSON(MetadataKind.Root, data);
 
     if (root.signed.type != MetadataKind.Root) {

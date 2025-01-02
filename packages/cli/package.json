@@ -19,7 +19,7 @@
     "provenance": true
   },
   "scripts": {
-    "clean": "shx rm -rf dist && shx rm tsconfig.build.tsbuildinfo",
+    "clean": "shx rm -rf dist",
     "prebuild": "npm run clean",
     "build": "tsc --build",
     "postpack": "shx rm -f oclif.manifest.json",
