@@ -1,5 +1,11 @@
 # @tufjs/cli
 
+## 0.3.0
+
+### Minor Changes
+
+- 7482cd2: Bump make-fetch-happen from 13.0.1 to 14.0.2
+
 ## 0.2.5
 
 ### Patch Changes
