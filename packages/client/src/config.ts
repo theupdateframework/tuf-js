@@ -1,5 +1,3 @@
-import type { MakeFetchHappenOptions } from 'make-fetch-happen';
-
 export type Config = {
   maxRootRotations: number;
   maxDelegations: number;
@@ -9,9 +7,6 @@ export type Config = {
   targetsMaxLength: number;
   prefixTargetsWithHash: boolean;
   fetchTimeout: number;
-  // deprecated use fetchRetry instead
-  fetchRetries: number | undefined;
-  fetchRetry: MakeFetchHappenOptions['retry'];
 };
 
 export const defaultConfig: Config = {
@@ -23,6 +18,4 @@ export const defaultConfig: Config = {
   targetsMaxLength: 5000000, // bytes
   prefixTargetsWithHash: true,
   fetchTimeout: 100000, // milliseconds
-  fetchRetries: undefined,
-  fetchRetry: 2,
 };
