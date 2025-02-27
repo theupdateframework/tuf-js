@@ -29,13 +29,11 @@
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/client#readme",
   "devDependencies": {
     "@tufjs/repo-mock": "3.0.1",
-    "@types/debug": "^4.1.12",
-    "@types/make-fetch-happen": "^10.0.4"
+    "@types/debug": "^4.1.12"
   },
   "dependencies": {
     "@tufjs/models": "3.0.1",
-    "debug": "^4.3.6",
-    "make-fetch-happen": "^14.0.2"
+    "debug": "^4.3.6"
   },
   "engines": {
     "node": "^18.17.0 || >=20.5.0"
