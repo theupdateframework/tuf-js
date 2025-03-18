@@ -43,14 +43,13 @@ export abstract class BaseFetcher implements Fetcher {
       // the length of the file as we go
       try {
         for await (const chunk of reader) {
-          const bufferChunk = Buffer.from(chunk);
-          numberOfBytesReceived += bufferChunk.length;
+          numberOfBytesReceived += chunk.length;
 
           if (numberOfBytesReceived > maxLength) {
             throw new DownloadLengthMismatchError('Max length reached');
           }
 
-          await writeBufferToStream(fileStream, bufferChunk);
+          await writeBufferToStream(fileStream, chunk);
         }
       } finally {
         // Make sure we always close the stream
@@ -111,7 +110,7 @@ export class DefaultFetcher extends BaseFetcher {
 
 const writeBufferToStream = async (
   stream: fs.WriteStream,
-  buffer: Buffer
+  buffer: string | Buffer<ArrayBufferLike>
 ): Promise<boolean> => {
   return new Promise((resolve, reject) => {
     stream.write(buffer, (err) => {
