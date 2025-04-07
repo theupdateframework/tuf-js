@@ -29,7 +29,7 @@
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/repo-mock#readme",
   "dependencies": {
     "@tufjs/models": "3.0.1",
-    "nock": "^13.5.5"
+    "nock": "^14.0.3"
   },
   "engines": {
     "node": "^18.17.0 || >=20.5.0"
