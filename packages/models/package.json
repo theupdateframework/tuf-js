@@ -29,7 +29,7 @@
   "homepage": "https://github.com/theupdateframework/tuf-js/tree/main/packages/models#readme",
   "dependencies": {
     "@tufjs/canonical-json": "2.0.0",
-    "minimatch": "^9.0.5"
+    "minimatch": "^10.0.3"
   },
   "engines": {
     "node": "^18.17.0 || >=20.5.0"
