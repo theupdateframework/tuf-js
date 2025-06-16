@@ -32,14 +32,14 @@ describe('Role', () => {
     describe('when keyids is not an array', () => {
       const json = { keyids: 'a', threshold: 1 };
       it('throws an error', () => {
-        expect(() => Role.fromJSON(json)).toThrowError(TypeError);
+        expect(() => Role.fromJSON(json)).toThrow(TypeError);
       });
     });
 
     describe('when threshold is not a number', () => {
       const json = { keyids: [], threshold: 'foo' };
       it('throws an error', () => {
-        expect(() => Role.fromJSON(json)).toThrowError(TypeError);
+        expect(() => Role.fromJSON(json)).toThrow(TypeError);
       });
     });
 
@@ -150,7 +150,7 @@ describe('DelegatedRole', () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
             pathHashPrefixes: pathHashPrefixes as any,
           });
-        }).toThrowError(ValueError);
+        }).toThrow(ValueError);
       });
     });
   });
@@ -360,9 +360,9 @@ describe('DelegatedRole', () => {
 
     describe('when there is a type error with keyids', () => {
       it('throws a TypeError', () => {
-        expect(() =>
-          DelegatedRole.fromJSON({ ...json, keyids: 1 })
-        ).toThrowError(TypeError);
+        expect(() => DelegatedRole.fromJSON({ ...json, keyids: 1 })).toThrow(
+          TypeError
+        );
       });
     });
 
@@ -370,15 +370,15 @@ describe('DelegatedRole', () => {
       it('throws a TypeError', () => {
         expect(() =>
           DelegatedRole.fromJSON({ ...json, threshold: 'a' })
-        ).toThrowError(TypeError);
+        ).toThrow(TypeError);
       });
     });
 
     describe('when there is a type error with name', () => {
       it('throws a TypeError', () => {
-        expect(() =>
-          DelegatedRole.fromJSON({ ...json, name: 99 })
-        ).toThrowError(TypeError);
+        expect(() => DelegatedRole.fromJSON({ ...json, name: 99 })).toThrow(
+          TypeError
+        );
       });
     });
 
@@ -386,16 +386,16 @@ describe('DelegatedRole', () => {
       it('throws a TypeError', () => {
         expect(() =>
           DelegatedRole.fromJSON({ ...json, terminating: 'yes' })
-        ).toThrowError(TypeError);
+        ).toThrow(TypeError);
       });
     });
 
     describe('when paths is defined', () => {
       describe('when there is a type error with paths', () => {
         it('throws a TypeError', () => {
-          expect(() =>
-            DelegatedRole.fromJSON({ ...json, paths: 1 })
-          ).toThrowError(TypeError);
+          expect(() => DelegatedRole.fromJSON({ ...json, paths: 1 })).toThrow(
+            TypeError
+          );
         });
       });
 
@@ -403,7 +403,7 @@ describe('DelegatedRole', () => {
         it('throws a TypeError', () => {
           expect(() =>
             DelegatedRole.fromJSON({ ...json, paths: ['a', 2] })
-          ).toThrowError(TypeError);
+          ).toThrow(TypeError);
         });
       });
 
@@ -420,7 +420,7 @@ describe('DelegatedRole', () => {
         it('throws a TypeError', () => {
           expect(() =>
             DelegatedRole.fromJSON({ ...json, path_hash_prefixes: 1 })
-          ).toThrowError(TypeError);
+          ).toThrow(TypeError);
         });
       });
 
@@ -428,7 +428,7 @@ describe('DelegatedRole', () => {
         it('throws a TypeError', () => {
           expect(() =>
             DelegatedRole.fromJSON({ ...json, path_hash_prefixes: ['a', 2] })
-          ).toThrowError(TypeError);
+          ).toThrow(TypeError);
         });
       });
 
