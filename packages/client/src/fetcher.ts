@@ -1,12 +1,10 @@
 import debug from 'debug';
 import fs from 'fs';
-import fetch from 'make-fetch-happen';
+import stream from 'stream';
 import util from 'util';
 
 import { DownloadHTTPError, DownloadLengthMismatchError } from './error';
 import { withTempFile } from './utils/tmpfile';
-
-import type { MakeFetchHappenOptions } from 'make-fetch-happen';
 
 const log = debug('tuf:fetch');
 
@@ -76,35 +74,29 @@ export abstract class BaseFetcher implements Fetcher {
   }
 }
 
-type Retry = MakeFetchHappenOptions['retry'];
-
 interface FetcherOptions {
   timeout?: number;
-  retry?: Retry;
 }
 
 export class DefaultFetcher extends BaseFetcher {
   private timeout?: number;
-  private retry?: Retry;
 
   constructor(options: FetcherOptions = {}) {
     super();
     this.timeout = options.timeout;
-    this.retry = options.retry;
   }
 
   public override async fetch(url: string): Promise<NodeJS.ReadableStream> {
     log('GET %s', url);
     const response = await fetch(url, {
-      timeout: this.timeout,
-      retry: this.retry,
+      signal: this.timeout && AbortSignal.timeout(this.timeout),
     });
 
     if (!response.ok || !response?.body) {
       throw new DownloadHTTPError('Failed to download', response.status);
     }
 
-    return response.body;
+    return stream.Readable.fromWeb(response.body);
   }
 }
 
