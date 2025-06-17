@@ -340,15 +340,15 @@ describe('Delegations', () => {
       it('throws a TypeError', () => {
         expect(() =>
           Delegations.fromJSON({ ...json, keys: { abc: 2 } })
-        ).toThrowError(TypeError);
+        ).toThrow(TypeError);
       });
     });
 
     describe('when there is a type error with roles', () => {
       it('throws a TypeError', () => {
-        expect(() =>
-          Delegations.fromJSON({ ...json, roles: [2] })
-        ).toThrowError(TypeError);
+        expect(() => Delegations.fromJSON({ ...json, roles: [2] })).toThrow(
+          TypeError
+        );
       });
     });
 

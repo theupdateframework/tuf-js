@@ -57,7 +57,7 @@ describe('Key', () => {
       it('throws an error', () => {
         expect(() => {
           key.verifySignature({ ...metadata, signatures: { xyz: signature } });
-        }).toThrowError(UnsignedMetadataError);
+        }).toThrow(UnsignedMetadataError);
       });
     });
 
@@ -70,7 +70,7 @@ describe('Key', () => {
       it('throws an error', () => {
         expect(() => {
           key.verifySignature(badMetadata);
-        }).toThrowError(UnsignedMetadataError);
+        }).toThrow(UnsignedMetadataError);
       });
     });
 
@@ -85,7 +85,7 @@ describe('Key', () => {
       it('throws an error', () => {
         expect(() => {
           badKey.verifySignature(metadata);
-        }).toThrowError(UnsignedMetadataError);
+        }).toThrow(UnsignedMetadataError);
       });
     });
 
@@ -100,7 +100,7 @@ describe('Key', () => {
       it('throws an error', () => {
         expect(() => {
           badKey.verifySignature(metadata);
-        }).toThrowError();
+        }).toThrow();
       });
     });
 
@@ -210,15 +210,15 @@ describe('Key', () => {
 
     describe('when there is a type error with keytype', () => {
       it('throws an error', () => {
-        expect(() =>
-          Key.fromJSON('abc', { ...json, keytype: 123 })
-        ).toThrowError(TypeError);
+        expect(() => Key.fromJSON('abc', { ...json, keytype: 123 })).toThrow(
+          TypeError
+        );
       });
     });
 
     describe('when there is a type error with scheme', () => {
       it('throws an error', () => {
-        expect(() => Key.fromJSON('abc', { ...json, scheme: 1 })).toThrowError(
+        expect(() => Key.fromJSON('abc', { ...json, scheme: 1 })).toThrow(
           TypeError
         );
       });
@@ -226,7 +226,7 @@ describe('Key', () => {
 
     describe('when there is a type error with keyval', () => {
       it('throws an error', () => {
-        expect(() => Key.fromJSON('abc', { ...json, keyval: 1 })).toThrowError(
+        expect(() => Key.fromJSON('abc', { ...json, keyval: 1 })).toThrow(
           TypeError
         );
       });

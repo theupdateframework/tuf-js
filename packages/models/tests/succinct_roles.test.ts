@@ -260,7 +260,7 @@ describe('SuccinctRoles', () => {
       it('throws a TypeError', () => {
         expect(() =>
           SuccinctRoles.fromJSON({ ...json, keyids: { abc: 2 } })
-        ).toThrowError(TypeError);
+        ).toThrow(TypeError);
       });
     });
 
@@ -268,7 +268,7 @@ describe('SuccinctRoles', () => {
       it('throws a TypeError', () => {
         expect(() =>
           SuccinctRoles.fromJSON({ ...json, bit_length: '1' })
-        ).toThrowError(TypeError);
+        ).toThrow(TypeError);
       });
     });
 
@@ -276,7 +276,7 @@ describe('SuccinctRoles', () => {
       it('throws a TypeError', () => {
         expect(() =>
           SuccinctRoles.fromJSON({ ...json, name_prefix: 1 })
-        ).toThrowError(TypeError);
+        ).toThrow(TypeError);
       });
     });
 
@@ -284,7 +284,7 @@ describe('SuccinctRoles', () => {
       it('throws a TypeError', () => {
         expect(() =>
           SuccinctRoles.fromJSON({ ...json, threshold: '1' })
-        ).toThrowError(TypeError);
+        ).toThrow(TypeError);
       });
     });
 
