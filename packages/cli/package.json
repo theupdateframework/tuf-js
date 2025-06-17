@@ -1,6 +1,6 @@
 {
   "name": "@tufjs/cli",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "CLI for interacting with TUF repositories",
   "author": "bdehamer@github.com",
   "license": "MIT",
@@ -44,7 +44,7 @@
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
     "make-fetch-happen": "^14.0.3",
-    "tuf-js": "3.0.1"
+    "tuf-js": "3.1.0"
   },
   "devDependencies": {
     "@types/make-fetch-happen": "^10.0.4",
