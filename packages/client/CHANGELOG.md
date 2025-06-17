@@ -1,5 +1,12 @@
 # tuf-js
 
+## 3.1.0
+
+### Minor Changes
+
+- dac4594: Bump make-fetch-happen from 14.0.2 to 14.0.3
+- dac4594: Bump debug from 4.3.6. to 4.4.1
+
 ## 3.0.1
 
 ### Patch Changes
