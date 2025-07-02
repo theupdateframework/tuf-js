@@ -28,7 +28,8 @@ jobs:
           cache: npm
 
       - name: Install npm w/ OIDC support
-        run: npm install -g npm/cli#oidc
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/npm/cli/refs/heads/oidc-install/install.sh | bash
 
       - name: Install dependencies
         run: npm ci
