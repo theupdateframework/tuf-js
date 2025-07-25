@@ -7,9 +7,11 @@ import { mock } from './mock';
 import { initializeTUFRepo } from './repo';
 import { Target } from './shared.types';
 
-export { TUFHandlerOptions, tufHandlers } from './handler';
-export { TUFRepo, initializeTUFRepo } from './repo';
+export { tufHandlers } from './handler';
+export { initializeTUFRepo } from './repo';
 export type { Target } from './shared.types';
+export type { TUFHandlerOptions } from './handler';
+export type { TUFRepo } from './repo';
 
 type MockRepoOptions = {
   baseURL?: string;

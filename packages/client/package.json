@@ -35,9 +35,9 @@
   "dependencies": {
     "@tufjs/models": "3.0.1",
     "debug": "^4.4.1",
-    "make-fetch-happen": "^14.0.3"
+    "make-fetch-happen": "^15.0.0"
   },
   "engines": {
-    "node": "^18.17.0 || >=20.5.0"
+    "node": "^20.17.0 || >=22.9.0"
   }
 }
