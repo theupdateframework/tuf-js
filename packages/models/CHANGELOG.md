@@ -1,5 +1,11 @@
 # @tufjs/models
 
+## 4.0.0
+
+### Major Changes
+
+- e6b255a: Drop support for node 18
+
 ## 3.0.1
 
 ### Patch Changes

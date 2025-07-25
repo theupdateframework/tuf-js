@@ -1,5 +1,17 @@
 # tuf-js
 
+## 4.0.0
+
+### Major Changes
+
+- e6b255a: Drop support for node 18
+- e6b255a: Bump make-fetch-happen from 14.x to 15.x
+
+### Patch Changes
+
+- Updated dependencies [e6b255a]
+  - @tufjs/models@4.0.0
+
 ## 3.1.0
 
 ### Minor Changes
