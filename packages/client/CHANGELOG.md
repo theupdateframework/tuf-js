@@ -1,5 +1,16 @@
 # tuf-js
 
+## 4.1.0
+
+### Minor Changes
+
+- 47e029e: Support for custom user agent string on fetch calls
+
+### Patch Changes
+
+- Updated dependencies [09aab8a]
+  - @tufjs/models@4.1.0
+
 ## 4.0.0
 
 ### Major Changes

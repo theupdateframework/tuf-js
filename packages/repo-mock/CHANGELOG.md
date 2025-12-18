@@ -1,5 +1,12 @@
 # @tufjs/repo-mock
 
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [09aab8a]
+  - @tufjs/models@4.1.0
+
 ## 4.0.0
 
 ### Major Changes
