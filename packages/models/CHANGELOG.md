@@ -1,5 +1,11 @@
 # @tufjs/models
 
+## 4.1.0
+
+### Minor Changes
+
+- 09aab8a: Bump `minimatch` from 9.0.5 to 10.1.1
+
 ## 4.0.0
 
 ### Major Changes
