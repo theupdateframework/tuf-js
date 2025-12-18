@@ -2,6 +2,7 @@ import { Metadata, MetadataKind, TargetFile, Targets } from '@tufjs/models';
 import debug from 'debug';
 import * as fs from 'fs';
 import * as path from 'path';
+import { version } from '../package.json';
 import { Config, defaultConfig } from './config';
 import {
   DownloadHTTPError,
@@ -62,9 +63,14 @@ export class Updater {
 
     this.trustedSet = new TrustedMetadataStore(data);
     this.config = { ...defaultConfig, ...config };
+    const userAgent = config?.userAgent
+      ? `${config.userAgent} tuf-js/${version}`
+      : `tuf-js/${version}`;
+
     this.fetcher =
       fetcher ||
       new DefaultFetcher({
+        userAgent,
         timeout: this.config.fetchTimeout,
         retry: this.config.fetchRetries ?? this.config.fetchRetry,
       });
