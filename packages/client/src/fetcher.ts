@@ -10,6 +10,8 @@ import type { MakeFetchHappenOptions } from 'make-fetch-happen';
 
 const log = debug('tuf:fetch');
 
+const USER_AGENT_HEADER = 'User-Agent';
+
 type DownloadFileHandler<T> = (file: string) => Promise<T>;
 
 export interface Fetcher {
@@ -79,16 +81,19 @@ export abstract class BaseFetcher implements Fetcher {
 type Retry = MakeFetchHappenOptions['retry'];
 
 interface FetcherOptions {
+  userAgent?: string;
   timeout?: number;
   retry?: Retry;
 }
 
 export class DefaultFetcher extends BaseFetcher {
+  private userAgent?: string;
   private timeout?: number;
   private retry?: Retry;
 
   constructor(options: FetcherOptions = {}) {
     super();
+    this.userAgent = options.userAgent;
     this.timeout = options.timeout;
     this.retry = options.retry;
   }
@@ -96,6 +101,9 @@ export class DefaultFetcher extends BaseFetcher {
   public override async fetch(url: string): Promise<NodeJS.ReadableStream> {
     log('GET %s', url);
     const response = await fetch(url, {
+      headers: {
+        [USER_AGENT_HEADER]: this.userAgent || '',
+      },
       timeout: this.timeout,
       retry: this.retry,
     });

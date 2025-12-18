@@ -6,6 +6,7 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedParameters": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "resolveJsonModule": true
   }
 }

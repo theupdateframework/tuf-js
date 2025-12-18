@@ -12,6 +12,7 @@ export type Config = {
   // deprecated use fetchRetry instead
   fetchRetries: number | undefined;
   fetchRetry: MakeFetchHappenOptions['retry'];
+  userAgent?: string;
 };
 
 export const defaultConfig: Config = {
@@ -25,4 +26,5 @@ export const defaultConfig: Config = {
   fetchTimeout: 100000, // milliseconds
   fetchRetries: undefined,
   fetchRetry: 2,
+  userAgent: '',
 };
