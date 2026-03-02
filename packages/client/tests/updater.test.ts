@@ -6,8 +6,10 @@ import os from 'os';
 import path from 'path';
 import { Updater, UpdaterOptions } from '../src/updater';
 
+nock.disableNetConnect
 describe('Updater', () => {
   const baseURL = 'http://localhost:8080';
+  // const baseURL = "https://google.com"
   const tufCacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tufjs-'));
 
   const target = {
@@ -22,7 +24,7 @@ describe('Updater', () => {
     targetBaseUrl: `${baseURL}/targets`,
     config: {
       fetchRetry: 0,
-      fetchTimeout: 1000,
+      // fetchTimeout: 1000,
     },
   };
 
