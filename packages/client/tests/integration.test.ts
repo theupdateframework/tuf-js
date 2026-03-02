@@ -8,7 +8,6 @@ import { Updater } from '../src/index';
 
 describe('Updater', () => {
   const baseURL = 'http://localhost:8080';
-  // const baseURL = "https://google.com"
   const tufCacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tufjs-'));
 
   const target = {
