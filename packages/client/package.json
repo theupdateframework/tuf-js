@@ -30,12 +30,11 @@
   "devDependencies": {
     "@tufjs/repo-mock": "4.0.1",
     "@types/debug": "^4.1.12",
-    "@types/make-fetch-happen": "^10.0.4"
+    "@types/retry": "^0.12.5"
   },
   "dependencies": {
     "@tufjs/models": "4.1.0",
-    "debug": "^4.4.3",
-    "make-fetch-happen": "^15.0.1"
+    "debug": "^4.4.3"
   },
   "engines": {
     "node": "^20.17.0 || >=22.9.0"

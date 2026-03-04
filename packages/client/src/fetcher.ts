@@ -1,12 +1,11 @@
 import debug from 'debug';
 import fs from 'fs';
-import fetch from 'make-fetch-happen';
 import util from 'util';
 
 import { DownloadHTTPError, DownloadLengthMismatchError } from './error';
 import { withTempFile } from './utils/tmpfile';
 
-import type { MakeFetchHappenOptions } from 'make-fetch-happen';
+import type { TimeoutsOptions } from 'retry';
 
 const log = debug('tuf:fetch');
 
@@ -24,7 +23,7 @@ export interface Fetcher {
 }
 
 export abstract class BaseFetcher implements Fetcher {
-  abstract fetch(url: string): Promise<NodeJS.ReadableStream>;
+  abstract fetch(url: string): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
 
   // Download file from given URL. The file is downloaded to a temporary
   // location and then passed to the given handler. The handler is responsible
@@ -43,17 +42,24 @@ export abstract class BaseFetcher implements Fetcher {
 
       // Read the stream a chunk at a time so that we can check
       // the length of the file as we go
+      const streamReader = reader.getReader();
       try {
-        for await (const chunk of reader) {
+        while (true) {
+          const { done, value: chunk } = await streamReader.read();
+          if (done) {
+            break;
+          }
+
           numberOfBytesReceived += chunk.length;
 
           if (numberOfBytesReceived > maxLength) {
             throw new DownloadLengthMismatchError('Max length reached');
           }
 
-          await writeBufferToStream(fileStream, chunk);
+          await writeBufferToStream(fileStream, Buffer.from(chunk));
         }
       } finally {
+        streamReader.releaseLock();
         // Make sure we always close the stream
         // eslint-disable-next-line @typescript-eslint/unbound-method
         await util.promisify(fileStream.close).bind(fileStream)();
@@ -78,7 +84,7 @@ export abstract class BaseFetcher implements Fetcher {
   }
 }
 
-type Retry = MakeFetchHappenOptions['retry'];
+type Retry = boolean | number | TimeoutsOptions | undefined;
 
 interface FetcherOptions {
   userAgent?: string;
@@ -98,14 +104,14 @@ export class DefaultFetcher extends BaseFetcher {
     this.retry = options.retry;
   }
 
-  public override async fetch(url: string): Promise<NodeJS.ReadableStream> {
+  public override async fetch(url: string): Promise<ReadableStream<Uint8Array<ArrayBuffer>>> {
     log('GET %s', url);
+    try {
     const response = await fetch(url, {
       headers: {
         [USER_AGENT_HEADER]: this.userAgent || '',
       },
-      timeout: this.timeout,
-      retry: this.retry,
+      signal: this.timeout ? AbortSignal.timeout(this.timeout) : undefined,
     });
 
     if (!response.ok || !response?.body) {
@@ -113,7 +119,12 @@ export class DefaultFetcher extends BaseFetcher {
     }
 
     return response.body;
+  
+  } catch (err) {
+    log('Failed to fetch %o',  err);
+    throw err;
   }
+}
 }
 
 const writeBufferToStream = async (

@@ -1,4 +1,4 @@
-import type { MakeFetchHappenOptions } from 'make-fetch-happen';
+import type { TimeoutsOptions } from 'retry';
 
 export type Config = {
   maxRootRotations: number;
@@ -11,7 +11,7 @@ export type Config = {
   fetchTimeout: number;
   // deprecated use fetchRetry instead
   fetchRetries: number | undefined;
-  fetchRetry: MakeFetchHappenOptions['retry'];
+  fetchRetry: boolean | number | TimeoutsOptions | undefined;
   userAgent?: string;
 };
 

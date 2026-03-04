@@ -1,6 +1,5 @@
 import { Command, Flags } from '@oclif/core';
 import * as fs from 'fs';
-import fetch from 'make-fetch-happen';
 import * as os from 'os';
 import * as path from 'path';
 import { Updater } from 'tuf-js';

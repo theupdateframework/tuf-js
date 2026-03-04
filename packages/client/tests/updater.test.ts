@@ -22,7 +22,6 @@ describe('Updater', () => {
     targetBaseUrl: `${baseURL}/targets`,
     config: {
       fetchRetry: 0,
-      fetchTimeout: 1000,
     },
   };
 
