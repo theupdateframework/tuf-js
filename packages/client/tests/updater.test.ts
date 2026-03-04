@@ -6,7 +6,6 @@ import os from 'os';
 import path from 'path';
 import { Updater, UpdaterOptions } from '../src/updater';
 
-nock.disableNetConnect
 describe('Updater', () => {
   const baseURL = 'http://localhost:8080';
   const tufCacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tufjs-'));

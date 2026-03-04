@@ -33,8 +33,5 @@
   ],
   "engines": {
     "node": "^20.17.0 || >=22.9.0"
-  },
-  "dependencies": {
-    "@types/retry": "^0.12.5"
   }
 }

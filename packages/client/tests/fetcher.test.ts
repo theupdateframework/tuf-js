@@ -3,12 +3,8 @@ import { DownloadHTTPError, DownloadLengthMismatchError } from '../src/error';
 import { DefaultFetcher } from '../src/fetcher';
 
 describe('Fetcher Test', () => {
-  const baseURL = 'https://localhost:8080';
+  const baseURL = 'http://localhost:8080';
   const response = 'THIS IS THE TEST RESPONSE';
-  
-  afterEach(() => {
-    nock.cleanAll();
-  })
 
   describe('fetch without reaching the max limit', () => {
     beforeAll(() => {
