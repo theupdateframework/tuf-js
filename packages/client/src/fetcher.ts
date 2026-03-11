@@ -106,7 +106,6 @@ export class DefaultFetcher extends BaseFetcher {
 
   public override async fetch(url: string): Promise<ReadableStream<Uint8Array<ArrayBuffer>>> {
     log('GET %s', url);
-    try {
     const response = await fetch(url, {
       headers: {
         [USER_AGENT_HEADER]: this.userAgent || '',
@@ -120,12 +119,9 @@ export class DefaultFetcher extends BaseFetcher {
 
     return response.body;
   
-  } catch (err) {
-    log('Failed to fetch %o',  err);
-    throw err;
   }
 }
-}
+
 
 const writeBufferToStream = async (
   stream: fs.WriteStream,

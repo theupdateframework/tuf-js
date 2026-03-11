@@ -35,13 +35,12 @@ describe('Fetcher Test', () => {
 
   describe('fetch with reaching timeout limit', () => {
     beforeAll(() => {
-      nock(baseURL).get('/').reply(200, response);
+      nock(baseURL).get('/').delay(1000).reply(200, response);
     });
 
-    // TODO: Fix this test case, timeouts are confusing nock.
-    xit('Reach the timeout limit', async () => {
+    it('Reach the timeout limit', async () => {
       const fetcher = new DefaultFetcher({ timeout: 1 });
-      await expect(fetcher.downloadBytes(baseURL, 10000000000)).rejects.toThrow(
+      await expect(fetcher.downloadBytes(baseURL, Number.MAX_SAFE_INTEGER)).rejects.toThrow(
         'The operation was aborted due to timeout'
       );
     });
