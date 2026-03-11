@@ -40,9 +40,9 @@ describe('Fetcher Test', () => {
 
     it('Reach the timeout limit', async () => {
       const fetcher = new DefaultFetcher({ timeout: 1 });
-      await expect(fetcher.downloadBytes(baseURL, Number.MAX_SAFE_INTEGER)).rejects.toThrow(
-        'The operation was aborted due to timeout'
-      );
+      await expect(
+        fetcher.downloadBytes(baseURL, Number.MAX_SAFE_INTEGER)
+      ).rejects.toThrow('The operation was aborted due to timeout');
     });
   });
 
@@ -50,7 +50,7 @@ describe('Fetcher Test', () => {
     beforeAll(() => {
       nock(baseURL).get('/').reply(404, 'error');
     });
-    
+
     it('fetch with bad status code', async () => {
       const fetcher = new DefaultFetcher();
       await expect(fetcher.fetch(baseURL)).rejects.toThrow(DownloadHTTPError);
