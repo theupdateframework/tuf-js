@@ -2,7 +2,10 @@ import crypto from 'crypto';
 export type { KeyObject } from 'crypto';
 
 // Returns an ECDSA key pair
-export function generateKeyPair(): crypto.KeyPairKeyObjectResult {
+export function generateKeyPair(): {
+  publicKey: crypto.KeyObject;
+  privateKey: crypto.KeyObject;
+} {
   return crypto.generateKeyPairSync('ec', { namedCurve: 'P-256' });
 }
 
