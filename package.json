@@ -19,7 +19,7 @@
     "@changesets/cli": "^2.30.0",
     "@tsconfig/node20": "^20.1.9",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.10.1",
+    "@types/node": "^25.5.0",
     "eslint": "^9.39.2",
     "jest": "^30.3.0",
     "nock": "^14.0.11",
