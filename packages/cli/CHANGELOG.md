@@ -1,5 +1,16 @@
 # @tufjs/cli
 
+## 0.5.0
+
+### Minor Changes
+
+- f0dddf1: Replace make-fetch-happen with native fetch
+
+### Patch Changes
+
+- Updated dependencies [f0dddf1]
+  - tuf-js@5.0.0
+
 ## 0.4.1
 
 ### Patch Changes
