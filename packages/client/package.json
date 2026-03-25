@@ -34,7 +34,8 @@
   },
   "dependencies": {
     "@tufjs/models": "4.1.0",
-    "debug": "^4.4.3"
+    "debug": "^4.4.3",
+    "@gar/promise-retry": "^1.0.3"
   },
   "engines": {
     "node": "^20.17.0 || >=22.9.0"

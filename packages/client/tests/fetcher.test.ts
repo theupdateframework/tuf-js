@@ -49,11 +49,69 @@ describe('Fetcher Test', () => {
   describe('Request Fetcher Fetch Test', () => {
     beforeAll(() => {
       nock(baseURL).get('/').reply(404, 'error');
+      nock(baseURL).get('/internal-error').reply(500, 'error');
+      nock(baseURL)
+        .get('/suceed-after-retry')
+        .reply(500, 'error')
+        .get('/suceed-after-retry')
+        .reply(200, response);
     });
 
     it('fetch with bad status code', async () => {
       const fetcher = new DefaultFetcher();
       await expect(fetcher.fetch(baseURL)).rejects.toThrow(DownloadHTTPError);
+    });
+
+    it('fetch with 500 status code', async () => {
+      const fetcher = new DefaultFetcher();
+
+      await expect(
+        fetcher.fetch(`${baseURL}/internal-error`)
+      ).rejects.toMatchObject({
+        statusCode: 500,
+      });
+    });
+
+    it('retries on 500 when retry is configured', async () => {
+      let attempts = 0;
+      nock(baseURL)
+        .get('/retry-500')
+        .times(3)
+        .reply(() => {
+          attempts += 1;
+          return [500, 'error'];
+        });
+
+      const fetcher = new DefaultFetcher({
+        retry: {
+          retries: 2,
+          minTimeout: 1,
+          maxTimeout: 1,
+          randomize: false,
+        },
+      });
+
+      await expect(fetcher.fetch(`${baseURL}/retry-500`)).rejects.toMatchObject(
+        {
+          statusCode: 500,
+        }
+      );
+      expect(attempts).toBe(3);
+    });
+
+    it('succeeds after retrying on 500', async () => {
+      const fetcher = new DefaultFetcher({
+        retry: {
+          retries: 1,
+          minTimeout: 1,
+          maxTimeout: 1,
+          randomize: false,
+        },
+      });
+
+      const result = await fetcher.fetch(`${baseURL}/suceed-after-retry`);
+      const text = await new Response(result).text();
+      expect(text).toBe(response);
     });
   });
 });
