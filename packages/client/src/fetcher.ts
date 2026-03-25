@@ -4,8 +4,9 @@ import util from 'util';
 
 import { DownloadHTTPError, DownloadLengthMismatchError } from './error';
 import { withTempFile } from './utils/tmpfile';
+import { promiseRetry } from '@gar/promise-retry';
 
-import type { TimeoutsOptions } from 'retry';
+import type { OperationOptions, TimeoutsOptions } from 'retry';
 
 const log = debug('tuf:fetch');
 
@@ -95,31 +96,66 @@ interface FetcherOptions {
 export class DefaultFetcher extends BaseFetcher {
   private userAgent?: string;
   private timeout?: number;
-  private retry?: Retry;
+  private retry?: OperationOptions;
 
   constructor(options: FetcherOptions = {}) {
     super();
     this.userAgent = options.userAgent;
     this.timeout = options.timeout;
-    this.retry = options.retry;
+    // Map retry to OperationOptions
+    if (options.retry === true) {
+      this.retry = { forever: true };
+    } else if (options.retry === false || options.retry === undefined) {
+      this.retry = undefined;
+    } else if (typeof options.retry === 'number') {
+      this.retry = { retries: options.retry };
+    } else {
+      this.retry = options.retry;
+    }
   }
 
   public override async fetch(
     url: string
   ): Promise<ReadableStream<Uint8Array<ArrayBuffer>>> {
-    log('GET %s', url);
-    const response = await fetch(url, {
-      headers: {
-        [USER_AGENT_HEADER]: this.userAgent || '',
+    const shouldRetry = this.retry !== undefined;
+
+    return promiseRetry(
+      async (retry: (err: Error) => never, number: number) => {
+        log('GET %s (attempt %d)', url, number);
+
+        let response: Response;
+        try {
+          response = await fetch(url, {
+            headers: {
+              [USER_AGENT_HEADER]: this.userAgent || '',
+            },
+            signal: this.timeout
+              ? AbortSignal.timeout(this.timeout)
+              : undefined,
+          });
+        } catch (error) {
+          const err = error instanceof Error ? error : new Error(String(error));
+          if (shouldRetry) {
+            return retry(err);
+          }
+          throw err;
+        }
+
+        if (!response.ok || !response.body) {
+          const err = new DownloadHTTPError(
+            'Failed to download',
+            response.status
+          );
+          if (shouldRetry && response.status >= 500 && response.status < 600) {
+            return retry(err);
+          }
+          throw err;
+        }
+
+        return response.body;
       },
-      signal: this.timeout ? AbortSignal.timeout(this.timeout) : undefined,
-    });
-
-    if (!response.ok || !response?.body) {
-      throw new DownloadHTTPError('Failed to download', response.status);
-    }
-
-    return response.body;
+      this.retry
+    );
   }
 }
 
