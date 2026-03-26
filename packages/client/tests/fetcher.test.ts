@@ -47,23 +47,15 @@ describe('Fetcher Test', () => {
   });
 
   describe('Request Fetcher Fetch Test', () => {
-    beforeAll(() => {
-      nock(baseURL).get('/').reply(404, 'error');
-      nock(baseURL).get('/internal-error').reply(500, 'error');
-      nock(baseURL)
-        .get('/suceed-after-retry')
-        .reply(500, 'error')
-        .get('/suceed-after-retry')
-        .reply(200, response);
-    });
-
     it('fetch with bad status code', async () => {
       const fetcher = new DefaultFetcher();
+      nock(baseURL).get('/').reply(404, 'error');
       await expect(fetcher.fetch(baseURL)).rejects.toThrow(DownloadHTTPError);
     });
 
     it('fetch with 500 status code', async () => {
       const fetcher = new DefaultFetcher();
+      nock(baseURL).get('/internal-error').reply(500, 'error');
 
       await expect(
         fetcher.fetch(`${baseURL}/internal-error`)
@@ -96,6 +88,11 @@ describe('Fetcher Test', () => {
           statusCode: 500,
         }
       );
+      nock(baseURL)
+        .get('/suceed-after-retry')
+        .reply(500, 'error')
+        .get('/suceed-after-retry')
+        .reply(200, response);
       expect(attempts).toBe(3);
     });
 
