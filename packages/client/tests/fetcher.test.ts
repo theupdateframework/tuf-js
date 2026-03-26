@@ -88,11 +88,6 @@ describe('Fetcher Test', () => {
           statusCode: 500,
         }
       );
-      nock(baseURL)
-        .get('/suceed-after-retry')
-        .reply(500, 'error')
-        .get('/suceed-after-retry')
-        .reply(200, response);
       expect(attempts).toBe(3);
     });
 
@@ -105,6 +100,11 @@ describe('Fetcher Test', () => {
           randomize: false,
         },
       });
+      nock(baseURL)
+        .get('/suceed-after-retry')
+        .reply(500, 'error')
+        .get('/suceed-after-retry')
+        .reply(200, response);
 
       const result = await fetcher.fetch(`${baseURL}/suceed-after-retry`);
       const text = await new Response(result).text();
