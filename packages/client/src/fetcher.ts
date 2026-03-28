@@ -108,6 +108,9 @@ export class DefaultFetcher extends BaseFetcher {
     } else if (options.retry === false || options.retry === undefined) {
       this.retry = undefined;
     } else if (typeof options.retry === 'number') {
+      if (options.retry < 0) {
+        throw new Error('Retry count must be non-negative number');
+      }
       this.retry = { retries: options.retry };
     } else {
       this.retry = options.retry;
