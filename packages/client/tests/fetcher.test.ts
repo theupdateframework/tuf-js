@@ -38,6 +38,10 @@ describe('Fetcher Test', () => {
       nock(baseURL).get('/').delay(1000).reply(200, response);
     });
 
+    afterAll(() => {
+      nock.abortPendingRequests();
+    });
+
     it('Reach the timeout limit', async () => {
       const fetcher = new DefaultFetcher({ timeout: 1 });
       await expect(
