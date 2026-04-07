@@ -274,7 +274,7 @@ export class Updater {
       this.trustedSet.updateSnapshot(data, true);
     } catch (error) {
       if (!this.trustedSet.timestamp) {
-        throw new ReferenceError('No timestamp metadata');
+        throw new ReferenceError('No timestamp metadata', { cause: error });
       }
       const snapshotMeta = this.trustedSet.timestamp.signed.snapshotMeta;
 
@@ -325,7 +325,7 @@ export class Updater {
     } catch (error) {
       // Local 'role' does not exist or is invalid: update from remote
       if (!this.trustedSet.snapshot) {
-        throw new ReferenceError('No snapshot metadata');
+        throw new ReferenceError('No snapshot metadata', { cause: error });
       }
 
       const metaInfo = this.trustedSet.snapshot.signed.meta[`${role}.json`];
