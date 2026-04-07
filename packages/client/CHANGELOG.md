@@ -1,5 +1,17 @@
 # tuf-js
 
+## 5.0.0
+
+### Major Changes
+
+- f0dddf1: Replace make-fetch-happen with native fetch
+
+### Patch Changes
+
+- 17aedea: Implement retry logic on fetch
+- Updated dependencies [99f735f]
+  - @tufjs/models@4.1.1
+
 ## 4.1.0
 
 ### Minor Changes
