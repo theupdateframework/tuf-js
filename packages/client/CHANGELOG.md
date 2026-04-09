@@ -1,5 +1,11 @@
 # tuf-js
 
+## 5.0.1
+
+### Patch Changes
+
+- 21627a2: Include original error when throwing new error
+
 ## 5.0.0
 
 ### Major Changes

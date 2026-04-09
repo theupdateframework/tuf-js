@@ -1,6 +1,6 @@
 {
   "name": "tuf-js",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "JavaScript implementation of The Update Framework (TUF)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
