@@ -33,11 +33,11 @@
     "@types/retry": "^0.12.5"
   },
   "dependencies": {
+    "@gar/promise-retry": "^1.0.3",
     "@tufjs/models": "4.1.1",
-    "debug": "^4.4.3",
-    "@gar/promise-retry": "^1.0.3"
+    "debug": "^4.4.3"
   },
   "engines": {
-    "node": "^20.17.0 || >=22.9.0"
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   }
 }
