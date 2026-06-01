@@ -1,5 +1,16 @@
 # @tufjs/cli
 
+## 0.6.0
+
+### Minor Changes
+
+- 0724300: Drop support for Node 20
+
+### Patch Changes
+
+- Updated dependencies [0724300]
+  - tuf-js@6.0.0
+
 ## 0.5.1
 
 ### Patch Changes

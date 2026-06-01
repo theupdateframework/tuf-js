@@ -1,5 +1,11 @@
 # @tufjs/models
 
+## 5.0.0
+
+### Major Changes
+
+- 0724300: Drop support for Node 20
+
 ## 4.1.1
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @tufjs/repo-mock
 
+## 5.0.0
+
+### Major Changes
+
+- 0724300: Drop support for Node 20
+
+### Patch Changes
+
+- Updated dependencies [0724300]
+  - @tufjs/models@5.0.0
+
 ## 4.0.2
 
 ### Patch Changes
