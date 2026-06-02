@@ -2,7 +2,8 @@
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
     "composite": false,
-    "rootDir": "."
+    "rootDir": ".",
+    "types": ["node", "jest"]
   },
   "include": ["src", "tests"],
   "references": [
