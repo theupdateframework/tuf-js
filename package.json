@@ -21,13 +21,13 @@
     "@tsconfig/node22": "^22.0.5",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.9.1",
-    "eslint": "^10.4.0",
+    "eslint": "^10.4.1",
     "jest": "^30.4.2",
     "nock": "^14.0.11",
     "prettier": "^3.8.3",
     "ts-jest": "^29.4.11",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.59.4"
+    "typescript-eslint": "^8.60.1"
   },
   "workspaces": [
     "./packages/*"
