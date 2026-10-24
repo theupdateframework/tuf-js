@@ -98,6 +98,8 @@ export abstract class Signed {
       throw new ValueError('expires is not defined');
     } else if (!(typeof expires === 'string')) {
       throw new TypeError('expires must be a string');
+    } else if (Number.isNaN(new Date(expires).getTime())) {
+      throw new ValueError('Failed to parse expires');
     }
 
     if (!guard.isDefined(version)) {
