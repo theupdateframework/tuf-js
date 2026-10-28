@@ -315,8 +315,14 @@ export class Updater {
     role: string,
     parentRole: string
   ): Promise<Metadata<Targets> | undefined> {
-    if (this.trustedSet.getRole(role)) {
-      return this.trustedSet.getRole(role);
+    const cachedRole = this.trustedSet.getRole(role);
+    if (cachedRole) {
+      const delegator = this.trustedSet.getRole(parentRole);
+      if (!delegator) {
+        throw new RuntimeError(`No trusted ${parentRole} metadata`);
+      }
+      delegator.verifyDelegate(role, cachedRole);
+      return cachedRole;
     }
 
     try {
