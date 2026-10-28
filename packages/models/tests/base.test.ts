@@ -185,6 +185,14 @@ describe('Signed', () => {
       });
     });
 
+    describe('when expires cannot be parsed as a date', () => {
+      it('throws an error', () => {
+        expect(() => {
+          DummySigned.commonFieldsFromJSON({ ...json, expires: 'not a date' });
+        }).toThrow(ValueError);
+      });
+    });
+
     describe('when the expires is not included', () => {
       it('throws an error', () => {
         expect(() => {

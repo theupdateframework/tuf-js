@@ -1,3 +1,4 @@
+import { ValueError } from '../src/error';
 import { MetaFile } from '../src/file';
 import { Timestamp } from '../src/timestamp';
 
@@ -148,6 +149,14 @@ describe('Timestamp', () => {
       it('throws an error', () => {
         expect(() => Timestamp.fromJSON({ ...json, meta: {} })).toThrow(
           TypeError
+        );
+      });
+    });
+
+    describe('when expires cannot be parsed as a date', () => {
+      it('throws an error', () => {
+        expect(() => Timestamp.fromJSON({ ...json, expires: '' })).toThrow(
+          ValueError
         );
       });
     });
