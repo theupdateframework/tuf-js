@@ -10,9 +10,10 @@ import {
 } from '@tufjs/models';
 import crypto from 'crypto';
 import fs from 'fs';
-import nock from 'nock';
 import os from 'os';
 import path from 'path';
+import { DownloadHTTPError } from '../src/error';
+import { Fetcher } from '../src/fetcher';
 import { Updater } from '../src/updater';
 
 describe('cached delegations', () => {
@@ -38,7 +39,6 @@ describe('cached delegations', () => {
   });
 
   afterEach(() => {
-    nock.cleanAll();
     fs.rmSync(metadataDir, { recursive: true });
   });
 
@@ -57,7 +57,7 @@ describe('cached delegations', () => {
     return metadata;
   }
 
-  function setupRepo(sharedKey: boolean): Updater {
+  function setupRepo(sharedKey: boolean) {
     const expires = new Date(Date.now() + 86400000).toISOString();
     const common = { version: 1, specVersion: '1.0.0', expires };
     const root = new Root({ ...common, consistentSnapshot: false });
@@ -142,26 +142,46 @@ describe('cached delegations', () => {
       new Timestamp({ ...common, snapshotMeta: new MetaFile({ version: 1 }) })
     );
 
-    const server = nock(baseURL)
-      .get('/metadata/2.root.json')
-      .reply(404)
-      .get('/metadata/timestamp.json')
-      .reply(200, timestamp.toJSON())
-      .get('/metadata/snapshot.json')
-      .reply(200, snapshot.toJSON());
-    Object.entries(roles).forEach(([role, metadata]) =>
-      server.get(`/metadata/${role}.json`).reply(200, metadata.toJSON())
+    const responses = new Map(
+      Object.entries({ timestamp, snapshot, ...roles }).map(
+        ([role, metadata]) => [
+          `${baseURL}/metadata/${role}.json`,
+          Buffer.from(JSON.stringify(metadata.toJSON())),
+        ]
+      )
     );
-
-    return new Updater({
-      metadataDir,
-      metadataBaseUrl: `${baseURL}/metadata`,
-      config: { fetchRetry: 0 },
+    const downloadBytes = jest.fn<
+      ReturnType<Fetcher['downloadBytes']>,
+      Parameters<Fetcher['downloadBytes']>
+    >((url) => {
+      if (url === `${baseURL}/metadata/2.root.json`) {
+        return Promise.reject(new DownloadHTTPError('Root not found', 404));
+      }
+      const response = responses.get(url);
+      if (!response) {
+        return Promise.reject(new Error(`Unexpected metadata request: ${url}`));
+      }
+      responses.delete(url);
+      return Promise.resolve(response);
     });
+    const fetcher: Fetcher = {
+      downloadBytes,
+      downloadFile: () =>
+        Promise.reject(new Error('Unexpected artifact download')),
+    };
+
+    return {
+      updater: new Updater({
+        metadataDir,
+        metadataBaseUrl: `${baseURL}/metadata`,
+        fetcher,
+      }),
+      downloadBytes,
+    };
   }
 
   it('rejects cached metadata not signed by the current delegator', async () => {
-    const updater = setupRepo(false);
+    const { updater, downloadBytes } = setupRepo(false);
     await expect(
       updater.getTargetInfo('team-a/file.txt')
     ).resolves.toHaveProperty('path', 'team-a/file.txt');
@@ -171,17 +191,17 @@ describe('cached delegations', () => {
     await expect(
       updater.getTargetInfo('team-a/file.txt')
     ).resolves.toHaveProperty('path', 'team-a/file.txt');
-    expect(nock.isDone()).toBe(true);
+    expect(downloadBytes).toHaveBeenCalledTimes(7);
   });
 
   it('reuses cached metadata authorized by both delegators without refetching', async () => {
-    const updater = setupRepo(true);
+    const { updater, downloadBytes } = setupRepo(true);
     for (const target of ['team-a/file.txt', 'team-b/file.txt']) {
       await expect(updater.getTargetInfo(target)).resolves.toHaveProperty(
         'path',
         target
       );
     }
-    expect(nock.isDone()).toBe(true);
+    expect(downloadBytes).toHaveBeenCalledTimes(7);
   });
 });
