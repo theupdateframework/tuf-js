@@ -1,5 +1,7 @@
+import { canonicalize } from '@tufjs/canonical-json';
+import crypto from 'crypto';
 import { Signed, SignedOptions } from '../src/base';
-import { UnsignedMetadataError } from '../src/error';
+import { CryptoError, UnsignedMetadataError } from '../src/error';
 import { Key } from '../src/key';
 import { Signature } from '../src/signature';
 
@@ -51,6 +53,128 @@ describe('Key', () => {
       keyType: 'ecdsa-sha2-nistp256',
       scheme: 'ecdsa-sha2-nistp256',
       keyVal: { public: publicKey },
+    });
+
+    describe('signature schemes', () => {
+      const data = { b: 'bar', a: 'foo' };
+      const payload = Buffer.from(canonicalize(data));
+      const keyID = 'scheme-test';
+
+      class DummySigned extends Signed {
+        toJSON() {
+          return data;
+        }
+      }
+
+      const metadata = (sig: Buffer) => ({
+        signed: new DummySigned({} as SignedOptions),
+        signatures: {
+          [keyID]: new Signature({ keyID, sig: sig.toString('hex') }),
+        },
+      });
+
+      describe('RSA-PSS', () => {
+        const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+          modulusLength: 2048,
+        });
+
+        it.each(['sha256', 'sha384', 'sha512'])(
+          'verifies %s with maximum and digest-length salts',
+          (hash) => {
+            const key = new Key({
+              keyID,
+              keyType: 'rsa',
+              scheme: `rsassa-pss-${hash}`,
+              keyVal: {
+                public: publicKey
+                  .export({ type: 'spki', format: 'pem' })
+                  .toString(),
+              },
+            });
+
+            for (const saltLength of [
+              crypto.constants.RSA_PSS_SALTLEN_MAX_SIGN,
+              crypto.constants.RSA_PSS_SALTLEN_DIGEST,
+            ]) {
+              const signingKey = {
+                key: privateKey,
+                padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+                saltLength,
+              };
+              const sig = crypto.sign(hash, payload, signingKey);
+              expect(() => key.verifySignature(metadata(sig))).not.toThrow();
+
+              const wrongHash = hash === 'sha256' ? 'sha384' : 'sha256';
+              const badSig = crypto.sign(wrongHash, payload, signingKey);
+              expect(() => key.verifySignature(metadata(badSig))).toThrow(
+                UnsignedMetadataError
+              );
+            }
+          }
+        );
+      });
+
+      describe.each([
+        ['ecdsa-sha2-nistp256', 'prime256v1', 'sha256', 65],
+        ['ecdsa-sha2-nistp384', 'secp384r1', 'sha384', 97],
+      ] as const)('ECDSA %s', (scheme, namedCurve, hash, pointLength) => {
+        const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
+          namedCurve,
+        });
+        const pem = publicKey
+          .export({ type: 'spki', format: 'pem' })
+          .toString();
+        const hex = publicKey
+          .export({ type: 'spki', format: 'der' })
+          .subarray(-pointLength)
+          .toString('hex');
+
+        it.each(['ecdsa', scheme])(
+          'verifies PEM and hex with keytype %s',
+          (keyType) => {
+            for (const publicValue of [pem, hex]) {
+              const key = new Key({
+                keyID,
+                keyType,
+                scheme,
+                keyVal: { public: publicValue },
+              });
+              const sig = crypto.sign(hash, payload, privateKey);
+              expect(() => key.verifySignature(metadata(sig))).not.toThrow();
+
+              const wrongHash = hash === 'sha256' ? 'sha384' : 'sha256';
+              const badSig = crypto.sign(wrongHash, payload, privateKey);
+              expect(() => key.verifySignature(metadata(badSig))).toThrow(
+                UnsignedMetadataError
+              );
+            }
+          }
+        );
+
+        it('rejects a PEM key whose curve does not match the scheme', () => {
+          const key = new Key({
+            keyID,
+            keyType: 'ecdsa',
+            scheme:
+              hash === 'sha256' ? 'ecdsa-sha2-nistp384' : 'ecdsa-sha2-nistp256',
+            keyVal: { public: pem },
+          });
+          const sig = crypto.sign(hash, payload, privateKey);
+          expect(() => key.verifySignature(metadata(sig))).toThrow(CryptoError);
+        });
+
+        it('rejects a legacy key type that does not match the scheme', () => {
+          const key = new Key({
+            keyID,
+            keyType:
+              hash === 'sha256' ? 'ecdsa-sha2-nistp384' : 'ecdsa-sha2-nistp256',
+            scheme,
+            keyVal: { public: pem },
+          });
+          const sig = crypto.sign(hash, payload, privateKey);
+          expect(() => key.verifySignature(metadata(sig))).toThrow(CryptoError);
+        });
+      });
     });
 
     describe('when no signature is found for the key', () => {

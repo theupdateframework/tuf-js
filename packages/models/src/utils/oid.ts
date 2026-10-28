@@ -19,10 +19,10 @@ export function encodeOIDString(oid: string): Buffer {
 function encodeVariableLengthInteger(value: number): number[] {
   const bytes: number[] = [];
   let mask = 0x00;
-  while (value > 0) {
+  do {
     bytes.unshift((value & 0x7f) | mask);
     value >>= 7;
     mask = 0x80;
-  }
+  } while (value > 0);
   return bytes;
 }
