@@ -1,5 +1,13 @@
 # @tufjs/models
 
+## 5.0.1
+
+### Patch Changes
+
+- 24ff373: Reject metadata whose `expires` value cannot be parsed as a date
+- c4f8983: Update minimatch from 10.2.5 to 10.2.6.
+- 3017c27: Support RSA-PSS signatures with SHA-384 and SHA-512. Fix ECDSA P-384 verification to use SHA-384 instead of SHA-256, support hex-encoded P-384 keys, and reject ECDSA keys whose curve does not match their scheme.
+
 ## 5.0.0
 
 ### Major Changes

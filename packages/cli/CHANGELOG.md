@@ -1,5 +1,12 @@
 # @tufjs/cli
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies [1eba9d5]
+  - tuf-js@6.0.1
+
 ## 0.6.0
 
 ### Minor Changes
