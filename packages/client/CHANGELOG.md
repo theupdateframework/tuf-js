@@ -1,5 +1,15 @@
 # tuf-js
 
+## 6.0.1
+
+### Patch Changes
+
+- 1eba9d5: Verify cached delegated metadata against the current delegator before reusing it for another target lookup.
+- Updated dependencies [24ff373]
+- Updated dependencies [c4f8983]
+- Updated dependencies [3017c27]
+  - @tufjs/models@5.0.1
+
 ## 6.0.0
 
 ### Major Changes
