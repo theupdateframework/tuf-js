@@ -61,7 +61,10 @@ yargs(hideBin(process.argv))
         throw new Error(`Target ${targetName} not found`);
       }
 
-      await updater.downloadTarget(targetInfo)
+      const cachedTarget = await updater.findCachedTarget(targetInfo)
+      if (!cachedTarget) {
+        await updater.downloadTarget(targetInfo)
+      }
     }
   })
   .parse()
