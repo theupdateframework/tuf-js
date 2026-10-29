@@ -38,7 +38,7 @@ yargs(hideBin(process.argv))
   .command('download', 'retrieve target', {
     'metadata-url': { type: 'string' },
     'metadata-dir': { type: 'string' },
-    'target-name': { type: 'string' },
+    'target-name': { type: 'string', array: true, demandOption: true },
     'target-base-url': { type: 'string' },
     'target-dir': { type: 'string' }
   }, async (argv) => {
@@ -55,11 +55,13 @@ yargs(hideBin(process.argv))
       targetDir: argv.targetDir
     })
 
-    const targetInfo = await updater.getTargetInfo(argv.targetName)
-    if (!targetInfo) {
-      throw new Error(`Target ${argv.targetPath} not found`);
-    }
+    for (const targetName of argv.targetName) {
+      const targetInfo = await updater.getTargetInfo(targetName)
+      if (!targetInfo) {
+        throw new Error(`Target ${targetName} not found`);
+      }
 
-    return updater.downloadTarget(targetInfo)
+      await updater.downloadTarget(targetInfo)
+    }
   })
   .parse()
