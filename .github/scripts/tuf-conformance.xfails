@@ -1,4 +1,2 @@
-# Optional key types and schemes not supported by tuf-js.
-test_rsa_keytype_and_scheme
-test_ecdsa_keytype_and_scheme
+# ML-DSA key schemes are not supported by tuf-js.
 test_mldsa_keytype_and_scheme

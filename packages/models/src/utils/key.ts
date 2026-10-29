@@ -9,6 +9,7 @@ const NULL_BYTE = 0x00;
 const OID_EDDSA = '1.3.101.112';
 const OID_EC_PUBLIC_KEY = '1.2.840.10045.2.1';
 const OID_EC_CURVE_P256V1 = '1.2.840.10045.3.1.7';
+const OID_EC_CURVE_P384 = '1.3.132.0.34';
 
 const PEM_HEADER = '-----BEGIN PUBLIC KEY-----';
 
@@ -18,7 +19,11 @@ interface KeyInfo {
   keyVal: string;
 }
 
-export function getPublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
+export interface PublicKey extends VerifyKeyObjectInput {
+  hashAlgorithm?: string;
+}
+
+export function getPublicKey(keyInfo: KeyInfo): PublicKey {
   switch (keyInfo.keyType) {
     case 'rsa':
       return getRSAPublicKey(keyInfo);
@@ -35,7 +40,7 @@ export function getPublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
   }
 }
 
-function getRSAPublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
+function getRSAPublicKey(keyInfo: KeyInfo): PublicKey {
   // Only support PEM-encoded RSA keys
   if (!keyInfo.keyVal.startsWith(PEM_HEADER)) {
     throw new CryptoError('Invalid key format');
@@ -45,8 +50,11 @@ function getRSAPublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
 
   switch (keyInfo.scheme) {
     case 'rsassa-pss-sha256':
+    case 'rsassa-pss-sha384':
+    case 'rsassa-pss-sha512':
       return {
         key: key,
+        hashAlgorithm: keyInfo.scheme.slice('rsassa-pss-'.length),
         padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
       };
     default:
@@ -77,7 +85,31 @@ function getED25519PublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
   return { key };
 }
 
-function getECDCSAPublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
+function getECDCSAPublicKey(keyInfo: KeyInfo): PublicKey {
+  let namedCurve: string;
+  let curveOID: string;
+  let hashAlgorithm: string;
+  switch (keyInfo.scheme) {
+    case 'ecdsa-sha2-nistp256':
+      namedCurve = 'prime256v1';
+      curveOID = OID_EC_CURVE_P256V1;
+      hashAlgorithm = 'sha256';
+      break;
+    case 'ecdsa-sha2-nistp384':
+      namedCurve = 'secp384r1';
+      curveOID = OID_EC_CURVE_P384;
+      hashAlgorithm = 'sha384';
+      break;
+    default:
+      throw new UnsupportedAlgorithmError(
+        `Unsupported ECDSA scheme: ${keyInfo.scheme}`
+      );
+  }
+
+  if (keyInfo.keyType !== 'ecdsa' && keyInfo.keyType !== keyInfo.scheme) {
+    throw new CryptoError('ECDSA key type does not match scheme');
+  }
+
   let key: KeyObject;
   // If key is already PEM-encoded we can just parse it
   if (keyInfo.keyVal.startsWith(PEM_HEADER)) {
@@ -89,13 +121,20 @@ function getECDCSAPublicKey(keyInfo: KeyInfo): VerifyKeyObjectInput {
     }
 
     key = crypto.createPublicKey({
-      key: ecdsa.hexToDER(keyInfo.keyVal),
+      key: ecdsa.hexToDER(keyInfo.keyVal, curveOID),
       format: 'der',
       type: 'spki',
     });
   }
 
-  return { key };
+  if (
+    key.asymmetricKeyType !== 'ec' ||
+    key.asymmetricKeyDetails?.namedCurve !== namedCurve
+  ) {
+    throw new CryptoError('ECDSA key curve does not match scheme');
+  }
+
+  return { key, hashAlgorithm };
 }
 
 const ed25519 = {
@@ -132,7 +171,7 @@ const ed25519 = {
 };
 
 const ecdsa = {
-  hexToDER: (hex: string): Buffer => {
+  hexToDER: (hex: string, curveOID: string): Buffer => {
     const key = Buffer.from(hex, 'hex');
     const bitString = Buffer.concat([
       Buffer.from([ANS1_TAG_BIT_STRING]),
@@ -143,7 +182,7 @@ const ecdsa = {
 
     const oids = Buffer.concat([
       encodeOIDString(OID_EC_PUBLIC_KEY),
-      encodeOIDString(OID_EC_CURVE_P256V1),
+      encodeOIDString(curveOID),
     ]);
 
     const oidSequence = Buffer.concat([

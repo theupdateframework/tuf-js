@@ -26,6 +26,13 @@ describe('getPublicKey', () => {
     const scheme = 'ecdsa-sha2-nistp256';
     const bit =
       '04cbc5cab2684160323c25cd06c3307178a6b1d1c9b949328453ae473c5ba7527e35b13f298b41633382241f3fd8526c262d43b45adee5c618fa0642c82b8a9803';
+
+    it('rejects unsupported schemes', () => {
+      expect(() =>
+        getPublicKey({ keyType: 'ecdsa', scheme: 'unknown', keyVal: bit })
+      ).toThrow(UnsupportedAlgorithmError);
+    });
+
     describe('fromHex', () => {
       it('encodes a public key', () => {
         const publicKey = getPublicKey({ keyType: type, scheme, keyVal: bit });
