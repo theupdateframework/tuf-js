@@ -149,6 +149,9 @@ function rolesFromJSON(data: JSONValue): DelegatedRoleMap | undefined {
 
     roleMap = data.reduce<DelegatedRoleMap>((acc, role) => {
       const delegatedRole = DelegatedRole.fromJSON(role);
+      if (Object.hasOwn(acc, delegatedRole.name)) {
+        throw new ValueError(`duplicate delegated role: ${delegatedRole.name}`);
+      }
       return {
         ...acc,
         [delegatedRole.name]: delegatedRole,

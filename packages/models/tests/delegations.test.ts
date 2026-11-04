@@ -352,6 +352,20 @@ describe('Delegations', () => {
       });
     });
 
+    describe('when the same role name appears twice', () => {
+      it('throws a ValueError', () => {
+        expect(() =>
+          Delegations.fromJSON({
+            ...json,
+            roles: [
+              { ...json.roles[0], paths: ['team-a/*'] },
+              { ...json.roles[0], paths: ['team-b/*'] },
+            ],
+          })
+        ).toThrow(ValueError);
+      });
+    });
+
     describe('when the JSON is valid', () => {
       describe('when no roles are supplied', () => {
         it('returns the expected Delegations object', () => {
