@@ -1,10 +1,13 @@
 import { clearMock, mockRepo } from '@tufjs/repo-mock';
 import assert from 'assert';
 import fs from 'fs';
+import nock from 'nock';
 import os from 'os';
 import path from 'path';
 
 import { Updater } from '../src/index';
+
+afterAll(() => nock.restore());
 
 describe('Updater', () => {
   const baseURL = 'http://localhost:8080';

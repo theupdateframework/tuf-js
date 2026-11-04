@@ -1,7 +1,10 @@
 import { Metadata, MetadataKind } from '@tufjs/models';
 import fs from 'fs';
 import http from 'http';
+import nock from 'nock';
 import tufmock, { clearMock, mockRepo } from '../src/index';
+
+afterAll(() => nock.restore());
 
 describe('mockRepo', () => {
   const baseURL = 'http://localhost:8000';
@@ -70,8 +73,13 @@ describe('mockRepo', () => {
     // No mock should be set-up for the 1.root.json file as this should never be
     // fetched in a normal TUF flow.
     await expect(fetch(`${baseURL}/metadata/1.root.json`)).rejects.toThrow(
-      /No match for request/
+      /Status code: 501/
     );
+    const unmatched = await globalThis.fetch(`${baseURL}/metadata/1.root.json`);
+    expect(unmatched.status).toBe(501);
+    await expect(unmatched.json()).resolves.toMatchObject({
+      code: 'ERR_NOCK_NO_MATCH',
+    });
   });
 
   it('mocks the targets endpoints', async () => {
