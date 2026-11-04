@@ -10,7 +10,7 @@ export function generateKeyPair(): {
 }
 
 // Returns a hex-encoded SHA256 digest
-export function digestSHA256(data: crypto.BinaryLike): string {
+export function digestSHA256(data: string | NodeJS.ArrayBufferView): string {
   return crypto.createHash('sha256').update(data).digest('hex');
 }
 

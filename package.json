@@ -20,7 +20,7 @@
     "@eslint/js": "^10.0.1",
     "@tsconfig/node22": "^22.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.9.1",
+    "@types/node": "^26.6.6",
     "eslint": "^10.13.0",
     "jest": "^30.5.2",
     "nock": "^14.0.11",

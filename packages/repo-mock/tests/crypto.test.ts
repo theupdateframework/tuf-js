@@ -7,6 +7,17 @@ describe('crypto', () => {
         '68e656b251e67e8358bef8483ab0d51c6619f3e7a1a9f0e75838d41ff368f728'
       );
     });
+
+    it('digests buffers and array buffer views', () => {
+      const buffer = Buffer.from('hello, world!');
+      const bytes = Uint8Array.from(buffer);
+      const expected =
+        '68e656b251e67e8358bef8483ab0d51c6619f3e7a1a9f0e75838d41ff368f728';
+
+      expect(digestSHA256(buffer)).toEqual(expected);
+      expect(digestSHA256(bytes)).toEqual(expected);
+      expect(digestSHA256(new DataView(bytes.buffer))).toEqual(expected);
+    });
   });
 
   describe('generateKeyPair', () => {
