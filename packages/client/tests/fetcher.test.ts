@@ -1,6 +1,13 @@
+import { once } from 'events';
+import http from 'http';
 import nock from 'nock';
 import { DownloadHTTPError, DownloadLengthMismatchError } from '../src/error';
 import { DefaultFetcher } from '../src/fetcher';
+
+afterAll(() => {
+  nock.cleanAll();
+  nock.restore();
+});
 
 describe('Fetcher Test', () => {
   const baseURL = 'http://localhost:8080';
@@ -34,18 +41,38 @@ describe('Fetcher Test', () => {
   });
 
   describe('fetch with reaching timeout limit', () => {
-    beforeAll(() => {
-      nock(baseURL).get('/').delay(1000).reply(200, response);
+    // Nock 15 can crash on abort, so leave a real request unanswered.
+    const server = http.createServer();
+    let serverURL: string;
+
+    beforeAll(async () => {
+      nock.restore();
+      server.listen(0, '127.0.0.1');
+      await once(server, 'listening');
+      const address = server.address();
+      if (!address || typeof address === 'string') {
+        throw new Error('Server did not bind to a TCP port');
+      }
+      serverURL = `http://127.0.0.1:${address.port}/`;
     });
 
-    afterAll(() => {
-      nock.abortPendingRequests();
+    afterAll(async () => {
+      try {
+        if (server.listening) {
+          await new Promise<void>((resolve, reject) => {
+            server.close((error) => (error ? reject(error) : resolve()));
+            server.closeAllConnections();
+          });
+        }
+      } finally {
+        nock.activate();
+      }
     });
 
     it('Reach the timeout limit', async () => {
-      const fetcher = new DefaultFetcher({ timeout: 1 });
+      const fetcher = new DefaultFetcher({ timeout: 100 });
       await expect(
-        fetcher.downloadBytes(baseURL, Number.MAX_SAFE_INTEGER)
+        fetcher.downloadBytes(serverURL, Number.MAX_SAFE_INTEGER)
       ).rejects.toThrow('The operation was aborted due to timeout');
     });
   });

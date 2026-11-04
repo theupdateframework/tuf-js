@@ -6,6 +6,8 @@ import os from 'os';
 import path from 'path';
 import { Updater, UpdaterOptions } from '../src/updater';
 
+afterAll(() => nock.restore());
+
 describe('Updater', () => {
   const baseURL = 'http://localhost:8080';
   const tufCacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tufjs-'));
@@ -81,11 +83,13 @@ describe('Updater', () => {
       beforeEach(() => {
         // Remove 404 response for 2.root.json
         const repoURL = new URL(baseURL);
-        nock.removeInterceptor({
+        // Nock supports hostname and port, but its type declarations omit them.
+        const interceptor = {
           hostname: repoURL.hostname,
           port: repoURL.port,
           path: '/metadata/2.root.json',
-        });
+        };
+        expect(nock.removeInterceptor(interceptor)).toBe(true);
 
         // Serve 2.root.json w/ invalid data
         nock(baseURL).get('/metadata/2.root.json').reply(200, {});
