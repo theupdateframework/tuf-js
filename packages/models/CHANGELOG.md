@@ -1,5 +1,11 @@
 # @tufjs/models
 
+## 5.0.2
+
+### Patch Changes
+
+- 6b416c6: Reject a delegations block that lists the same role name more than once instead of silently keeping only the last entry.
+
 ## 5.0.1
 
 ### Patch Changes

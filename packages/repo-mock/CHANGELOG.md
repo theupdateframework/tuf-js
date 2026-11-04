@@ -1,5 +1,13 @@
 # @tufjs/repo-mock
 
+## 5.0.2
+
+### Patch Changes
+
+- c55339d: Bump `nock` from 14.0.11 to 15.0.5. Unmatched requests to a mocked origin now return an HTTP 501 response instead of a request error.
+- Updated dependencies [6b416c6]
+  - @tufjs/models@5.0.2
+
 ## 5.0.1
 
 ### Patch Changes
