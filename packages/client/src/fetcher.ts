@@ -1,9 +1,8 @@
 import debug from 'debug';
 import fs from 'fs';
-import util from 'util';
 
 import { DownloadHTTPError, DownloadLengthMismatchError } from './error';
-import { withTempFile } from './utils/tmpfile';
+import { tempFile } from './utils/tmpfile';
 import { promiseRetry } from '@gar/promise-retry';
 
 import type { OperationOptions, TimeoutsOptions } from 'retry';
@@ -35,11 +34,13 @@ export abstract class BaseFetcher implements Fetcher {
     maxLength: number,
     handler: DownloadFileHandler<T>
   ): Promise<T> {
-    return withTempFile(async (tmpFile) => {
-      const reader = await this.fetch(url);
+    await using temporaryFile = await tempFile();
+    const reader = await this.fetch(url);
+
+    {
+      await using fileStream = createFileWriteStream(temporaryFile.path);
 
       let numberOfBytesReceived = 0;
-      const fileStream = fs.createWriteStream(tmpFile);
 
       // Read the stream a chunk at a time so that we can check
       // the length of the file as we go
@@ -57,17 +58,15 @@ export abstract class BaseFetcher implements Fetcher {
             throw new DownloadLengthMismatchError('Max length reached');
           }
 
-          await writeBufferToStream(fileStream, Buffer.from(chunk));
+          await fileStream.write(Buffer.from(chunk));
         }
       } finally {
         streamReader.releaseLock();
-        // Make sure we always close the stream
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        await util.promisify(fileStream.close).bind(fileStream)();
       }
+    }
 
-      return handler(tmpFile);
-    });
+    const result = await handler(temporaryFile.path);
+    return result;
   }
 
   // Download bytes from given URL.
@@ -162,16 +161,35 @@ export class DefaultFetcher extends BaseFetcher {
   }
 }
 
-const writeBufferToStream = async (
-  stream: fs.WriteStream,
-  buffer: string | Buffer<ArrayBufferLike>
-): Promise<boolean> => {
-  return new Promise((resolve, reject) => {
-    stream.write(buffer, (err) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(true);
-    });
-  });
+interface FileWriteStream extends AsyncDisposable {
+  write(buffer: Buffer): Promise<void>;
+}
+
+const createFileWriteStream = (file: string): FileWriteStream => {
+  const stream = fs.createWriteStream(file);
+
+  return {
+    write(buffer) {
+      return new Promise((resolve, reject) => {
+        stream.write(buffer, (error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve();
+        });
+      });
+    },
+    async [Symbol.asyncDispose]() {
+      await new Promise<void>((resolve, reject) => {
+        stream.close((error) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve();
+        });
+      });
+    },
+  };
 };

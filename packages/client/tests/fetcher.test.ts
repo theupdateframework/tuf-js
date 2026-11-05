@@ -1,4 +1,5 @@
 import { once } from 'events';
+import fs from 'fs/promises';
 import http from 'http';
 import nock from 'nock';
 import { DownloadHTTPError, DownloadLengthMismatchError } from '../src/error';
@@ -38,6 +39,21 @@ describe('Fetcher Test', () => {
         DownloadLengthMismatchError
       );
     });
+  });
+
+  it('cleans up the temporary file when the handler throws', async () => {
+    nock(baseURL).get('/handler-error').reply(200, response);
+    const fetcher = new DefaultFetcher();
+    let temporaryFile = '';
+
+    await expect(
+      fetcher.downloadFile(baseURL + '/handler-error', 1000, (file) => {
+        temporaryFile = file;
+        return Promise.reject(new Error('handler failed'));
+      })
+    ).rejects.toThrow('handler failed');
+
+    await expect(fs.stat(temporaryFile)).rejects.toThrow(/no such file/);
   });
 
   describe('fetch with reaching timeout limit', () => {
