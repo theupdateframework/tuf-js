@@ -1,6 +1,6 @@
 {
   "name": "@tufjs/cli",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "CLI for interacting with TUF repositories",
   "author": "bdehamer@github.com",
   "license": "MIT",
@@ -43,7 +43,7 @@
     "@oclif/color": "^1.0.13",
     "@oclif/core": "^5",
     "@oclif/plugin-help": "^7",
-    "tuf-js": "6.0.2"
+    "tuf-js": "6.0.3"
   },
   "devDependencies": {
     "oclif": "^6.0.15",

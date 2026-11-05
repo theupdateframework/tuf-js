@@ -1,5 +1,11 @@
 # tuf-js
 
+## 6.0.3
+
+### Patch Changes
+
+- e0cdbfc: Use async disposal for temporary download files and write streams.
+
 ## 6.0.2
 
 ### Patch Changes
