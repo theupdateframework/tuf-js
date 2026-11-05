@@ -13,6 +13,7 @@ import {
 } from './error';
 import { DefaultFetcher, Fetcher } from './fetcher';
 import { TrustedMetadataStore } from './store';
+import { withTempFile } from './utils/tmpfile';
 import * as url from './utils/url';
 
 export interface UpdaterOptions {
@@ -148,9 +149,11 @@ export class Updater {
         // Verify hashes and length of downloaded file
         await targetInfo.verify(fs.createReadStream(fileName));
 
-        // Copy file to target path
-        log('WRITE %s', targetPath);
-        fs.copyFileSync(fileName, targetPath);
+        await withTempFile(async (stagedPath) => {
+          fs.copyFileSync(fileName, stagedPath);
+          log('WRITE %s', targetPath);
+          fs.renameSync(stagedPath, targetPath);
+        }, path.dirname(targetPath));
       }
     );
 

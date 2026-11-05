@@ -4,17 +4,19 @@ import path from 'path';
 
 type TempFileHandler<T> = (file: string) => Promise<T>;
 
-// Invokes the given handler with the path to a temporary file. The file
-// is deleted after the handler returns.
+// Invokes the handler with a temporary file path, optionally under directory.
+// The temporary directory is deleted after the handler returns.
 export const withTempFile = async <T>(
-  handler: TempFileHandler<T>
+  handler: TempFileHandler<T>,
+  directory?: string
 ): Promise<T> =>
-  withTempDir(async (dir) => handler(path.join(dir, 'tempfile')));
+  withTempDir(async (dir) => handler(path.join(dir, 'tempfile')), directory);
 
-// Invokes the given handler with a temporary directory. The directory is
-// deleted after the handler returns.
-const withTempDir = async <T>(handler: TempFileHandler<T>) => {
-  const tmpDir = await fs.realpath(os.tmpdir());
+const withTempDir = async <T>(
+  handler: TempFileHandler<T>,
+  directory?: string
+) => {
+  const tmpDir = await fs.realpath(directory ?? os.tmpdir());
   const dir = await fs.mkdtemp(tmpDir + path.sep);
 
   try {
