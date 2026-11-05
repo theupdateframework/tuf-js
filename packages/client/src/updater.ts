@@ -149,10 +149,10 @@ export class Updater {
         // Verify hashes and length of downloaded file
         await targetInfo.verify(fs.createReadStream(fileName));
 
-        await withTempFile(async (stagedPath) => {
+        await withTempFile((stagedPath) => {
           fs.copyFileSync(fileName, stagedPath);
           log('WRITE %s', targetPath);
-          fs.renameSync(stagedPath, targetPath);
+          return renameWithRetry(stagedPath, targetPath);
         }, path.dirname(targetPath));
       }
     );
@@ -466,4 +466,44 @@ export class Updater {
       );
     }
   }
+}
+
+const MAX_RENAME_RETRIES = 8;
+const RENAME_RETRY_BASE_DELAY_MS = 10;
+const RENAME_RETRY_MAX_DELAY_MS = 100;
+
+async function renameWithRetry(
+  source: string,
+  destination: string
+): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await fs.promises.rename(source, destination);
+      return;
+    } catch (error) {
+      if (
+        process.platform !== 'win32' ||
+        !isTransientWindowsRenameError(error) ||
+        attempt >= MAX_RENAME_RETRIES
+      ) {
+        throw error;
+      }
+
+      const delay = Math.min(
+        RENAME_RETRY_BASE_DELAY_MS * 2 ** attempt,
+        RENAME_RETRY_MAX_DELAY_MS
+      );
+      await new Promise<void>((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
+function isTransientWindowsRenameError(error: unknown): boolean {
+  if (!(error instanceof Error) || !('code' in error)) {
+    return false;
+  }
+
+  return (
+    error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM'
+  );
 }

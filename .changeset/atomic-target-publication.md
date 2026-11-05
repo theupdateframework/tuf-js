@@ -2,4 +2,4 @@
 'tuf-js': patch
 ---
 
-Publish verified targets with a destination-local rename to prevent concurrent cache readers from observing partially written files.
+Publish verified targets with a destination-local rename and retry transient Windows file-sharing errors.
