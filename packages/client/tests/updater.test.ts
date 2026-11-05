@@ -184,6 +184,8 @@ describe('Updater', () => {
   });
 
   describe('#downloadTarget', () => {
+    const itOnWindows = process.platform === 'win32' ? it : it.skip;
+    const itOffWindows = process.platform === 'win32' ? it.skip : it;
     let subject: Updater;
 
     beforeEach(async () => {
@@ -207,5 +209,180 @@ describe('Updater', () => {
       const targetPath = await subject.downloadTarget(targetInfo);
       expect(fs.readFileSync(targetPath, 'utf-8')).toEqual(target.content);
     });
+
+    itOffWindows(
+      'preserves the complete file for an already-open reader',
+      async () => {
+        const targetInfo = await subject.getTargetInfo(target.name);
+        assert(targetInfo);
+        const targetPath = path.join(tufCacheDir, target.name);
+        const previous = 'previous complete target';
+        fs.writeFileSync(targetPath, previous);
+        const reader = await fs.promises.open(targetPath, 'r');
+
+        try {
+          await expect(subject.downloadTarget(targetInfo)).resolves.toBe(
+            targetPath
+          );
+          expect(await reader.readFile('utf8')).toBe(previous);
+          expect(fs.readFileSync(targetPath, 'utf8')).toBe(target.content);
+        } finally {
+          await reader.close();
+        }
+      }
+    );
+
+    itOnWindows(
+      'retries replacement until the open reader closes',
+      async () => {
+        const targetInfo = await subject.getTargetInfo(target.name);
+        assert(targetInfo);
+        const targetPath = path.join(tufCacheDir, target.name);
+        const previous = 'previous complete target';
+        fs.writeFileSync(targetPath, previous);
+        const reader = await fs.promises.open(targetPath, 'r');
+        let notifyFirstAttempt: () => void = () => {};
+        const firstAttempt = new Promise<void>((resolve) => {
+          notifyFirstAttempt = resolve;
+        });
+        const originalRename = fs.promises.rename.bind(fs.promises);
+        let attempts = 0;
+        const rename = jest
+          .spyOn(fs.promises, 'rename')
+          .mockImplementation((source, destination) => {
+            attempts++;
+            if (attempts === 1) {
+              notifyFirstAttempt();
+            }
+            return originalRename(source, destination);
+          });
+        let readerClosed = false;
+
+        try {
+          const download = subject.downloadTarget(targetInfo);
+          await firstAttempt;
+          await new Promise<void>((resolve) => setTimeout(resolve, 50));
+          await reader.close();
+          readerClosed = true;
+
+          await expect(download).resolves.toBe(targetPath);
+          expect(attempts).toBeGreaterThan(1);
+          expect(fs.readFileSync(targetPath, 'utf8')).toBe(target.content);
+        } finally {
+          if (!readerClosed) {
+            await reader.close();
+          }
+          rename.mockRestore();
+        }
+      }
+    );
+
+    itOnWindows(
+      'stops retrying after persistent Windows rename errors',
+      async () => {
+        const targetInfo = await subject.getTargetInfo(target.name);
+        assert(targetInfo);
+        const targetPath = path.join(tufCacheDir, target.name);
+        const previous = 'previous complete target';
+        fs.writeFileSync(targetPath, previous);
+        const entries = fs.readdirSync(tufCacheDir).sort();
+        const error = Object.assign(new Error('rename failed'), {
+          code: 'EPERM',
+        });
+        const rename = jest
+          .spyOn(fs.promises, 'rename')
+          .mockRejectedValue(error);
+
+        try {
+          await expect(subject.downloadTarget(targetInfo)).rejects.toBe(error);
+          expect(rename).toHaveBeenCalledTimes(16);
+          expect(fs.readFileSync(targetPath, 'utf8')).toBe(previous);
+          expect(fs.readdirSync(tufCacheDir).sort()).toEqual(entries);
+        } finally {
+          rename.mockRestore();
+        }
+      }
+    );
+
+    it(
+      'preserves the cached target and removes staging when rename fails',
+      async () => {
+        const targetInfo = await subject.getTargetInfo(target.name);
+        assert(targetInfo);
+        const targetPath = path.join(tufCacheDir, target.name);
+        const previous = 'previous complete target';
+        fs.writeFileSync(targetPath, previous);
+        const entries = fs.readdirSync(tufCacheDir).sort();
+        const error = Object.assign(new Error('rename failed'), {
+          code: 'EIO',
+        });
+        const rename = jest
+          .spyOn(fs.promises, 'rename')
+          .mockRejectedValue(error);
+
+        try {
+          await expect(subject.downloadTarget(targetInfo)).rejects.toBe(error);
+          expect(fs.readFileSync(targetPath, 'utf8')).toBe(previous);
+          expect(fs.readdirSync(tufCacheDir).sort()).toEqual(entries);
+        } finally {
+          rename.mockRestore();
+        }
+      }
+    );
+
+    it(
+      'does not publish a target that fails verification',
+      async () => {
+        const targetInfo = await subject.getTargetInfo(target.name);
+        assert(targetInfo);
+        const targetPath = path.join(tufCacheDir, target.name);
+        const previous = 'previous complete target';
+        fs.writeFileSync(targetPath, previous);
+        const entries = fs.readdirSync(tufCacheDir).sort();
+        const error = new Error('target verification failed');
+        const verify = jest
+          .spyOn(targetInfo, 'verify')
+          .mockRejectedValue(error);
+        const rename = jest.spyOn(fs.promises, 'rename');
+
+        try {
+          await expect(subject.downloadTarget(targetInfo)).rejects.toBe(error);
+          expect(rename).not.toHaveBeenCalled();
+          expect(fs.readFileSync(targetPath, 'utf8')).toBe(previous);
+          expect(fs.readdirSync(tufCacheDir).sort()).toEqual(entries);
+        } finally {
+          verify.mockRestore();
+          rename.mockRestore();
+        }
+      }
+    );
+
+    it(
+      'supports independent updaters publishing to the same custom path',
+      async () => {
+        const targetInfo = await subject.getTargetInfo(target.name);
+        assert(targetInfo);
+        const other = new Updater(options);
+        const targetPath = path.join(tufCacheDir, 'custom-target.json');
+        const entries = fs.readdirSync(tufCacheDir).sort();
+        clearMock();
+        nock(baseURL)
+          .get(/^\/targets\//)
+          .times(2)
+          .reply(200, target.content);
+
+        const results = await Promise.all([
+          subject.downloadTarget(targetInfo, targetPath),
+          other.downloadTarget(targetInfo, targetPath),
+        ]);
+
+        expect(results).toEqual([targetPath, targetPath]);
+        expect(fs.readFileSync(targetPath, 'utf8')).toBe(target.content);
+        expect(fs.readdirSync(tufCacheDir).sort()).toEqual(
+          [...entries, 'custom-target.json'].sort()
+        );
+        expect(nock.isDone()).toBe(true);
+      }
+    );
   });
 });
