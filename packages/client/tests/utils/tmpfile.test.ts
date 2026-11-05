@@ -1,14 +1,30 @@
 import fs from 'fs/promises';
-import { withTempFile } from '../../src/utils/tmpfile';
+import { tempFile } from '../../src/utils/tmpfile';
 
-describe('withTempFile', () => {
+describe('tempFile', () => {
   it('creates a temporary file', async () => {
-    const file = await withTempFile((tmpFileName) => {
-      expect(tmpFileName).toBeTruthy();
-      return Promise.resolve(tmpFileName);
-    });
+    let file: string;
+    {
+      await using temporaryFile = await tempFile();
+      file = temporaryFile.path;
 
-    // Check to make sure the file has been deleted
-    await expect(fs.open(file)).rejects.toThrow(/no such file/);
+      await expect(fs.stat(file)).resolves.toBeTruthy();
+    }
+
+    await expect(fs.stat(file)).rejects.toThrow(/no such file/);
+  });
+
+  it('deletes the temporary file when the scope throws', async () => {
+    let file = '';
+
+    await expect(
+      (async () => {
+        await using temporaryFile = await tempFile();
+        file = temporaryFile.path;
+        throw new Error('test error');
+      })()
+    ).rejects.toThrow('test error');
+
+    await expect(fs.stat(file)).rejects.toThrow(/no such file/);
   });
 });

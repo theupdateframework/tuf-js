@@ -1,25 +1,27 @@
-import fs from 'fs/promises';
+import { mkdtemp, open, realpath, rm } from 'fs/promises';
 import os from 'os';
 import path from 'path';
 
-type TempFileHandler<T> = (file: string) => Promise<T>;
+interface TempFile extends AsyncDisposable {
+  path: string;
+}
 
-// Invokes the given handler with the path to a temporary file. The file
-// is deleted after the handler returns.
-export const withTempFile = async <T>(
-  handler: TempFileHandler<T>
-): Promise<T> =>
-  withTempDir(async (dir) => handler(path.join(dir, 'tempfile')));
-
-// Invokes the given handler with a temporary directory. The directory is
-// deleted after the handler returns.
-const withTempDir = async <T>(handler: TempFileHandler<T>) => {
-  const tmpDir = await fs.realpath(os.tmpdir());
-  const dir = await fs.mkdtemp(tmpDir + path.sep);
+export async function tempFile(): Promise<TempFile> {
+  const tmpDir = await realpath(os.tmpdir());
+  const dir = await mkdtemp(tmpDir + path.sep);
+  const file = path.join(dir, 'tempfile');
 
   try {
-    return await handler(dir);
-  } finally {
-    await fs.rm(dir, { force: true, recursive: true, maxRetries: 3 });
+    await (await open(file, 'a')).close();
+  } catch (error) {
+    await rm(dir, { force: true, recursive: true, maxRetries: 3 });
+    throw error;
   }
-};
+
+  return {
+    path: file,
+    async [Symbol.asyncDispose]() {
+      await rm(dir, { force: true, recursive: true, maxRetries: 3 });
+    },
+  };
+}
