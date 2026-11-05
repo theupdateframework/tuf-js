@@ -16,9 +16,8 @@ describe('withTempFile', () => {
   it('stages under the supplied directory and cleans up on success', async () => {
     const parent = await fs.mkdtemp(path.join(os.tmpdir(), 'tuf-stage-'));
     try {
-      const realParent = await fs.realpath(parent);
       await withTempFile(async (file) => {
-        expect(path.dirname(path.dirname(file))).toBe(realParent);
+        expect(path.dirname(path.dirname(file))).toBe(parent);
         await fs.writeFile(file, 'complete target');
         expect(await fs.readFile(file, 'utf8')).toBe('complete target');
       }, parent);

@@ -295,7 +295,7 @@ describe('Updater', () => {
 
         try {
           await expect(subject.downloadTarget(targetInfo)).rejects.toBe(error);
-          expect(rename).toHaveBeenCalledTimes(9);
+          expect(rename).toHaveBeenCalledTimes(16);
           expect(fs.readFileSync(targetPath, 'utf8')).toBe(previous);
           expect(fs.readdirSync(tufCacheDir).sort()).toEqual(entries);
         } finally {
@@ -340,7 +340,9 @@ describe('Updater', () => {
         fs.writeFileSync(targetPath, previous);
         const entries = fs.readdirSync(tufCacheDir).sort();
         const error = new Error('target verification failed');
-        const verify = jest.spyOn(targetInfo, 'verify').mockRejectedValue(error);
+        const verify = jest
+          .spyOn(targetInfo, 'verify')
+          .mockRejectedValue(error);
         const rename = jest.spyOn(fs.promises, 'rename');
 
         try {

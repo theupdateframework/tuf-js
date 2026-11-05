@@ -468,9 +468,9 @@ export class Updater {
   }
 }
 
-const MAX_RENAME_RETRIES = 8;
+const MAX_RENAME_RETRIES = 15;
 const RENAME_RETRY_BASE_DELAY_MS = 10;
-const RENAME_RETRY_MAX_DELAY_MS = 100;
+const RENAME_RETRY_MAX_DELAY_MS = 250;
 
 async function renameWithRetry(
   source: string,

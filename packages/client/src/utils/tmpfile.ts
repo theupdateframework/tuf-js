@@ -16,7 +16,7 @@ const withTempDir = async <T>(
   handler: TempFileHandler<T>,
   directory?: string
 ) => {
-  const tmpDir = await fs.realpath(directory ?? os.tmpdir());
+  const tmpDir = directory ?? (await fs.realpath(os.tmpdir()));
   const dir = await fs.mkdtemp(tmpDir + path.sep);
 
   try {
