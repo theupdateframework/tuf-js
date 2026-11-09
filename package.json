@@ -27,7 +27,7 @@
     "babel-plugin-transform-import-meta": "^2.3.3",
     "eslint": "^10.13.0",
     "jest": "^30.5.2",
-    "nock": "^15.0.5",
+    "nock": "^15.0.6",
     "prettier": "^3.9.10",
     "ts-jest": "^29.4.15",
     "typescript": "^6.0.2",
