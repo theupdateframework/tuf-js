@@ -48,7 +48,7 @@
   "devDependencies": {
     "oclif": "^6.0.15",
     "shx": "^0.4.0",
-    "tslib": "^2.8.1"
+    "tslib": "^2.9.1"
   },
   "oclif": {
     "bin": "tuf",
