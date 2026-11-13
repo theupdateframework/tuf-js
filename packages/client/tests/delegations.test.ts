@@ -57,7 +57,7 @@ describe('cached delegations', () => {
     return metadata;
   }
 
-  function setupRepo(sharedKey: boolean) {
+  function setupRepo(sharedKey: boolean, omitFromSnapshot?: string) {
     const expires = new Date(Date.now() + 86400000).toISOString();
     const common = { version: 1, specVersion: '1.0.0', expires };
     const root = new Root({ ...common, consistentSnapshot: false });
@@ -131,10 +131,9 @@ describe('cached delegations', () => {
       new Snapshot({
         ...common,
         meta: Object.fromEntries(
-          Object.keys(roles).map((role) => [
-            `${role}.json`,
-            new MetaFile({ version: 1 }),
-          ])
+          Object.keys(roles)
+            .filter((role) => role !== omitFromSnapshot)
+            .map((role) => [`${role}.json`, new MetaFile({ version: 1 })])
         ),
       })
     );
@@ -203,5 +202,12 @@ describe('cached delegations', () => {
       );
     }
     expect(downloadBytes).toHaveBeenCalledTimes(7);
+  });
+
+  it('reports a repository error when a delegate is missing from snapshot', async () => {
+    const { updater } = setupRepo(true, 'release');
+    await expect(updater.getTargetInfo('team-a/file.txt')).rejects.toThrow(
+      'Role release was delegated but is not part of snapshot'
+    );
   });
 });
