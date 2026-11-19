@@ -9,10 +9,17 @@ export const verifySignature = (
   signature: string
 ): boolean => {
   const canonicalData = Buffer.from(canonicalize(metaDataSignedData));
+  const signedData =
+    key.signatureAlgorithm === 'ml-dsa-1'
+      ? Buffer.concat([
+          Buffer.from([0x74, 0x75, 0x66, 0x01]),
+          crypto.createHash('sha512').update(canonicalData).digest(),
+        ])
+      : canonicalData;
 
   return crypto.verify(
     key.hashAlgorithm,
-    canonicalData,
+    signedData,
     key,
     Buffer.from(signature, 'hex')
   );
