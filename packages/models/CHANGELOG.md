@@ -1,5 +1,11 @@
 # @tufjs/models
 
+## 5.0.3
+
+### Patch Changes
+
+- ea439a0: Bump `minimatch` from 11.0.5 to 11.0.9.
+
 ## 5.0.2
 
 ### Patch Changes

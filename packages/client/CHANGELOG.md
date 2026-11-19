@@ -1,5 +1,13 @@
 # tuf-js
 
+## 6.0.3
+
+### Patch Changes
+
+- e0cdbfc: Use async disposal for temporary download files and write streams.
+- Updated dependencies [ea439a0]
+  - @tufjs/models@5.0.3
+
 ## 6.0.2
 
 ### Patch Changes
