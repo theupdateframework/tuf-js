@@ -1,5 +1,13 @@
 # @tufjs/repo-mock
 
+## 5.0.3
+
+### Patch Changes
+
+- ea439a0: Bump `nock` from 15.0.5 to 15.0.6.
+- Updated dependencies [ea439a0]
+  - @tufjs/models@5.0.3
+
 ## 5.0.2
 
 ### Patch Changes

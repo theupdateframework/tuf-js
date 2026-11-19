@@ -1,5 +1,14 @@
 # @tufjs/cli
 
+## 0.6.3
+
+### Patch Changes
+
+- ea439a0: Bump `@oclif/core` from 5.1.11 to 5.1.12.
+- ea439a0: Bump `@oclif/plugin-help` from 7.0.6 to 7.0.10.
+- Updated dependencies [e0cdbfc]
+  - tuf-js@6.0.3
+
 ## 0.6.2
 
 ### Patch Changes
