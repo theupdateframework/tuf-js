@@ -41,6 +41,9 @@ Please see [TUF's website](https://theupdateframework.com/) for more information
 
 * node: ^22.22.2 || ^24.15.0 || >=26.0.0
 
+ML-DSA metadata verification requires Node.js 24 or later. Node.js 22 continues
+to support the other verification algorithms.
+
 ## License
 
 This project is licensed under the terms of the MIT open source license. Please refer to [MIT](./LICENSE.md) for the full terms.

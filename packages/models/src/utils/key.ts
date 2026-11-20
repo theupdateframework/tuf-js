@@ -21,6 +21,7 @@ interface KeyInfo {
 
 export interface PublicKey extends VerifyKeyObjectInput {
   hashAlgorithm?: string;
+  signatureAlgorithm?: 'ml-dsa-1';
 }
 
 export function getPublicKey(keyInfo: KeyInfo): PublicKey {
@@ -29,6 +30,8 @@ export function getPublicKey(keyInfo: KeyInfo): PublicKey {
       return getRSAPublicKey(keyInfo);
     case 'ed25519':
       return getED25519PublicKey(keyInfo);
+    case 'ml-dsa':
+      return getMLDSAPublicKey(keyInfo);
     case 'ecdsa':
     case 'ecdsa-sha2-nistp256':
     case 'ecdsa-sha2-nistp384':
@@ -38,6 +41,39 @@ export function getPublicKey(keyInfo: KeyInfo): PublicKey {
         `Unsupported key type: ${keyInfo.keyType}`
       );
   }
+}
+
+function getMLDSAPublicKey(keyInfo: KeyInfo): PublicKey {
+  let keyType: string;
+  switch (keyInfo.scheme) {
+    case 'ml-dsa-44/1':
+    case 'ml-dsa-65/1':
+    case 'ml-dsa-87/1':
+      keyType = keyInfo.scheme.slice(0, -2);
+      break;
+    default:
+      throw new UnsupportedAlgorithmError(
+        `Unsupported ML-DSA scheme: ${keyInfo.scheme}`
+      );
+  }
+
+  const [major, minor] = process.versions.node.split('.').map(Number);
+  if (major < 24 || (major === 24 && minor < 6)) {
+    throw new UnsupportedAlgorithmError(
+      'ML-DSA is not supported by this Node.js version'
+    );
+  }
+
+  if (!keyInfo.keyVal.startsWith(PEM_HEADER)) {
+    throw new CryptoError('Invalid key format');
+  }
+
+  const key = crypto.createPublicKey(keyInfo.keyVal);
+  if (key.asymmetricKeyType !== keyType) {
+    throw new CryptoError('ML-DSA key parameter set does not match scheme');
+  }
+
+  return { key, signatureAlgorithm: 'ml-dsa-1' };
 }
 
 function getRSAPublicKey(keyInfo: KeyInfo): PublicKey {
