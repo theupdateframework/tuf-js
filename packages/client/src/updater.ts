@@ -8,6 +8,7 @@ import {
   DownloadHTTPError,
   EqualVersionError,
   PersistError,
+  RepositoryError,
   RuntimeError,
   ValueError,
 } from './error';
@@ -335,6 +336,11 @@ export class Updater {
       }
 
       const metaInfo = this.trustedSet.snapshot.signed.meta[`${role}.json`];
+      if (!metaInfo) {
+        throw new RepositoryError(
+          `Role ${role} was delegated but is not part of snapshot`
+        );
+      }
 
       // TODO: use length for fetching
       const maxLength = metaInfo.length || this.config.targetsMaxLength;
