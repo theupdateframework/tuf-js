@@ -1,5 +1,13 @@
 # tuf-js
 
+## 6.0.4
+
+### Patch Changes
+
+- ce8ba9c: Report a repository error when a delegated role is named in targets metadata but has no entry in snapshot, instead of throwing a TypeError.
+- Updated dependencies [e16df97]
+  - @tufjs/models@5.1.0
+
 ## 6.0.3
 
 ### Patch Changes

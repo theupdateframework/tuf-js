@@ -1,5 +1,11 @@
 # @tufjs/models
 
+## 5.1.0
+
+### Minor Changes
+
+- e16df97: Support verification of ML-DSA metadata signatures on Node.js 24 and later.
+
 ## 5.0.3
 
 ### Patch Changes
